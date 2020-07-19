@@ -36,6 +36,10 @@ func (bs *BitcaskStore) Close() error {
 	return nil
 }
 
+func (bs *BitcaskStore) DelUser(username string) error {
+	return bs.db.Delete([]byte(fmt.Sprintf("/users/%s", username)))
+}
+
 func (bs *BitcaskStore) GetUser(username string) (*User, error) {
 	data, err := bs.db.Get([]byte(fmt.Sprintf("/users/%s", username)))
 	if err == bitcask.ErrKeyNotFound {
