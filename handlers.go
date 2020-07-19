@@ -79,10 +79,8 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		text := r.FormValue("text")
 		if text == "" {
-			ctx := &Context{
-				Error:   true,
-				Message: "No post content provided!",
-			}
+			ctx.Error = true
+			ctx.Message = "No post content provided!"
 			s.render("error", w, ctx)
 			return
 		}
@@ -90,19 +88,15 @@ func (s *Server) PostHandler() httprouter.Handle {
 		user, err := s.db.GetUser(ctx.Username)
 		if err != nil {
 			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)
-			ctx := &Context{
-				Error:   true,
-				Message: "Error posting tweet",
-			}
+			ctx.Error = true
+			ctx.Message = "Error posting tweet"
 			s.render("error", w, ctx)
 			return
 		}
 
 		if err := AppendTweet(s.config.Data, text, user); err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: "Error posting tweet",
-			}
+			ctx.Error = true
+			ctx.Message = "Error posting tweet"
 			s.render("error", w, ctx)
 			return
 		}
@@ -181,10 +175,8 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		}
 
 		if err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: "An error occurred while loading the  timeline",
-			}
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
 			s.render("error", w, ctx)
 			return
 		}
@@ -278,10 +270,8 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 					message = "Registrations are disabled on this instance. Please contact the operator."
 				}
 
-				ctx := &Context{
-					Error:   true,
-					Message: message,
-				}
+				ctx.Error = true
+				ctx.Message = message
 				s.render("error", w, ctx)
 			}
 
@@ -333,10 +323,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		url := strings.TrimSpace(r.FormValue("url"))
 
 		if nick == "" || url == "" {
-			ctx := &Context{
-				Error:   true,
-				Message: "Both nick and url must be specified",
-			}
+			ctx.Error = true
+			ctx.Message = "Both nick and url must be specified"
 			s.render("error", w, ctx)
 			return
 		}
@@ -349,18 +337,14 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		user.Following[nick] = url
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: fmt.Sprintf("Error following feed %s: %s", nick, url),
-			}
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error following feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx = &Context{
-			Error:   false,
-			Message: fmt.Sprintf("Successfully started following %s: %s", nick, url),
-		}
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Successfully started following %s: %s", nick, url)
 		s.render("error", w, ctx)
 		return
 	}
@@ -379,10 +363,8 @@ func (s *Server) ImportHandler() httprouter.Handle {
 		feeds := r.FormValue("feeds")
 
 		if feeds == "" {
-			ctx := &Context{
-				Error:   true,
-				Message: "Nothing to import!",
-			}
+			ctx.Error = true
+			ctx.Message = "Nothing to import!"
 			s.render("error", w, ctx)
 			return
 		}
@@ -411,26 +393,20 @@ func (s *Server) ImportHandler() httprouter.Handle {
 		}
 		if err := scanner.Err(); err != nil {
 			log.WithError(err).Error("error scanning feeds for import")
-			ctx := &Context{
-				Error:   true,
-				Message: "Error importing feeds",
-			}
+			ctx.Error = true
+			ctx.Message = "Error importing feeds"
 			s.render("error", w, ctx)
 		}
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: "Error importing feeds",
-			}
+			ctx.Error = true
+			ctx.Message = "Error importing feeds"
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx = &Context{
-			Error:   false,
-			Message: fmt.Sprintf("Successfully imported %d feeds", imported),
-		}
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Successfully imported %d feeds", imported)
 		s.render("error", w, ctx)
 		return
 	}
@@ -444,10 +420,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		nick := strings.TrimSpace(r.FormValue("nick"))
 
 		if nick == "" {
-			ctx := &Context{
-				Error:   true,
-				Message: "No nick specified to unfollow",
-			}
+			ctx.Error = true
+			ctx.Message = "No nick specified to unfollow"
 			s.render("error", w, ctx)
 			return
 		}
@@ -459,10 +433,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 
 		url, ok := user.Following[nick]
 		if !ok {
-			ctx := &Context{
-				Error:   true,
-				Message: fmt.Sprintf("No feed found by the nick %s", nick),
-			}
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("No feed found by the nick %s", nick)
 			s.render("error", w, ctx)
 			return
 		}
@@ -470,18 +442,14 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		delete(user.Following, nick)
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: fmt.Sprintf("Error unfollowing feed %s: %s", nick, url),
-			}
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error unfollowing feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx = &Context{
-			Error:   false,
-			Message: fmt.Sprintf("Successfully stopped following %s: %s", nick, url),
-		}
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Successfully stopped following %s: %s", nick, url)
 		s.render("error", w, ctx)
 		return
 	}
@@ -516,18 +484,14 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
-			ctx := &Context{
-				Error:   true,
-				Message: "Error updating user",
-			}
+			ctx.Error = true
+			ctx.Message = "Error updating user"
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx = &Context{
-			Error:   false,
-			Message: "Successfully updated settings",
-		}
+		ctx.Error = false
+		ctx.Message = "Successfully updated settings"
 		s.render("error", w, ctx)
 		return
 	}
