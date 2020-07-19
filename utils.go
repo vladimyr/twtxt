@@ -40,8 +40,10 @@ func NormalizeURL(url string) string {
 		log.WithError(err).Errorf("error parsing url %s", url)
 		return ""
 	}
-	if u.Scheme == "https" {
-		u.Scheme = "http"
+	if u.Scheme == "http" && strings.HasSuffix(u.Host, ":80") {
+		u.Host = strings.TrimSuffix(u.Host, ":80")
+	}
+	if u.Scheme == "https" && strings.HasSuffix(u.Host, ":443") {
 		u.Host = strings.TrimSuffix(u.Host, ":443")
 	}
 	u.User = nil
