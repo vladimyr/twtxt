@@ -8,7 +8,10 @@ import (
 )
 
 type Context struct {
-	InstanceName string
+	InstanceName            string
+	SoftwareVersion         string
+	RegisterDisabled        bool
+	RegisterDisabledMessage string
 
 	Username      string
 	User          *User
@@ -19,14 +22,12 @@ type Context struct {
 
 	Tweeter Tweeter
 	Tweets  Tweets
-
-	RegisterDisabled        bool
-	RegisterDisabledMessage string
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
-		InstanceName: conf.Name,
+		InstanceName:    conf.Name,
+		SoftwareVersion: FullVersion(),
 
 		RegisterDisabled: !conf.Register,
 	}
