@@ -28,11 +28,11 @@ func init() {
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
 
-	flag.StringVarP(&data, "data", "d", "./data", "data directory")
-	flag.StringVarP(&store, "store", "s", "bitcask://twtxt.db", "store to use")
-	flag.StringVarP(&name, "name", "n", "twtxt.net", "set the instance's name")
-	flag.BoolVarP(&register, "register", "r", false, "enable user registration")
-	flag.StringVarP(&baseURL, "base-url", "u", "http://0.0.0.0:8000", "base url to use for app")
+	flag.StringVarP(&data, "data", "d", twtxt.DefaultData, "data directory")
+	flag.StringVarP(&store, "store", "s", twtxt.DefaultStore, "store to use")
+	flag.StringVarP(&name, "name", "n", twtxt.DefaultName, "set the instance's name")
+	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
+	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use for app")
 }
 
 func main() {
