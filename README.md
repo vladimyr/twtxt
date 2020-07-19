@@ -52,6 +52,27 @@ $ twtd
 
 Then visit: http://localhost:8000/
 
+## Stargazers over time
+
+[![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/bitcask)
+
+## Support
+
+Support the ongoing development of Bitcask!
+
+**Sponser**
+
+- Become a [Sponsor](https://www.patreon.com/prologic)
+
+## Contributors
+
+Thank you to all those that have contributed to this project, battle-tested it, used it in their own projects or products, fixed bugs, improved performance and even fix tiny typos in documentation! Thank you and keep contributing!
+
+You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to the project. If you contriibute a PR please consider adding your name there. There is also Github's own [Contributors](https://github.com/prologic/twtxt/graphs/contributors) statistics.
+
+[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/0)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/0)
+[![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/1)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/1)
+
 ## License
 
 twtwt is licensed under the terms of the [MIT License](/LICENSE)
