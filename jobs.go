@@ -120,5 +120,22 @@ func (job *FixUserAccountsJob) Run() {
 
 			log.Infof("successfully migrated user account %s", normalizedUsername)
 		}
+
+		if user.URL == "" {
+			log.Infof("fixing URL for user %s", user.Username)
+			// Fix URL
+			user.URL = fmt.Sprintf(
+				"%s/u/%s",
+				strings.TrimSuffix(job.conf.BaseURL, "/"),
+				normalizedUsername,
+			)
+
+			if err := job.db.SetUser(normalizedUsername, user); err != nil {
+				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
+				return
+			}
+
+			log.Infof("successfully fixed URL for user %s", user.Username)
+		}
 	}
 }
