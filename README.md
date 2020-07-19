@@ -54,15 +54,16 @@ Then visit: http://localhost:8000/
 
 ## Stargazers over time
 
-[![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/bitcask)
+[![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/twtxt)
 
 ## Support
 
-Support the ongoing development of Bitcask!
+Support the ongoing development of twtxt!
 
 **Sponser**
 
 - Become a [Sponsor](https://www.patreon.com/prologic)
+- Contribute! See [TODO](/TODO.md)
 
 ## Contributors
 
