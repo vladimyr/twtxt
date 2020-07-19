@@ -307,6 +307,13 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		password := r.FormValue("password")
 		email := r.FormValue("email")
 
+		if _, err := s.db.GetUser(username); err == nil {
+			ctx.Error = true
+			ctx.Message = "User with that username already exists! Please pick another!"
+			s.render("error", w, ctx)
+			return
+		}
+
 		hash, err := s.pm.NewPassword(password)
 		if err != nil {
 			log.WithError(err).Error("error creating password hash")
