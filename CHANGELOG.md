@@ -4,6 +4,9 @@
 
 ### Bug Fixes
 
+* Fix a critical bug whereby users could re-register the same username and override someone else's account :/
+* Fix username case sensitivity and normalize by forcing all usersnames to be lowercase and whitespace stripped
+* Fix useability issue where some UI/UX would toggle between authenticated and unauthentiated state causing confusion
 * Fix the  follow self behaviour to actually work
 * Fix defaults to use the same  ones in twtxt's options
 * Fix  URL() of User objects
@@ -11,6 +14,9 @@
 
 ### Features
 
+* Add additional logic to fix null/blank user account URL(s) to the FixUserAccountJob as well
+* Add FixUserAccountsJob to fix existing broken accounts that might already exist
+* Add new /discover view for convenience access to the global instance's timeline  with easy to use Follow links for discoverability
 * Add feature whereby new registered users follow themselves by default
 * Add support, stargazers and contributing info to READmE
 * Add enhanced server capability for graceful/clean shutdowns
