@@ -3,6 +3,7 @@ package twtxt
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/prologic/twtxt/session"
 	log "github.com/sirupsen/logrus"
@@ -42,7 +43,11 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	if ctx.Authenticated && ctx.Username != "" {
 		ctx.Tweeter = Tweeter{
 			Nick: ctx.Username,
-			URL:  fmt.Sprintf("http://0.0.0.0:8000/u/%s", ctx.Username),
+			URL: fmt.Sprintf(
+				"%s/u/%s",
+				strings.TrimSuffix(conf.BaseURL, "/"),
+				ctx.Username,
+			),
 		}
 
 		user, err := db.GetUser(ctx.Username)
