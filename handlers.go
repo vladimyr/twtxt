@@ -228,7 +228,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 			return
 		}
 
-		username := r.FormValue("username")
+		username := NormalizeUsername(r.FormValue("username"))
 		password := r.FormValue("password")
 
 		// Error: no username or password provided
@@ -303,7 +303,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		username := r.FormValue("username")
+		username := NormalizeUsername(r.FormValue("username"))
 		password := r.FormValue("password")
 		email := r.FormValue("email")
 

@@ -27,6 +27,10 @@ func ParseURI(uri string) (*URI, error) {
 	return nil, fmt.Errorf("invalid uri: %s", uri)
 }
 
+func NormalizeUsername(username string) string {
+	return strings.TrimSpace(strings.ToLower(username))
+}
+
 func NormalizeURL(url string) string {
 	if url == "" {
 		return ""
