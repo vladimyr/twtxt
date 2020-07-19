@@ -76,6 +76,10 @@ You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/0)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/0)
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/1)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/1)
 
+## Related Projects
+
+- [rss2twtxt](https://github.com/prologic/rss2twtxt)
+
 ## License
 
 twtwt is licensed under the terms of the [MIT License](/LICENSE)
