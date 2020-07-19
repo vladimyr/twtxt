@@ -1,9 +1,7 @@
 package twtxt
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/prologic/twtxt/session"
 	log "github.com/sirupsen/logrus"
@@ -41,19 +39,23 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	}
 
 	if ctx.Authenticated && ctx.Username != "" {
-		ctx.Tweeter = Tweeter{
-			Nick: ctx.Username,
-			URL: fmt.Sprintf(
-				"%s/u/%s",
-				strings.TrimSuffix(conf.BaseURL, "/"),
-				ctx.Username,
-			),
-		}
-
 		user, err := db.GetUser(ctx.Username)
 		if err != nil {
 			log.WithError(err).Warnf("error loading user object for %s", ctx.Username)
 		}
+
+		ctx.Tweeter = Tweeter{
+			Nick: user.Username,
+			URL:  user.URL,
+		}
+
+		// Every registered new user follows themselves
+		// TODO: Make  this configurable server behaviour?
+		if user.Following == nil {
+			user.Following = make(map[string]string)
+		}
+		user.Following["me"] = user.URL
+
 		ctx.User = user
 	}
 

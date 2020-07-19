@@ -107,6 +107,33 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
+		// Update user's own timeline with their own new post.
+		sources := map[string]string{
+			"me": user.URL,
+		}
+
+		if err := func() error {
+			cache, err := LoadCache(s.config.Data)
+			if err != nil {
+				log.WithError(err).Warn("error loading feed cache")
+				return err
+			}
+
+			cache.FetchTweets(sources)
+
+			if err := cache.Store(s.config.Data); err != nil {
+				log.WithError(err).Warn("error saving feed cache")
+				return err
+			}
+			return nil
+		}(); err != nil {
+			log.WithError(err).Error("error updating feed cache")
+			ctx.Error = true
+			ctx.Message = "Error updating feed cache and timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
@@ -278,12 +305,12 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Password:  hash,
 			CreatedAt: time.Now(),
 
-			Following: make(map[string]string),
+			URL: fmt.Sprintf(
+				"%s/u/%s",
+				strings.TrimSuffix(s.config.BaseURL, "/"),
+				username,
+			),
 		}
-
-		// Every registered new user follows themselves
-		// TODO: Make  this configurable server behaviour?
-		user.Following["me"] = user.URL()
 
 		s.db.SetUser(username, user)
 

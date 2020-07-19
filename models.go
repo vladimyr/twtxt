@@ -9,11 +9,11 @@ type User struct {
 	Username  string
 	Password  string
 	Email     string
+	URL       string
 	CreatedAt time.Time
 
 	Following map[string]string
 
-	url     string
 	sources map[string]string
 }
 
@@ -35,10 +35,6 @@ func LoadUser(data []byte) (user *User, err error) {
 	}
 
 	return
-}
-
-func (u *User) URL() string {
-	return u.url
 }
 
 func (u *User) Sources() map[string]string {
