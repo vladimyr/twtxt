@@ -35,7 +35,7 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 // TwtxtHandler ...
 func (s *Server) TwtxtHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		nick := p.ByName("nick")
+		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
