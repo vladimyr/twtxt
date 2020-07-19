@@ -277,7 +277,13 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Email:     email,
 			Password:  hash,
 			CreatedAt: time.Now(),
+
+			Following: make(map[string]string),
 		}
+
+		// Every registered new user follows themselves
+		// TODO: Make  this configurable server behaviour?
+		user.Following["me"] = user.URL()
 
 		s.db.SetUser(username, user)
 
