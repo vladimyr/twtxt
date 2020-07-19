@@ -1,18 +1,15 @@
 
-<a name="0.0.2"></a>
-## [0.0.2](https://github.com/prologic/twtxt/compare/0.0.1...0.0.2) (2020-07-19)
+<a name="0.0.3"></a>
+## [0.0.3](https://github.com/prologic/twtxt/compare/0.0.2...0.0.3) (2020-07-19)
 
 ### Bug Fixes
 
+* Fix bug with NormalizeURL() incorrectly translating https:// to http://
 * Fix deps and cleanup unused ones
 * Fix the layout of thee /settings view
 * Fix a critical bug whereby users could re-register the same username and override someone else's account :/
 * Fix username case sensitivity and normalize by forcing all usersnames to be lowercase and whitespace stripped
 * Fix useability issue where some UI/UX would toggle between authenticated and unauthentiated state causing confusion
-* Fix the  follow self behaviour to actually work
-* Fix defaults to use the same  ones in twtxt's options
-* Fix  URL() of User objects
-* Fix import and hard-code no. of tweets to display
 
 ### Features
 
@@ -22,6 +19,20 @@
 * Add additional logic to fix null/blank user account URL(s) to the FixUserAccountJob as well
 * Add FixUserAccountsJob to fix existing broken accounts that might already exist
 * Add new /discover view for convenience access to the global instance's timeline  with easy to use Follow links for discoverability
+
+
+<a name="0.0.2"></a>
+## [0.0.2](https://github.com/prologic/twtxt/compare/0.0.1...0.0.2) (2020-07-19)
+
+### Bug Fixes
+
+* Fix the  follow self behaviour to actually work
+* Fix defaults to use the same  ones in twtxt's options
+* Fix  URL() of User objects
+* Fix import and hard-code no. of tweets to display
+
+### Features
+
 * Add feature whereby new registered users follow themselves by default
 * Add support, stargazers and contributing info to READmE
 * Add enhanced server capability for graceful/clean shutdowns
