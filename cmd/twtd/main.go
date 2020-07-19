@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -40,8 +41,30 @@ func init() {
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 }
 
-func main() {
+func flagNameFromEnvironmentName(s string) string {
+	s = strings.ToLower(s)
+	s = strings.Replace(s, "_", "-", -1)
+	return s
+}
+
+func ParseArgs() error {
+	for _, v := range os.Environ() {
+		vals := strings.SplitN(v, "=", 2)
+		flagName := flagNameFromEnvironmentName(vals[0])
+		fn := flag.CommandLine.Lookup(flagName)
+		if fn == nil || fn.Changed {
+			continue
+		}
+		if err := fn.Value.Set(vals[1]); err != nil {
+			return err
+		}
+	}
 	flag.Parse()
+	return nil
+}
+
+func main() {
+	ParseArgs()
 
 	if version {
 		fmt.Printf("twtxt v%s", twtxt.FullVersion())
