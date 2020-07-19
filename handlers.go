@@ -114,6 +114,23 @@ func (s *Server) PostHandler() httprouter.Handle {
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		if r.Method == http.MethodHead {
+			defer r.Body.Close()
+
+			cacheLastModified, err := CacheLastModified(s.config.Data)
+			if err != nil {
+				log.WithError(err).Error("CacheLastModified() error")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "text/html")
+			w.Header().Set(
+				"Last-Modified",
+				cacheLastModified.UTC().Format(http.TimeFormat),
+			)
+			return
+		}
+
 		ctx := NewContext(s.config, s.db, r)
 
 		var (

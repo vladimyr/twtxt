@@ -61,5 +61,7 @@ func main() {
 	}
 
 	log.Infof("%s listening on http://%s", path.Base(os.Args[0]), bind)
-	svr.ListenAndServe()
+	if err := svr.Run(); err != nil {
+		log.WithError(err).Fatal("error running or shutting down server")
+	}
 }

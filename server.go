@@ -1,8 +1,11 @@
 package twtxt
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
@@ -16,45 +19,13 @@ import (
 	"github.com/prologic/twtxt/session"
 )
 
-// Router ...
-type Router struct {
-	httprouter.Router
-}
-
-// NewRouter ...
-func NewRouter() *Router {
-	return &Router{
-		httprouter.Router{
-			RedirectTrailingSlash:  true,
-			RedirectFixedPath:      true,
-			HandleMethodNotAllowed: false,
-			HandleOPTIONS:          true,
-		},
-	}
-}
-
-// ServeFilesWithCacheControl ...
-func (r *Router) ServeFilesWithCacheControl(path string, root http.FileSystem) {
-	if len(path) < 10 || path[len(path)-10:] != "/*filepath" {
-		panic("path must end with /*filepath in path '" + path + "'")
-	}
-
-	fileServer := http.FileServer(root)
-
-	r.GET(path, func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		w.Header().Set("Vary", "Accept-Encoding")
-		w.Header().Set("Cache-Control", "public, max-age=7776000")
-		req.URL.Path = ps.ByName("filepath")
-		fileServer.ServeHTTP(w, req)
-	})
-}
-
 // Server ...
 type Server struct {
 	bind      string
 	config    *Config
 	templates *Templates
 	router    *Router
+	server    *http.Server
 
 	// Database
 	db Store
@@ -85,24 +56,69 @@ func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
 	}
 }
 
-// ListenAndServe ...
-func (s *Server) ListenAndServe() {
+// AddRouter ...
+func (s *Server) AddRoute(method, path string, handler http.Handler) {
+	s.router.Handler(method, path, handler)
+}
 
-	log.Fatal(
-		http.ListenAndServe(
-			s.bind,
-			logger.New(logger.Options{
-				Prefix:               "twtxt",
-				RemoteAddressHeaders: []string{"X-Forwarded-For"},
-			}).Handler(
-				gziphandler.GzipHandler(
-					s.sm.Handler(
-						s.router,
-					),
-				),
-			),
-		),
-	)
+// AddShutdownHook ...
+func (s *Server) AddShutdownHook(f func()) {
+	s.server.RegisterOnShutdown(f)
+}
+
+// Shutdown ...
+func (s *Server) Shutdown(ctx context.Context) error {
+	s.cron.Stop()
+
+	if err := s.server.Shutdown(ctx); err != nil {
+		log.WithError(err).Error("error shutting down server")
+		return err
+	}
+
+	if err := s.db.Close(); err != nil {
+		log.WithError(err).Error("error closing store")
+		return err
+	}
+
+	return nil
+}
+
+// Run ...
+func (s *Server) Run() (err error) {
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt)
+		<-sigint
+
+		log.Info("Shutting down...")
+
+		// We received an interrupt signal, shut down.
+		if err = s.Shutdown(context.Background()); err != nil {
+			// Error from closing listeners, or context timeout:
+			log.WithError(err).Fatal("Error shutting down HTTP server")
+		}
+		close(idleConnsClosed)
+	}()
+
+	if err = s.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		log.WithError(err).Fatal("HTTP server ListenAndServe")
+	}
+
+	<-idleConnsClosed
+
+	return
+}
+
+// ListenAndServe ...
+func (s *Server) ListenAndServe() error {
+	return s.server.ListenAndServe()
+}
+
+// AddCronJob ...
+func (s *Server) AddCronJob(spec string, job cron.Job) error {
+	return s.cron.AddJob(spec, job)
 }
 
 func (s *Server) setupCronJobs() error {
@@ -167,6 +183,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/support", s.PageHandler("support"))
 
 	s.router.GET("/", s.TimelineHandler())
+	s.router.HEAD("/", s.TimelineHandler())
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
 	s.router.HEAD("/u/:nick", s.TwtxtHandler())
 	s.router.GET("/u/:nick", s.TwtxtHandler())
@@ -205,26 +222,44 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	router := NewRouter()
 
+	am := auth.NewManager(auth.NewOptions("/login", "/register"))
+
+	pm := password.NewManager(nil)
+
+	sm := session.NewManager(
+		session.NewOptions("twtxt", "mysecret"),
+		session.NewMemoryStore(-1),
+	)
+
 	server := &Server{
 		bind:      bind,
 		config:    config,
 		router:    router,
 		templates: templates,
 
+		server: &http.Server{
+			Addr: bind,
+			Handler: logger.New(logger.Options{
+				Prefix:               "twtxt",
+				RemoteAddressHeaders: []string{"X-Forwarded-For"},
+			}).Handler(
+				gziphandler.GzipHandler(
+					sm.Handler(router),
+				),
+			),
+		},
+
 		// Schedular
 		cron: cron.New(),
 
-		// Auth
-		am: auth.NewManager(auth.NewOptions("/login", "/register")),
+		// Auth Manager
+		am: am,
 
-		// Sessions
-		sm: session.NewManager(
-			session.NewOptions("twtxt", "mysecret"),
-			session.NewMemoryStore(-1),
-		),
+		// Session Manager
+		sm: sm,
 
-		// Passwords
-		pm: password.NewManager(nil),
+		// Password Manager
+		pm: pm,
 	}
 
 	for _, opt := range options {

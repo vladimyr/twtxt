@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/prologic/bitcask"
+	log "github.com/sirupsen/logrus"
 )
 
+// BitcaskStore ...
 type BitcaskStore struct {
 	db *bitcask.Bitcask
 }
@@ -17,6 +19,21 @@ func newBitcaskStore(path string) (*BitcaskStore, error) {
 	}
 
 	return &BitcaskStore{db: db}, nil
+}
+
+// Close ...
+func (bs *BitcaskStore) Close() error {
+	if err := bs.db.Sync(); err != nil {
+		log.WithError(err).Error("error syncing store")
+		return err
+	}
+
+	if err := bs.db.Close(); err != nil {
+		log.WithError(err).Error("error closing store")
+		return err
+	}
+
+	return nil
 }
 
 func (bs *BitcaskStore) GetUser(username string) (*User, error) {

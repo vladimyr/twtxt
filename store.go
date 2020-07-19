@@ -12,6 +12,8 @@ var (
 )
 
 type Store interface {
+	Close() error
+
 	GetUser(username string) (*User, error)
 	SetUser(username string, user *User) error
 
