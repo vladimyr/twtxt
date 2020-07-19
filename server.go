@@ -184,7 +184,11 @@ func (s *Server) initRoutes() {
 
 	s.router.GET("/", s.TimelineHandler())
 	s.router.HEAD("/", s.TimelineHandler())
+
+	s.router.GET("/discover", s.am.MustAuth(s.DiscoverHandler()))
+
 	s.router.POST("/post", s.am.MustAuth(s.PostHandler()))
+
 	s.router.HEAD("/u/:nick", s.TwtxtHandler())
 	s.router.GET("/u/:nick", s.TwtxtHandler())
 

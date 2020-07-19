@@ -193,6 +193,31 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 	}
 }
 
+// DiscoverHandler ...
+func (s *Server) DiscoverHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		tweets, err := GetAllTweets(s.config)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		sort.Sort(sort.Reverse(tweets))
+
+		if len(tweets) > 50 {
+			ctx.Tweets = tweets[:50]
+		} else {
+			ctx.Tweets = tweets
+		}
+
+		s.render("discover", w, ctx)
+	}
+}
+
 // LoginHandler ...
 func (s *Server) LoginHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -314,13 +339,13 @@ func (s *Server) FollowHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		if r.Method == "GET" {
+		nick := strings.TrimSpace(r.FormValue("nick"))
+		url := strings.TrimSpace(r.FormValue("url"))
+
+		if r.Method == "GET" && nick == "" && url == "" {
 			s.render("follow", w, ctx)
 			return
 		}
-
-		nick := strings.TrimSpace(r.FormValue("nick"))
-		url := strings.TrimSpace(r.FormValue("url"))
 
 		if nick == "" || url == "" {
 			ctx.Error = true

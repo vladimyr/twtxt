@@ -1,0 +1,13 @@
+{{define "content"}}
+<div class="grid">
+  <div>
+    {{ range .Tweets }}
+      <p>
+      &gt;&nbsp;<a href="{{ .Tweeter.URL }}">{{ .Tweeter.Nick }}</a>&nbsp;({{ .Created | Time }})&nbsp;[<a href="/follow?nick={{ .Tweeter.Nick  }}&url={{ .Tweeter.URL }}">Follow</a>]
+        <br />
+        {{ .Text | FormatMentions }}
+      </p>
+    {{ end }}
+  </div>
+</div>
+{{end}}

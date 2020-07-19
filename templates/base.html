@@ -13,6 +13,9 @@
   <nav class="container-fluid">
     <ul>
       <li><strong><a href="/">twtxt</a></strong></li>
+      {{ if .Authenticated }}
+        <li><a href="/discover">/discover</a></li>
+      {{ end }}
     </ul>
     <ul>
       {{ if .Authenticated }}
