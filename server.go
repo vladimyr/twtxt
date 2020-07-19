@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
@@ -216,13 +217,19 @@ func (s *Server) initRoutes() {
 
 // NewServer ...
 func NewServer(bind string, options ...Option) (*Server, error) {
+	config := NewConfig()
+
+	for _, opt := range options {
+		if err := opt(config); err != nil {
+			return nil, err
+		}
+	}
+
 	templates, err := NewTemplates()
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
 		return nil, err
 	}
-
-	config := NewConfig()
 
 	router := NewRouter()
 
@@ -231,7 +238,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	pm := password.NewManager(nil)
 
 	sm := session.NewManager(
-		session.NewOptions("twtxt", "mysecret"),
+		session.NewOptions(
+			config.Name,
+			config.CookieSecret,
+			strings.HasPrefix(config.BaseURL, "https"),
+			config.SessionExpiry,
+		),
 		session.NewMemoryStore(-1),
 	)
 
@@ -264,12 +276,6 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		// Password Manager
 		pm: pm,
-	}
-
-	for _, opt := range options {
-		if err := opt(server.config); err != nil {
-			return nil, err
-		}
 	}
 
 	db, err := NewStore(server.config.Store)

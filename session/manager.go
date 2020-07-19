@@ -50,11 +50,13 @@ func NewSession(sid SessionID, store Store) *Session {
 type Options struct {
 	name   string
 	secret string
+	secure bool
+	expiry time.Duration
 }
 
 // NewOptions ...
-func NewOptions(name, secret string) *Options {
-	return &Options{name, secret}
+func NewOptions(name, secret string, secure bool, expiry time.Duration) *Options {
+	return &Options{name, secret, secure, expiry}
 }
 
 // Manager ...
@@ -79,10 +81,10 @@ func (m *Manager) Create(w http.ResponseWriter) (SessionID, error) {
 	cookie := &http.Cookie{
 		Name:     m.options.name,
 		Value:    sid.String(),
-		Secure:   false,
+		Secure:   m.options.secure,
 		HttpOnly: true,
-		MaxAge:   3600,
-		Expires:  time.Now().Add(1 * time.Hour),
+		MaxAge:   int(m.options.expiry.Seconds()),
+		Expires:  time.Now().Add(m.options.expiry),
 	}
 
 	securecookie.SetSecureCookie(w, m.options.secret, cookie)
@@ -133,7 +135,7 @@ func (m *Manager) Delete(w http.ResponseWriter, r *http.Request) {
 	cookie := &http.Cookie{
 		Name:     m.options.name,
 		Value:    "",
-		Secure:   false,
+		Secure:   m.options.secure,
 		HttpOnly: true,
 		MaxAge:   -1,
 		Expires:  time.Now(),

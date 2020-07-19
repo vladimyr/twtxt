@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
@@ -16,11 +17,13 @@ var (
 	debug   bool
 	version bool
 
-	data     string
-	store    string
-	name     string
-	register bool
-	baseURL  string
+	data          string
+	store         string
+	name          string
+	register      bool
+	baseURL       string
+	cookieSecret  string
+	sessionExpiry time.Duration
 )
 
 func init() {
@@ -32,7 +35,9 @@ func init() {
 	flag.StringVarP(&store, "store", "s", twtxt.DefaultStore, "store to use")
 	flag.StringVarP(&name, "name", "n", twtxt.DefaultName, "set the instance's name")
 	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
-	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use for app")
+	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
+	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
+	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 }
 
 func main() {
@@ -55,6 +60,8 @@ func main() {
 		twtxt.WithStore(store),
 		twtxt.WithBaseURL(baseURL),
 		twtxt.WithRegister(register),
+		twtxt.WithCookieSecret(cookieSecret),
+		twtxt.WithSessionExpiry(sessionExpiry),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

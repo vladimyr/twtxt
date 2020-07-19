@@ -1,5 +1,7 @@
 package twtxt
 
+import "time"
+
 const (
 	// DefaultData is the default data directory for storage
 	DefaultData = "./data"
@@ -15,6 +17,12 @@ const (
 
 	// DefaultRegister is the default user registration flag
 	DefaultRegister = false
+
+	// DefaultCookieSecret is the server's default cookie secret
+	DefaultCookieSecret = "PLEASE_CHANGE_ME!!!"
+
+	// DefaultSessionExpiry is the server's default session expiry time
+	DefaultSessionExpiry = 24 * time.Hour
 )
 
 func NewConfig() *Config {
@@ -64,6 +72,22 @@ func WithName(name string) Option {
 func WithRegister(register bool) Option {
 	return func(cfg *Config) error {
 		cfg.Register = register
+		return nil
+	}
+}
+
+// WithCookieSecret sets the server's cookie secret
+func WithCookieSecret(secret string) Option {
+	return func(cfg *Config) error {
+		cfg.CookieSecret = secret
+		return nil
+	}
+}
+
+// WithSessionExpiry sets the server's session expiry time
+func WithSessionExpiry(expiry time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.SessionExpiry = expiry
 		return nil
 	}
 }

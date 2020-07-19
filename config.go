@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"time"
 )
 
 // Config contains the server configuration parameters
 type Config struct {
-	Data            string `json:"data"`
-	Name            string `json:"name"`
-	Store           string `json:"store"`
-	BaseURL         string `json:"base_url"`
-	Register        bool   `json:"register"`
-	RegisterMessage string `json:"register_message"`
+	Data            string        `json:"data"`
+	Name            string        `json:"name"`
+	Store           string        `json:"store"`
+	BaseURL         string        `json:"base_url"`
+	Register        bool          `json:"register"`
+	RegisterMessage string        `json:"register_message"`
+	CookieSecret    string        `json:"cookie_secret"`
+	SessionExpiry   time.Duration `json:"session_expiry"`
 }
 
 // Load loads a configuration from the given path
