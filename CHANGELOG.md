@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+* Fix deps and cleanup unused ones
+* Fix the layout of thee /settings view
 * Fix a critical bug whereby users could re-register the same username and override someone else's account :/
 * Fix username case sensitivity and normalize by forcing all usersnames to be lowercase and whitespace stripped
 * Fix useability issue where some UI/UX would toggle between authenticated and unauthentiated state causing confusion
@@ -14,6 +16,9 @@
 
 ### Features
 
+* Add support for configuring flags from the environment via the same long option names
+* Add options to configure session cookie secret and expiry
+* Add Contributing guideline and TODO
 * Add additional logic to fix null/blank user account URL(s) to the FixUserAccountJob as well
 * Add FixUserAccountsJob to fix existing broken accounts that might already exist
 * Add new /discover view for convenience access to the global instance's timeline  with easy to use Follow links for discoverability
