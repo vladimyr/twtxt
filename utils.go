@@ -69,30 +69,6 @@ func SafeParseInt(s string, d int) int {
 	return n
 }
 
-// Abs returns the absolute value of x.
-func Abs(x int) int {
-	if x < 0 {
-		return x * -1
-	}
-	return x
-}
-
-// Max returns the larger of x or y.
-func Max(x, y int) int {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-// Min returns the smaller of x or y.
-func Min(x, y int) int {
-	if x > y {
-		return y
-	}
-	return x
-}
-
 // FormatTweet formats a tweet into a valid HTML snippet
 func FormatTweet(text string) template.HTML {
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
