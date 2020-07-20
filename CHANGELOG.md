@@ -1,4 +1,28 @@
 
+<a name="0.0.4"></a>
+## [0.0.4](https://github.com/prologic/twtxt/compare/0.0.3...0.0.4) (2020-07-21)
+
+### Bug Fixes
+
+* Fix links opening in new window with target=_blank
+* Fix typo on support page ([#5](https://github.com/prologic/twtxt/issues/5))
+* Fix app versioning and add to base template so we can tell which version of twtxt is running
+* Fix bug in TwtfileHandler with case sensitivity of nick param
+
+### Features
+
+* Add delete account support
+* Add better layout of tweets so they stand out more
+* Add support for Markdown formatting ([#10](https://github.com/prologic/twtxt/issues/10))
+* Add pagination support ([#9](https://github.com/prologic/twtxt/issues/9))
+* Add Follow/Unfollow to /discover view that understands the state of who a user follows or doesn't ([#8](https://github.com/prologic/twtxt/issues/8))
+
+### Updates
+
+* Update README.md
+* Update README.md
+
+
 <a name="0.0.3"></a>
 ## [0.0.3](https://github.com/prologic/twtxt/compare/0.0.2...0.0.3) (2020-07-19)
 
