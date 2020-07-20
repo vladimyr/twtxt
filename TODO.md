@@ -11,7 +11,7 @@ details and/or submit a Pull Request.
 In no particular order:
 
 - [ ] IndieAuth support
-- [ ] Account deletion
+- [X] Account deletion
 - [X] Render links
 - [X] Render subset of Markdown
 - [ ] Reset password

@@ -336,6 +336,13 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
+		if _, err := os.Stat(filepath.Join(s.config.Data, feedsDir, username)); err == nil {
+			ctx.Error = true
+			ctx.Message = "Delete user with that username already exists! Please pick another!"
+			s.render("error", w, ctx)
+			return
+		}
+
 		hash, err := s.pm.NewPassword(password)
 		if err != nil {
 			log.WithError(err).Error("error creating password hash")
@@ -546,6 +553,33 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		ctx.Error = false
 		ctx.Message = "Successfully updated settings"
+		s.render("error", w, ctx)
+		return
+	}
+}
+
+// DeleteHandler ...
+func (s *Server) DeleteHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		user := ctx.User
+		if user == nil {
+			log.Fatalf("user not found in context")
+		}
+
+		if err := s.db.DelUser(ctx.Username); err != nil {
+			ctx.Error = true
+			ctx.Message = "Error deleting account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		s.sm.Delete(w, r)
+		ctx.Authenticated = false
+
+		ctx.Error = false
+		ctx.Message = "Successfully deleted account"
 		s.render("error", w, ctx)
 		return
 	}

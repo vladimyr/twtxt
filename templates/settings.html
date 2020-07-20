@@ -23,6 +23,18 @@
       {{ else }}
         <small><i>You are following zero feeds! Click <a href="/follow">/follow</a> to start following feeds.</i></small>
       {{ end }}
+
+      <hgroup>
+        <h1>Delete account</h1>
+        <h2>Here you may delete your account.</h2>
+      </hgroup>
+      <p>
+        <b>WARNING:</b>&nbsp;This is permanate and cannot be undone!
+        (<i>There is no confirmation!</i>)
+      </p>
+      <form action="/delete" method="POST">
+        <button type="submit" class="button-red">Delete</button>
+      </form>
     </div>
   </article>
 {{end}}
