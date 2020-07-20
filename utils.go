@@ -77,7 +77,9 @@ func FormatTweet(text string) template.HTML {
 
 	md := []byte(FormatMentions(text))
 	maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
-	html := bluemonday.UGCPolicy().SanitizeBytes(maybeUnsafeHTML)
+	p := bluemonday.UGCPolicy()
+	p.AllowAttrs("target").OnElements("a")
+	html := p.SanitizeBytes(maybeUnsafeHTML)
 
 	return template.HTML(html)
 }
