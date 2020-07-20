@@ -24,6 +24,9 @@ const (
 	// DefaultTweetsPerPage is the server's default tweets per page to display
 	DefaultTweetsPerPage = 50
 
+	// DefaultMaxTweetLength is the default maximum length of posts permitted
+	DefaultMaxTweetLength = 288
+
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 24 * time.Hour
 )
@@ -91,6 +94,14 @@ func WithCookieSecret(secret string) Option {
 func WithTweetsPerPage(tweetsPerPage int) Option {
 	return func(cfg *Config) error {
 		cfg.TweetsPerPage = tweetsPerPage
+		return nil
+	}
+}
+
+// WithMaxTweetLength sets the maximum length of posts permitted on the server
+func WithMaxTweetLength(maxTweetLength int) Option {
+	return func(cfg *Config) error {
+		cfg.MaxTweetLength = maxTweetLength
 		return nil
 	}
 }

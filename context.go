@@ -11,6 +11,7 @@ import (
 type Context struct {
 	InstanceName            string
 	SoftwareVersion         string
+	MaxTweetLength          int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
 
@@ -28,9 +29,9 @@ type Context struct {
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	ctx := &Context{
-		InstanceName:    conf.Name,
-		SoftwareVersion: FullVersion(),
-
+		InstanceName:     conf.Name,
+		SoftwareVersion:  FullVersion(),
+		MaxTweetLength:   conf.MaxTweetLength,
 		RegisterDisabled: !conf.Register,
 	}
 

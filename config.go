@@ -17,6 +17,7 @@ type Config struct {
 	RegisterMessage string        `json:"register_message"`
 	CookieSecret    string        `json:"cookie_secret"`
 	TweetsPerPage   int           `json:"tweets_per_page"`
+	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 }
 

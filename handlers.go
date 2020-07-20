@@ -79,13 +79,15 @@ func (s *Server) PostHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		text := r.FormValue("text")
+		text := CleanTweet(r.FormValue("text"))
 		if text == "" {
 			ctx.Error = true
 			ctx.Message = "No post content provided!"
 			s.render("error", w, ctx)
 			return
 		}
+
+		log.Debugf("text: #%v", text)
 
 		user, err := s.db.GetUser(ctx.Username)
 		if err != nil {

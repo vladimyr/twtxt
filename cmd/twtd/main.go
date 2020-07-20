@@ -18,14 +18,15 @@ var (
 	debug   bool
 	version bool
 
-	data          string
-	store         string
-	name          string
-	register      bool
-	baseURL       string
-	cookieSecret  string
-	tweetsPerPage int
-	sessionExpiry time.Duration
+	data           string
+	store          string
+	name           string
+	register       bool
+	baseURL        string
+	cookieSecret   string
+	tweetsPerPage  int
+	maxTweetLength int
+	sessionExpiry  time.Duration
 )
 
 func init() {
@@ -39,6 +40,7 @@ func init() {
 	flag.BoolVarP(&register, "register", "r", twtxt.DefaultRegister, "enable user registration")
 	flag.StringVarP(&baseURL, "base-url", "u", twtxt.DefaultBaseURL, "base url to use")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
+	flag.IntVarP(&maxTweetLength, "max-tweet-length", "L", twtxt.DefaultMaxTweetLength, "maximum length of posts")
 	flag.IntVarP(&tweetsPerPage, "tweets-per-page", "T", twtxt.DefaultTweetsPerPage, "tweets per page to display")
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 }
@@ -88,6 +90,7 @@ func main() {
 		twtxt.WithCookieSecret(cookieSecret),
 		twtxt.WithTweetsPerPage(tweetsPerPage),
 		twtxt.WithSessionExpiry(sessionExpiry),
+		twtxt.WithMaxTweetLength(maxTweetLength),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

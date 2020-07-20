@@ -69,6 +69,16 @@ func SafeParseInt(s string, d int) int {
 	return n
 }
 
+// CleanTweet cleans a tweet's text, replacing new lines with spaces and
+// stripping surrounding spaces.
+func CleanTweet(text string) string {
+	text = strings.ReplaceAll(text, "\r\n", " ")
+	text = strings.ReplaceAll(text, "\n", " ")
+	text = strings.TrimSpace(text)
+
+	return text
+}
+
 // FormatTweet formats a tweet into a valid HTML snippet
 func FormatTweet(text string) template.HTML {
 	htmlFlags := html.CommonFlags | html.HrefTargetBlank
