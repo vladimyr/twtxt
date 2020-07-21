@@ -331,6 +331,13 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		password := r.FormValue("password")
 		email := r.FormValue("email")
 
+		if err := ValidateUsername(username); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Username validation failed: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
 		if _, err := s.db.GetUser(username); err == nil {
 			ctx.Error = true
 			ctx.Message = "User with that username already exists! Please pick another!"

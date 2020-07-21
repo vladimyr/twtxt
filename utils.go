@@ -1,6 +1,7 @@
 package twtxt
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"regexp"
@@ -12,6 +13,20 @@ import (
 	"github.com/goware/urlx"
 	"github.com/microcosm-cc/bluemonday"
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	reservedUsernames = []string{
+		"me",
+		"news",
+		"help",
+		"support",
+	}
+
+	validUsername = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
+
+	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrReservedUsername = errors.New("error: username is reserved")
 )
 
 type URI struct {
@@ -67,6 +82,25 @@ func SafeParseInt(s string, d int) int {
 		return d
 	}
 	return n
+}
+
+// ValidateUsername validates the username before allowing it to be created.
+// This ensures usernames match a defined pattern and that some usernames
+// that are reserved are never used by users.
+func ValidateUsername(username string) error {
+	username = NormalizeUsername(username)
+
+	if !validUsername.MatchString(username) {
+		return ErrInvalidUsername
+	}
+
+	for _, reservedUsername := range reservedUsernames {
+		if username == reservedUsername {
+			return ErrReservedUsername
+		}
+	}
+
+	return nil
 }
 
 // CleanTweet cleans a tweet's text, replacing new lines with spaces and
