@@ -26,6 +26,7 @@ type Context struct {
 
 	Tweeter Tweeter
 	Tweets  Tweets
+	Feeds   Feeds
 	Pager   paginator.Paginator
 }
 

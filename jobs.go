@@ -14,6 +14,7 @@ var Jobs map[string]JobFactory
 
 func init() {
 	Jobs = map[string]JobFactory{
+		"@every 1m": NewUpdateFeedSourcesJob,
 		"@every 5m": NewUpdateFeedsJob,
 		"@every 1h": NewFixUserAccountsJob,
 	}
@@ -61,6 +62,29 @@ func (job *UpdateFeedsJob) Run() {
 		log.WithError(err).Warn("error saving feed cache")
 	} else {
 		log.Info("updated feed cache")
+	}
+}
+
+type UpdateFeedSourcesJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewUpdateFeedSourcesJob(conf *Config, db Store) cron.Job {
+	return &UpdateFeedSourcesJob{conf: conf, db: db}
+}
+
+func (job *UpdateFeedSourcesJob) Run() {
+	log.Infof("updating %d feed sources", len(job.conf.FeedSources))
+
+	feeds := FetchFeeds(job.conf.FeedSources)
+
+	log.Infof("fetched %d feeds", len(feeds))
+
+	if err := SaveFeeds(feeds, job.conf.Data); err != nil {
+		log.WithError(err).Warn("error saving feeds")
+	} else {
+		log.Info("updated feeds")
 	}
 }
 

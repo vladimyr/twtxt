@@ -14,6 +14,7 @@ type Config struct {
 	Store           string `json:"store"`
 	Theme           string
 	BaseURL         string        `json:"base_url"`
+	FeedSources     []string      `json:"feed_sources"`
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`
 	CookieSecret    string        `json:"cookie_secret"`

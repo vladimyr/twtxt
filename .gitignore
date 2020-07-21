@@ -13,5 +13,6 @@
 
 /data/cache
 /data/feeds/*
+/data/sourcees
 
 /rice-box.go

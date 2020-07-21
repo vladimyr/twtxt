@@ -34,6 +34,14 @@ const (
 	DefaultSessionExpiry = 24 * time.Hour
 )
 
+var (
+	// DefaultFeedSources is the default list of external feed sources
+	DefaultFeedSources = []string{
+		"https://feeds.twtxt.net/we-are-feeds.txt",
+		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt",
+	}
+)
+
 func NewConfig() *Config {
 	return &Config{
 		Data:    DefaultData,
@@ -65,6 +73,14 @@ func WithStore(store string) Option {
 func WithBaseURL(baseURL string) Option {
 	return func(cfg *Config) error {
 		cfg.BaseURL = baseURL
+		return nil
+	}
+}
+
+// WithFeedSources sets the feed sources  to use for external feeds
+func WithFeedSources(feedSources []string) Option {
+	return func(cfg *Config) error {
+		cfg.FeedSources = feedSources
 		return nil
 	}
 }

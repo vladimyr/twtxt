@@ -242,6 +242,25 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	}
 }
 
+// FeedsHandler ...
+func (s *Server) FeedsHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		feeds, err := LoadFeeds(s.config.Data)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading feed "
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Feeds = feeds
+
+		s.render("feeds", w, ctx)
+	}
+}
+
 // LoginHandler ...
 func (s *Server) LoginHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
