@@ -107,7 +107,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		// Update user's own timeline with their own new post.
 		sources := map[string]string{
-			"me": user.URL,
+			user.Username: user.URL,
 		}
 
 		if err := func() error {

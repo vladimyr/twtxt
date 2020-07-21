@@ -76,9 +76,12 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		if user.Following == nil {
 			user.Following = make(map[string]string)
 		}
-		user.Following["me"] = user.URL
+		user.Following[user.Username] = user.URL
 
 		ctx.User = user
+	} else {
+		ctx.User = &User{}
+		ctx.Tweeter = Tweeter{}
 	}
 
 	return ctx

@@ -37,6 +37,10 @@ func LoadUser(data []byte) (user *User, err error) {
 	return
 }
 
+func (u *User) Is(username string) bool {
+	return NormalizeUsername(u.Username) == NormalizeUsername(username)
+}
+
 func (u *User) Follows(url string) bool {
 	_, ok := u.sources[NormalizeURL(url)]
 	return ok

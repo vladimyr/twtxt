@@ -16,9 +16,17 @@
     {{ range .Tweets }}
       <article>
         <hgroup>
-          <h2>&gt;&nbsp;<a href="{{ .Tweeter.URL }}">{{ .Tweeter.Nick }}</a>&nbsp;({{ .Created | Time }})</h2>
+          <h2>
+            &gt;&nbsp;
+            {{ if $.User.Is .Tweeter.Nick }}
+              <a href="{{ $.User.URL }}">me</a>
+            {{ else }}
+              <a href="{{ .Tweeter.URL }}">{{ .Tweeter.Nick }}</a>
+            {{ end }}
+            &nbsp;({{ .Created | Time }})
+          </h2>
           <h3>
-            {{ if $.Authenticated }}
+            {{ if (and $.Authenticated (not ($.User.Is .Tweeter.Nick))) }}
               &nbsp;
               {{ if $.User.Follows .Tweeter.URL }}
                 [<a href="/unfollow?nick={{ .Tweeter.Nick  }}">Unfollow</a>]

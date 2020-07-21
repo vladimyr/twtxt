@@ -17,7 +17,14 @@
       {{ if .User.Following }}
         <ol>
           {{ range $Nick, $URL := .User.Following }}
-          <li><a href="{{ $URL }}">{{ $Nick }}</a>(<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]</li>
+            <li>
+              {{ if $.User.Is $Nick }}
+                <a href="{{ $URL }}">me</a>
+              {{ else }}
+                <a href="{{ $URL }}">{{ $Nick }}</a>
+                (<i>{{ $URL }}</i>)&nbsp;[<a href="/unfollow?nick={{ $Nick }}">Unfollow</a>]
+              {{ end }}
+            </li>
           {{ end }}
         </oL>
       {{ else }}
