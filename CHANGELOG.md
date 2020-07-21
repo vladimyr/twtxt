@@ -1,4 +1,21 @@
 
+<a name="0.0.5"></a>
+## [0.0.5](https://github.com/prologic/twtxt/compare/0.0.4...0.0.5) (2020-07-21)
+
+### Bug Fixes
+
+* Fix UI/UX handling around bad logins
+* Fix the follow self feature properly with more consistency
+* Fix firefox UI/UX issue by upgrading to PicoCSS v1.0.3 ([#17](https://github.com/prologic/twtxt/issues/17))
+
+### Features
+
+* Add /feeds view with configurable feed sources for discoverability of other sources of feeds
+* Add username validation to prevent more potential bad data
+* Add configurable theme (site-wide) and persist user-defined (vai cookies) theme selection ([#16](https://github.com/prologic/twtxt/issues/16))
+* Add configurable maximum tweet length and cleanup tweets before they are stored to replace new lines, etc
+
+
 <a name="0.0.4"></a>
 ## [0.0.4](https://github.com/prologic/twtxt/compare/0.0.3...0.0.4) (2020-07-21)
 
