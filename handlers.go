@@ -284,16 +284,18 @@ func (s *Server) LoginHandler() httprouter.Handle {
 		// Lookup user
 		user, err := s.db.GetUser(username)
 		if err != nil {
-			log.WithError(err).Errorf("error looking up user %s", username)
-			http.Redirect(w, r, "/login", http.StatusFound)
+			ctx.Error = true
+			ctx.Message = "Invalid username! Hint: Register an account?"
+			s.render("error", w, ctx)
 			return
 		}
 
 		// Validate cleartext password against KDF hash
 		err = s.pm.Check(user.Password, password)
 		if err != nil {
-			log.WithError(err).Errorf("password mismatch for %s", username)
-			http.Redirect(w, r, "/login", http.StatusFound)
+			ctx.Error = true
+			ctx.Message = "Invalid password! Hint: Reset your password?"
+			s.render("error", w, ctx)
 			return
 		}
 
