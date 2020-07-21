@@ -141,7 +141,12 @@ func (cache Cache) FetchTweets(sources map[string]string) {
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				scanner := bufio.NewScanner(resp.Body)
-				tweets = ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+				tweets, err := ParseFile(scanner, Tweeter{Nick: nick, URL: url})
+				if err != nil {
+					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
+					tweetsch <- nil
+					return
+				}
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}

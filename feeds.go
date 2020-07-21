@@ -66,7 +66,6 @@ func LoadFeeds(path string) (Feeds, error) {
 		log.WithError(err).Error("error decoding feeds")
 		return nil, err
 	}
-	log.Debugf("feeds: %#v", feeds)
 	return feeds, nil
 }
 
@@ -107,9 +106,14 @@ func FetchFeeds(sources []string) Feeds {
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				scanner := bufio.NewScanner(resp.Body)
-				log.Debugf("feeds: %#v", feeds)
+				fs, err := ParseFeedSource(scanner)
+				if err != nil {
+					log.WithError(err).Errorf("error parsing feed source: %s", url)
+					return
+				}
+
 				mu.Lock()
-				feeds = append(feeds, ParseFeedSource(scanner)...)
+				feeds = append(feeds, fs...)
 				mu.Unlock()
 			}
 		}(url)
@@ -120,11 +124,10 @@ func FetchFeeds(sources []string) Feeds {
 	return feeds
 }
 
-func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds) {
+func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds, err error) {
 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
 	for scanner.Scan() {
 		line := scanner.Text()
-		log.Debugf("line: %q", line)
 		if line == "" {
 			continue
 		}
@@ -132,10 +135,8 @@ func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds) {
 			continue
 		}
 		parts := re.FindStringSubmatch(line)
-		log.Debugf("parts: %#v", parts)
 		// "Submatch 0 is the match of the entire expression, submatch 1 the
 		// match of the first parenthesized subexpression, and so on."
-		log.Debugf("len(parts): %d", len(parts))
 		if len(parts) != 4 {
 			log.Warnf("could not parse: '%s'", line)
 			continue
@@ -143,8 +144,7 @@ func ParseFeedSource(scanner *bufio.Scanner) (feeds Feeds) {
 		feeds = append(feeds, Feed{parts[1], parts[3]})
 	}
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		return nil, err
 	}
-	log.Debugf("feeds: %#v", feeds)
-	return feeds
+	return feeds, nil
 }

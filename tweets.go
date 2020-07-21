@@ -125,14 +125,19 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 			continue
 		}
 		s := bufio.NewScanner(f)
-		tweets = append(tweets, ParseFile(s, tweeter)...)
+		t, err := ParseFile(s, tweeter)
+		if err != nil {
+			log.WithError(err).Errorf("error processing feed %s", fn)
+			continue
+		}
+		tweets = append(tweets, t...)
 		f.Close()
 	}
 
 	return tweets, nil
 }
 
-func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
+func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) (Tweets, error) {
 	var tweets Tweets
 	re := regexp.MustCompile(`^(.+?)(\s+)(.+)$`) // .+? is ungreedy
 	for scanner.Scan() {
@@ -158,9 +163,9 @@ func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) Tweets {
 			})
 	}
 	if err := scanner.Err(); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return tweets
+	return tweets, nil
 }
 
 func ParseTime(timestr string) time.Time {
