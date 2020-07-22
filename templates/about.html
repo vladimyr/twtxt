@@ -4,20 +4,38 @@
     <h1>About twtxt</h1>
     <p>
       twtxt is a <a href="https://twtxt.readthedocs.io/en/latest/">twtxt</a>
-      client in the form of a web application. This is a hosted instance where
-      you can signup to create an account and starting posting and following feeds
-      of others, bots or news sources.
+      client in the form of a web application. You are viewing an instance of
+      this software at {{ .InstanceName }}. twtxt allows you to make small
+      posts in a simple easy way without privacy concerns, advertising, tracking
+      or the fear of censorship. Think of twtxt as somewhat like Twitter™ but
+      unlike Twitter™ twtxt and {{ .InstanceName }} are designed to be
+      decentralised.
     </p>
     <p>
       The <a href="/">timeline</a> view displays the latest posts of
       users on this instance. Since <i>twtxt</i> itself is a federated and
-      decentralised micro-blogging format there is no "global" timeline.
+      decentralised micro-blogging format there is no "global" timeline, so
+      you can only discover posts from users on the same instance as you are
+      on (<i>{{ .InstanceName }} in this case</i>) or by searching for other
+      twtxt feeds such as those available at <a href="https://feeds.twtxt.net">feeds.twtxt.net</a>.
     </p>
     <p>
-      <del>
-        There is also a builtin <a href="#">/registry/v1</a> and <a href="#">/api/v1</a> that serves as a registry and search
-        endpoint for keyword and mentions and direct API access to this instance.
-      </del>
+      This software and this instance {{ .InstanceName }} requires user registration
+      as it both hosts your twtxt feed as well as allows you to fetch, browse, follow
+      and read other user's feeds or external feeds. The following is a list of features
+      that are provided:
+      <ul>
+        <li>Decentralised micro-Blogging, or short-form Posts</li>
+        <li>Backed by the simple to read, parse and write <a href="https://twtxt.nreadthedocs.org">twtxt</a> format specification</li>
+        <li>Fully supports <a href="https://en.wikipedia.org/wiki/Markdown">Markdown</a> rendering including 😺 pictures!</li>
+        <li>Supports <a href="https://github.com/mdom/we-are-twtxt">we-are-twtxt</a> feed sources format for discovering external feeds</li>
+      </ul>
+      <small>For a list of upcoming features please follow the <a href="https://github.com/prologic/twtxt/issues">Issues</a> page on Github.</small>
+    </p>
+    <p>
+      For additional help on how to use twtxt and this instance {{ .InstanceName }}
+      please see the <a href="/help">Help</a> page or contact <a href="/support">Support</a>
+      for help. Please also see the <a href="/privacy">Privacy</a> policy for this instance.
     </p>
   </div>
 </article>

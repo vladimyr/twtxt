@@ -1,0 +1,30 @@
+{{define "content"}}
+<article class="grid">
+  <div>
+    <details>
+      <summary>How to create an account?</summary>
+      <p>
+        To create an account on {{ .InstanceName }} simply navigate to
+        <a href="/register">/register</a> assuming the operator of this
+        instance has left user registration open. There you need to fill
+        in a valid Username and Password and optional Email Address
+        (<i>which is only used for passwrod recovery</i>).
+      </p>
+    </details>
+    <details>
+      <summary>How do follow someone?</summary>
+      <p>
+        Following someone in the twtxt community is actually rather hard to do
+        becuase of it being decentralised. This means no one company or entity
+        controls who posts what, where, why or how on their twtxt feeds.
+      </p>
+      <p>
+        Nevertheless following someone on the same instance ({{ .InstanceName }})
+        you are on is easy! Simply <a href="/login">login</a> and navigate to the
+        <a href="/discovery">discover</a> page to find <i>public</i> posts of
+        users on the same instance. This is a good way to discover new users.
+      </p>
+    </details>
+  </div>
+</article>
+{{end}}

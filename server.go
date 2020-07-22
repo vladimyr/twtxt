@@ -180,6 +180,7 @@ func (s *Server) initRoutes() {
 	s.router.NotFound = http.HandlerFunc(s.NotFoundHandler)
 
 	s.router.GET("/about", s.PageHandler("about"))
+	s.router.GET("/help", s.PageHandler("help"))
 	s.router.GET("/privacy", s.PageHandler("privacy"))
 	s.router.GET("/support", s.PageHandler("support"))
 
