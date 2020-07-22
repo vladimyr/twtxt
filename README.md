@@ -36,14 +36,6 @@ $ go get -u github.com/prologic/twtxt/...
 
 ## Usage
 
-### CLI
-
-Run twt:
-
-```#!bash
-$ twt
-```
-
 ### Web App
 
 Run twtd:
