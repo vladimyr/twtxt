@@ -10,8 +10,12 @@
         <input type="url" name="url" placeholder="URL of the feed" aria-label="URL" autocomplete="url" required>
         <button type="submit" class="primary">Follow</button>
         <p>
-          Need to follow a list of eeds?
+          Need to import a list of feeds from another client?
           Use the <a href="/import">/import</a> feature.
+          You can also find other users on this {{ .InstanceName }} instance
+          on the <a href="/discover">/discover</a> page (<i>assuming they have posted</i>)
+          or discover other sources of external feeds to follow on the
+          <a href="/feeds">/feeds</a> page.
         </p>
       </form>
     </div>
