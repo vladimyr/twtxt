@@ -181,7 +181,7 @@ func FormatMentions(text string) string {
 // FormatRequest generates ascii representation of a request
 func FormatRequest(r *http.Request) string {
 	return fmt.Sprintf(
-		"%s %v %s/%v %v (%s)",
+		"%s %v %s%v %v (%s)",
 		r.RemoteAddr,
 		r.Method,
 		r.Host,
