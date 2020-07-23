@@ -168,7 +168,7 @@ func (job *FixUserAccountsJob) Run() {
 		for _, url := range user.Following {
 			url = NormalizeURL(url)
 			if strings.HasPrefix(url, job.conf.BaseURL) {
-				followee := filepath.Base(url)
+				followee := NormalizeUsername(NormalizeUsername(filepath.Base(url)))
 				followers[followee] = append(followers[followee], user.Username)
 			}
 		}
