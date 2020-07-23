@@ -20,6 +20,7 @@ var (
 		"me",
 		"news",
 		"help",
+		"twtxt",
 		"support",
 	}
 
