@@ -433,7 +433,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		nick := strings.TrimSpace(r.FormValue("nick"))
-		url := strings.TrimSpace(r.FormValue("url"))
+		url := NormalizeURL(r.FormValue("url"))
 
 		if r.Method == "GET" && nick == "" && url == "" {
 			s.render("follow", w, ctx)
@@ -459,6 +459,21 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			ctx.Message = fmt.Sprintf("Error following feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
+		}
+
+		if strings.HasPrefix(url, s.config.BaseURL) {
+			followee, err := s.db.GetUser(filepath.Base(url))
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", filepath.Base(url))
+			} else {
+				if followee.Followers == nil {
+					followee.Followers = make(map[string]string)
+					followee.Followers[user.Username] = user.URL
+				}
+				if err := s.db.SetUser(followee.Username, followee); err != nil {
+					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+				}
+			}
 		}
 
 		ctx.Error = false
@@ -564,6 +579,20 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 			ctx.Message = fmt.Sprintf("Error unfollowing feed %s: %s", nick, url)
 			s.render("error", w, ctx)
 			return
+		}
+
+		if strings.HasPrefix(url, s.config.BaseURL) {
+			followee, err := s.db.GetUser(filepath.Base(url))
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for followee %s", filepath.Base(url))
+			} else {
+				if followee.Followers != nil {
+					delete(followee.Followers, user.Username)
+					if err := s.db.SetUser(followee.Username, followee); err != nil {
+						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					}
+				}
+			}
 		}
 
 		ctx.Error = false
