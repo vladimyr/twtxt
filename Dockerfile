@@ -33,8 +33,16 @@ COPY ./session/*.go ./session/
 COPY ./password/*.go ./password/
 COPY ./cmd/twtd/*.go ./cmd/twtd/
 
+# Version/Commit (there there is no .git in Docker build context)
+# NOTE: This is fairly low down in the Dockerfile instructions so
+#       we don't break the Docker build cache just be changing
+#       unrelated files that actually haven't changed but caused the
+#       COMMIT value to change.
+ARG VERSION="0.0.0"
+ARG COMMIT="HEAD"
+
 # Build binary
-RUN make build
+RUN make build VERSION=$VERSION COMMIT=$COMMIT
 
 # Runtime
 FROM alpine:latest
