@@ -473,6 +473,18 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}
+				if err := AppendSpecial(
+					s.config.Data,
+					twtxtSpecialUser,
+					fmt.Sprintf(
+						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
 			}
 		}
 
@@ -591,6 +603,18 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					if err := s.db.SetUser(followee.Username, followee); err != nil {
 						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 					}
+				}
+				if err := AppendSpecial(
+					s.config.Data,
+					twtxtSpecialUser,
+					fmt.Sprintf(
+						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
+						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
 				}
 			}
 		}
