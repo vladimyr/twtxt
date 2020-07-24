@@ -468,8 +468,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 			} else {
 				if followee.Followers == nil {
 					followee.Followers = make(map[string]string)
-					followee.Followers[user.Username] = user.URL
 				}
+				followee.Followers[user.Username] = user.URL
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}
