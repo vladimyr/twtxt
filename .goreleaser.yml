@@ -1,6 +1,6 @@
 ---
 builds:
-  - binary: twtxtd
+  - binary: twtd
     flags: -tags "static_build"
     ldflags: -w -X main.Version={{.Version}} -X main.Commit={{.Commit}}
     env:
@@ -22,3 +22,8 @@ builds:
       pre: rice embed-go
 sign:
   artifacts: checksum
+release:
+  github:
+    owner: prologic
+    name: twtxt
+  draft: true
