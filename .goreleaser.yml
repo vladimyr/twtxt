@@ -1,8 +1,9 @@
 ---
 builds:
   - binary: twtd
+    main: ./cmd/bitcask
     flags: -tags "static_build"
-    ldflags: -w -X main.Version={{.Version}} -X main.Commit={{.Commit}}
+    ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
     env:
       - CGO_ENABLED=0
     goos:
