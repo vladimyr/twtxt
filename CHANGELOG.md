@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* Fix the custom release-notes for goreleaser (finally)
 * Fix the gorelease custom release notes by skipping the gorelease changelog generation
 * Fix the release process, remove git-chglog use before running gorelease
 * Fix instructions on how to build from source (Fixes [#30](https://github.com/prologic/twtxt/issues/30))
@@ -41,6 +42,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
