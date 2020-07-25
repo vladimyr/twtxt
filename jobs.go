@@ -14,13 +14,53 @@ var Jobs map[string]JobFactory
 
 func init() {
 	Jobs = map[string]JobFactory{
-		"@every 15m": NewUpdateFeedSourcesJob,
 		"@every 5m":  NewUpdateFeedsJob,
-		"@every 1h":  NewFixUserAccountsJob,
+		"@every 15m": NewUpdateFeedSourcesJob,
+		"@hourly":    NewFixUserAccountsJob,
+		"@daily":     NewStatsJob,
 	}
 }
 
 type JobFactory func(conf *Config, store Store) cron.Job
+
+type StatsJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewStatsJob(conf *Config, db Store) cron.Job {
+	return &StatsJob{conf: conf, db: db}
+}
+
+func (job *StatsJob) Run() {
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all users from database")
+		return
+	}
+
+	log.Infof("updating stats")
+
+	var feeds int
+	for _, user := range users {
+		feeds += len(user.Feeds)
+	}
+
+	tweets, err := GetAllTweets(job.conf)
+	if err != nil {
+		log.WithError(err).Warnf("error calculating number of tweets")
+		return
+	}
+
+	text := fmt.Sprintf(
+		"🧮  USERS:%d FEEDS:%d POSTS:%d",
+		len(users), feeds, len(tweets),
+	)
+
+	if err := AppendSpecial(job.conf.Data, statsSpecialUser, text); err != nil {
+		log.WithError(err).Warn("error updating stats feed")
+	}
+}
 
 type UpdateFeedsJob struct {
 	conf *Config
