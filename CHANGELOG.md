@@ -45,6 +45,7 @@
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
+* Update CHANGELOG for 0.0.8
 
 
 <a name="0.0.7"></a>
