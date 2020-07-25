@@ -23,10 +23,6 @@ fi
 
 echo "Releasing ${TAG} ..."
 
-git-chglog --next-tag="${TAG}" --output CHANGELOG.md
-git commit -a -m "Update CHANGELOG for ${TAG}"
-git tag -a -s -m "Release ${TAG}" "${TAG}"
-git push --tags
 goreleaser release \
   --rm-dist \
   --release-notes <(git-chglog --next-tag "${TAG}" "${TAG}" | tail -n+5)
