@@ -29,4 +29,4 @@ git tag -a -s -m "Release ${TAG}" "${TAG}"
 git push --tags
 goreleaser release \
   --rm-dist \
-  --release-notes <(git-chglog --next-tag "${TAG}" "${TAG}" | tail -n+5)
+  --release-notes <(git-chglog "${TAG}" | tail -n+5)
