@@ -23,8 +23,6 @@ builds:
       pre: rice embed-go
 signs:
   - artifacts: checksum
-changelog:
-  skip: true
 release:
   github:
     owner: prologic
