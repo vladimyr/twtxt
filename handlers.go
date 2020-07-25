@@ -83,7 +83,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					if !user.FollowedBy(followerClient.URL) {
 						if err := AppendSpecial(
 							s.config.Data,
-							twtxtSpecialUser,
+							"twtxt",
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 								nick, URLForUser(s.config.BaseURL, nick),
@@ -528,7 +528,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config.Data,
-					twtxtSpecialUser,
+					"twtxt",
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
@@ -659,7 +659,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config.Data,
-					twtxtSpecialUser,
+					"twtxt",
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username),

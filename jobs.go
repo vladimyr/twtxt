@@ -57,7 +57,7 @@ func (job *StatsJob) Run() {
 		len(users), feeds, len(tweets),
 	)
 
-	if err := AppendSpecial(job.conf.Data, statsSpecialUser, text); err != nil {
+	if err := AppendSpecial(job.conf.Data, "stats", text); err != nil {
 		log.WithError(err).Warn("error updating stats feed")
 	}
 }
