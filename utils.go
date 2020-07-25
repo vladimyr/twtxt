@@ -22,6 +22,8 @@ const (
 	helpSpecialUser    = "help"
 	twtxtSpecialUser   = "twtxt"
 	supportSpecialUser = "support"
+
+	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
 )
 
 var (
@@ -37,6 +39,7 @@ var (
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
 	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrUsernameTooLong  = errors.New("error: username is too long")
 	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername = errors.New("error: username is reserved")
 )
@@ -138,6 +141,10 @@ func ValidateUsername(username string) error {
 		if username == reservedUsername {
 			return ErrReservedUsername
 		}
+	}
+
+	if len(username) > maxUsernameLength {
+		return ErrUsernameTooLong
 	}
 
 	return nil
