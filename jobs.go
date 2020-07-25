@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -148,6 +149,15 @@ func (job *FixUserAccountsJob) Run() {
 	followers := make(map[string][]string)
 
 	for _, user := range users {
+		fn := filepath.Join(filepath.Join(job.conf.Data, feedsDir, user.Username))
+		if _, err := os.Stat(fn); os.IsNotExist(err) {
+			if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+				log.WithError(err).Warnf("error touching feed file for user %s", user.Username)
+			} else {
+				log.Infof("touched feed file for user %s", user.Username)
+			}
+		}
+
 		normalizedUsername := NormalizeUsername(user.Username)
 
 		if normalizedUsername != user.Username {
