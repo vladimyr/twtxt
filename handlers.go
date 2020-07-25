@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -56,6 +57,11 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 		stat, err := os.Stat(path)
 		if err != nil {
+			if os.IsNotExist(err) {
+				http.Error(w, "Feed Not Found", http.StatusNotFound)
+				return
+			}
+
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
@@ -450,10 +456,17 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := os.Stat(filepath.Join(s.config.Data, feedsDir, username)); err == nil {
+		fn := filepath.Join(s.config.Data, feedsDir, username)
+		if _, err := os.Stat(fn); err == nil {
 			ctx.Error = true
 			ctx.Message = "Deleted user with that username already exists! Please pick another!"
 			s.render("error", w, ctx)
+			return
+		}
+
+		if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+			log.WithError(err).Error("error creating new user feed")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -473,7 +486,11 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			URL: URLForUser(s.config.BaseURL, username),
 		}
 
-		s.db.SetUser(username, user)
+		if err := s.db.SetUser(username, user); err != nil {
+			log.WithError(err).Error("error saving user object for new user")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		log.Infof("user registered: %v", user)
 		http.Redirect(w, r, "/login", http.StatusFound)
