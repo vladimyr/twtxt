@@ -20,8 +20,8 @@ builds:
       - 7
     hooks:
       pre: rice embed-go
-sign:
-  artifacts: checksum
+signs:
+  - artifacts: checksum
 release:
   github:
     owner: prologic
