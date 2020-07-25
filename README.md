@@ -90,7 +90,7 @@ and uses the [Traefik](https://docs.traefik.io/) ingres load balancer so you mus
 also have that configured and running in your cluster appropriately.
 
 ```console
-docker stack deploy -c twtxt.yml
+docker stack deploy -c twtxt.yaml
 ```
 
 ## Stargazers over time
