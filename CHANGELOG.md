@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+* Fix instructions on how to build from source (Fixes [#30](https://github.com/prologic/twtxt/issues/30))
+* Fix PR blocks and remove autoAssign workflow that fails with Resource not accessible by integration
 * Fix releasee process to generate release-notes via git-chglog which are better than goreleaser's ones
 * Fix goarch in gorelease config (uggh)
 * Fix gorelease config (3rd time's the charm)
@@ -26,6 +28,7 @@
 
 ### Features
 
+* Add default configuration env values to docker-compose ([#39](https://github.com/prologic/twtxt/issues/39))
 * Add git-chglog to release process to update the ongoing CHANGELOG too
 * Add feed creation event to the twtxt special feed
 * Add FixUserAccounts job logic to touch feed files for users that have never posted
@@ -36,6 +39,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 
