@@ -325,6 +325,17 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
+		if err := AppendSpecial(
+			s.config.Data,
+			"twtxt",
+			fmt.Sprintf(
+				"FEED: %s from @<%s %s>",
+				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
+			),
+		); err != nil {
+			log.WithError(err).Warnf("error appending special FOLLOW post")
+		}
+
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
 		s.render("error", w, ctx)
