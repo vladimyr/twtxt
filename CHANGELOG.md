@@ -4,6 +4,8 @@
 
 ### Bug Fixes
 
+* Fix the gorelease custom release notes by skipping the gorelease changelog generation
+* Fix the release process, remove git-chglog use before running gorelease
 * Fix instructions on how to build from source (Fixes [#30](https://github.com/prologic/twtxt/issues/30))
 * Fix PR blocks and remove autoAssign workflow that fails with Resource not accessible by integration
 * Fix releasee process to generate release-notes via git-chglog which are better than goreleaser's ones
@@ -39,6 +41,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
