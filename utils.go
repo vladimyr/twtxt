@@ -17,11 +17,8 @@ import (
 )
 
 const (
-	meSpecialUser      = "me"
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
-	statsSpecialUser   = "stats"
-	twtxtSpecialUser   = "twtxt"
 	supportSpecialUser = "support"
 
 	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
@@ -30,14 +27,13 @@ const (
 
 var (
 	specialUsernames = []string{
-		meSpecialUser,
 		newsSpecialUser,
 		helpSpecialUser,
-		twtxtSpecialUser,
-		statsSpecialUser,
 		supportSpecialUser,
 	}
-	reservedUsernames = specialUsernames
+	reservedUsernames = []string{
+		"me", "stats", "twtxt",
+	}
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
