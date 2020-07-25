@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* Fix releasee process to generate release-notes via git-chglog which are better than goreleaser's ones
 * Fix goarch in gorelease config (uggh)
 * Fix gorelease config (3rd time's the charm)
 * Fix gorelease config properly (this time)
@@ -32,6 +33,10 @@
 * Add documentation on using docker-compose ([#26](https://github.com/prologic/twtxt/issues/26))
 * Add new feature for creating sub-feeds / personas allowing users to create topic-based feeds and poast as those topics
 * Add a section to the help page on formatting posts
+
+### Updates
+
+* Update CHANGELOG for 0.0.8
 
 
 <a name="0.0.7"></a>
