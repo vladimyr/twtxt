@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,6 +19,10 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 
 	"github.com/prologic/twtxt/session"
+)
+
+var (
+	ErrFeedImposter = errors.New("error: imposter detected, you do not own this feed")
 )
 
 func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +115,8 @@ func (s *Server) PostHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
+
 		text := CleanTweet(r.FormValue("text"))
 		if text == "" {
 			ctx.Error = true
@@ -127,7 +134,18 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		if err := AppendTweet(s.config.Data, text, user); err != nil {
+		switch postas {
+		case "", "me":
+			err = AppendTweet(s.config.Data, text, user)
+		default:
+			if user.OwnsFeed(postas) {
+				err = AppendSpecial(s.config.Data, postas, text)
+			} else {
+				err = ErrFeedImposter
+			}
+		}
+
+		if err != nil {
 			ctx.Error = true
 			ctx.Message = "Error posting tweet"
 			s.render("error", w, ctx)
@@ -268,6 +286,43 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		ctx.Pager = pager
 
 		s.render("timeline", w, ctx)
+	}
+}
+
+// FeedHandler ...
+func (s *Server) FeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		name := NormalizeFeedName(r.FormValue("name"))
+
+		if err := ValidateFeedName(s.config.Data, name); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Invalid feed name: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		if err := ctx.User.CreateFeed(s.config.Data, name); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
+
+		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
+			ctx.Error = true
+			ctx.Message = fmt.Sprintf("Error creating feed: %s", err.Error())
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = false
+		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
+		s.render("error", w, ctx)
+		return
 	}
 }
 

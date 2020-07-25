@@ -2,7 +2,16 @@ package twtxt
 
 import (
 	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
+)
+
+var (
+	ErrFeedAlreadyExists = errors.New("error: feed already exists by that name")
 )
 
 type User struct {
@@ -11,6 +20,8 @@ type User struct {
 	Email     string
 	URL       string
 	CreatedAt time.Time
+
+	Feeds []string
 
 	Followers map[string]string
 	Following map[string]string
@@ -50,6 +61,31 @@ func LoadUser(data []byte) (user *User, err error) {
 	return
 }
 
+func (u *User) OwnsFeed(name string) bool {
+	name = strings.ToLower(name)
+	for _, feed := range u.Feeds {
+		if strings.ToLower(feed) == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (u *User) CreateFeed(path, name string) error {
+	p := filepath.Join(path, feedsDir, name)
+	if _, err := os.Stat(p); err == nil {
+		return ErrFeedAlreadyExists
+	}
+
+	if err := ioutil.WriteFile(p, []byte{}, 0644); err != nil {
+		return err
+	}
+
+	u.Feeds = append(u.Feeds, name)
+
+	return nil
+}
+
 func (u *User) Is(username string) bool {
 	return NormalizeUsername(u.Username) == NormalizeUsername(username)
 }
@@ -57,6 +93,13 @@ func (u *User) Is(username string) bool {
 func (u *User) FollowedBy(url string) bool {
 	_, ok := u.remotes[NormalizeURL(url)]
 	return ok
+}
+
+func (u *User) Follow(nick, url string) {
+	if !u.Follows(url) {
+		u.Following[nick] = url
+		u.sources[url] = nick
+	}
 }
 
 func (u *User) Follows(url string) bool {
