@@ -397,7 +397,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 
 		if _, err := os.Stat(filepath.Join(s.config.Data, feedsDir, username)); err == nil {
 			ctx.Error = true
-			ctx.Message = "Delete user with that username already exists! Please pick another!"
+			ctx.Message = "Deleted user with that username already exists! Please pick another!"
 			s.render("error", w, ctx)
 			return
 		}
