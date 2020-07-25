@@ -118,8 +118,6 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		log.Debugf("text: #%v", text)
-
 		user, err := s.db.GetUser(ctx.Username)
 		if err != nil {
 			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)
