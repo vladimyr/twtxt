@@ -28,11 +28,37 @@ There is also a publicly (_free_) service online available at:
 
 ## Installation
 
-### Source
+### Pre-built Binaries
+
+As a first point, please try to use one of the pre-built binaries  that are
+available on the [Releases](https://github.com/prologic/twtxt/releases) page.
+
+### Building from source
+
+This is an option if you are familiar with [Go](https://golang.org) development.
+
+1. Clone this repository (_this is important_)
 
 ```console
-go get -u github.com/prologic/twtxt/...
+git clone https://github.com/prologic/twtxt.git
 ```
+
+2. Install required dependencies (_this is important_)
+
+```console
+make deps
+```
+
+3. Build the binaries
+
+```console
+make
+```
+
+__NOTE___: It is important you follow these steps and don't just simply attempt
+           `go get ...` this project as that will not work (#30) due to the
+           need to package templates and static assets which we use the
+           [go.rice](https://github.com/GeertJohan/go.rice) tool for.
 
 ## Usage
 
