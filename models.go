@@ -10,8 +10,13 @@ import (
 	"time"
 )
 
+const (
+	maxUserFeeds = 5 // 5 is < 7 and humans can only really handle ~7 things
+)
+
 var (
 	ErrFeedAlreadyExists = errors.New("error: feed already exists by that name")
+	ErrTooManyFeeds      = errors.New("error: you have too many feeds")
 )
 
 type User struct {
@@ -72,6 +77,10 @@ func (u *User) OwnsFeed(name string) bool {
 }
 
 func (u *User) CreateFeed(path, name string) error {
+	if len(u.Feeds) > maxUserFeeds {
+		return ErrTooManyFeeds
+	}
+
 	p := filepath.Join(path, feedsDir, name)
 	if _, err := os.Stat(p); err == nil {
 		return ErrFeedAlreadyExists
