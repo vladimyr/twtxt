@@ -227,6 +227,19 @@ func (job *FixUserAccountsJob) Run() {
 				user.Following[nick] = URLForUser(job.conf.BaseURL, username, true)
 			}
 		}
+
+		// Fix user feeds (thanks @antonio :P)
+		feeds := []string{}
+		for _, feed := range user.Feeds {
+			feed = NormalizeFeedName(feed)
+			for _, specialUser := range specialUsernames {
+				if feed != specialUser {
+					feeds = append(feeds, feed)
+				}
+			}
+		}
+		user.Feeds = feeds
+
 		if err := job.db.SetUser(normalizedUsername, user); err != nil {
 			log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
 			return
