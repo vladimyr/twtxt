@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -861,5 +862,45 @@ func (s *Server) DeleteHandler() httprouter.Handle {
 		ctx.Message = "Successfully deleted account"
 		s.render("error", w, ctx)
 		return
+	}
+}
+
+// FollowersHandler ...
+func (s *Server) FollowersHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user, err := s.db.GetUser(nick)
+
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "User not found"
+			s.render("error", w, ctx)
+
+			return
+		}
+
+		if r.Header.Get("Accept") == "application/json" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			if err := json.NewEncoder(w).Encode(user.Followers); err != nil {
+				log.WithError(err).Error("error encoding user for display")
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+
+			return
+		}
+
+		ctx.User = user
+
+		s.render("followers", w, ctx)
 	}
 }
