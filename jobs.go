@@ -2,6 +2,10 @@ package twtxt
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -13,6 +17,7 @@ func init() {
 	Jobs = map[string]JobFactory{
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
+		"@hourly":    NewFixUserAccountsJob,
 		"@daily":     NewStatsJob,
 	}
 }
@@ -121,5 +126,161 @@ func (job *UpdateFeedSourcesJob) Run() {
 		log.WithError(err).Warn("error saving feeds")
 	} else {
 		log.Info("updated feeds")
+	}
+}
+
+type FixUserAccountsJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
+	return &FixUserAccountsJob{conf: conf, db: db}
+}
+
+func (job *FixUserAccountsJob) Run() {
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all users from database")
+		return
+	}
+
+	// followee -> list of followers
+	followers := make(map[string][]string)
+
+	for _, user := range users {
+		fn := filepath.Join(filepath.Join(job.conf.Data, feedsDir, user.Username))
+		if _, err := os.Stat(fn); os.IsNotExist(err) {
+			if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+				log.WithError(err).Warnf("error touching feed file for user %s", user.Username)
+			} else {
+				log.Infof("touched feed file for user %s", user.Username)
+			}
+		}
+
+		normalizedUsername := NormalizeUsername(user.Username)
+
+		if normalizedUsername != user.Username {
+			log.Infof("migrating user account %s -> %s", user.Username, normalizedUsername)
+
+			if err := job.db.DelUser(user.Username); err != nil {
+				log.WithError(err).Errorf("error deleting old user %s", user.Username)
+				return
+			}
+
+			p := filepath.Join(filepath.Join(job.conf.Data, feedsDir))
+
+			if err := os.Rename(filepath.Join(p, user.Username), filepath.Join(p, fmt.Sprintf("%s.tmp", user.Username))); err != nil {
+				log.WithError(err).Errorf("error renaming old feed for %s", user.Username)
+				return
+			}
+
+			if err := os.Rename(filepath.Join(p, fmt.Sprintf("%s.tmp", user.Username)), filepath.Join(p, normalizedUsername)); err != nil {
+				log.WithError(err).Errorf("error renaming new feed for %s", user.Username)
+				return
+			}
+
+			// Fix Username
+			user.Username = normalizedUsername
+
+			// Fix URL
+			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
+
+			if err := job.db.SetUser(normalizedUsername, user); err != nil {
+				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
+				return
+			}
+
+			log.Infof("successfully migrated user account %s", normalizedUsername)
+		}
+
+		log.Infof("fixing URL and TwtURL for user %s", user.Username)
+		user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, false)
+		user.TwtURL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
+		if err := job.db.SetUser(normalizedUsername, user); err != nil {
+			log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
+			return
+		} else {
+			log.Infof("successfully fixed URLs for user %s", user.Username)
+		}
+
+		if strings.HasPrefix(user.URL, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
+			log.Infof("fixing URL for user %s", user.Username)
+			user.URL = URLForUser(job.conf.BaseURL, user.Username, true)
+			if err := job.db.SetUser(normalizedUsername, user); err != nil {
+				log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
+				return
+			}
+		}
+
+		for _, url := range user.Following {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, job.conf.BaseURL) {
+				followee := NormalizeUsername(NormalizeUsername(filepath.Base(url)))
+				followers[followee] = append(followers[followee], user.Username)
+			}
+		}
+
+		for nick, url := range user.Following {
+			if strings.HasPrefix(url, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
+				username := filepath.Base(url)
+				user.Following[nick] = URLForUser(job.conf.BaseURL, username, true)
+			}
+		}
+
+		// Fix user feeds (thanks @antonio :P)
+		feeds := []string{}
+		for _, feed := range user.Feeds {
+			feed = NormalizeFeedName(feed)
+			for _, specialUser := range specialUsernames {
+				if feed != specialUser {
+					feeds = append(feeds, feed)
+				}
+			}
+		}
+		user.Feeds = feeds
+
+		if err := job.db.SetUser(normalizedUsername, user); err != nil {
+			log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
+			return
+		}
+	}
+
+	for followee, followers := range followers {
+		user, err := job.db.GetUser(followee)
+		if err != nil {
+			log.WithError(err).Warnf("error loading user object for %s", followee)
+			continue
+		}
+
+		if user.Followers == nil {
+			user.Followers = make(map[string]string)
+		}
+		for _, follower := range followers {
+			user.Followers[follower] = URLForUser(job.conf.BaseURL, follower, true)
+		}
+
+		if err := job.db.SetUser(followee, user); err != nil {
+			log.WithError(err).Warnf("error saving user object for %s", followee)
+			continue
+		}
+		log.Infof("updating %d followers for %s", len(followers), followee)
+	}
+
+	adminUser, err := job.db.GetUser(job.conf.AdminUser)
+	if err != nil {
+		log.WithError(err).Warnf("error loading user object for AdminUser")
+	} else {
+		adminUser.Feeds = []string{}
+		for _, specialUser := range specialUsernames {
+			if !adminUser.OwnsFeed(specialUser) {
+				adminUser.Feeds = append(adminUser.Feeds, specialUser)
+			}
+		}
+		if err := job.db.SetUser(adminUser.Username, adminUser); err != nil {
+			log.WithError(err).Warn("error saving user object for AdminUser")
+		} else {
+			log.Infof("updated AdminUser %s with %d specialUsername feeds", job.conf.AdminUser, len(specialUsernames))
+		}
 	}
 }
