@@ -17,7 +17,7 @@ func init() {
 	Jobs = map[string]JobFactory{
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
-		"@hourly":    NewFixUserAccountsJob,
+		"@every 1m":  NewFixUserAccountsJob,
 		"@daily":     NewStatsJob,
 	}
 }
@@ -205,6 +205,15 @@ func (job *FixUserAccountsJob) Run() {
 			}
 
 			log.Infof("successfully fixed URL for user %s", user.Username)
+		}
+
+		if strings.HasPrefix(user.URL, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
+			log.Infof("fixing URL for user %s", user.Username)
+			user.URL = URLForUser(job.conf.BaseURL, user.Username, true)
+			if err := job.db.SetUser(normalizedUsername, user); err != nil {
+				log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
+				return
+			}
 		}
 
 		for _, url := range user.Following {
