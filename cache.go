@@ -145,8 +145,9 @@ func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 				tweeter := Tweeter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
 					tweeter.URL = URLForUser(conf.BaseURL, nick, false)
+					tweeter.TwtURL = URLForUser(conf.BaseURL, nick, true)
 				} else {
-					tweeter.URL = url
+					tweeter.TwtURL = url
 				}
 				tweets, err := ParseFile(scanner, tweeter)
 				if len(tweets) == 0 {

@@ -4,13 +4,13 @@
       <hgroup>
         <h2>{{ .Profile.Username }}</h2>
         <h3>
-          {{ if $.User.Follows .Profile.URL }}
+          {{ if $.User.Follows .Profile.TwtURL }}
             <a href="/unfollow?nick={{ .Profile.Username  }}">
               <i class="icss-minus"></i>
               Unfollow
             </a>
           {{ else }}
-            <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.URL }}">
+            <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.TwtURL }}">
               <i class="icss-plus"></i>
               Follow
             </a>
@@ -19,7 +19,7 @@
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
-            <li>TwtURL: <a href="{{ .Profile.URL }}">{{ .Profile.URL }}</a></li>
+            <li>TwtURL: <a href="{{ .Profile.TwtURL }}">{{ .Profile.URL }}</a></li>
             <li>Followers: {{ .Profile.Followers | len }}</li>
             <li>Following: {{ .Profile.Following | len }}</li>
           </ul>
@@ -39,19 +39,20 @@
         <article>
           <hgroup>
             <h2>
-              {{ if $.User.Is .Tweeter.Nick }}
+              {{ if $.User.Is .Tweeter.TwtURL }}
                 <a href="{{ .Tweeter.URL }}">
                   <i class="icss-user"></i>
                   me
                 </a>
               {{ else }}
-                <a href="{{ .Tweeter.URL }}">
-                  {{ if $.IsFeed .Tweeter.URL }}
-                    <i class="icss-rss"></i>
-                  {{ else }}
+                {{ if $.IsLocal .Tweeter.URL }}
+                  <a href="{{ .Tweeter.URL }}">
                     <i class="icss-user-circle"></i>
-                  {{ end }}
-                  {{ .Tweeter.Nick }}
+                {{ else }}
+                  <a href="{{ .Tweeter.TwtURL }}">
+                    <i class="icss-rss"></i>
+                {{ end }}
+                {{ .Tweeter.Nick }}
                 </a>
               {{ end }}
             </h2>

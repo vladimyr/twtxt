@@ -73,8 +73,9 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		}
 
 		ctx.Tweeter = Tweeter{
-			Nick: user.Username,
-			URL:  URLForUser(conf.BaseURL, user.Username, false),
+			Nick:   user.Username,
+			URL:    URLForUser(conf.BaseURL, user.Username, false),
+			TwtURL: URLForUser(conf.BaseURL, user.Username, true),
 		}
 
 		// Every registered new user follows themselves
@@ -82,7 +83,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		if user.Following == nil {
 			user.Following = make(map[string]string)
 		}
-		user.Following[user.Username] = user.URL
+		user.Following[user.Username] = user.TwtURL
 
 		ctx.User = user
 	} else {
@@ -93,6 +94,6 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	return ctx
 }
 
-func (ctx Context) IsFeed(url string) bool {
-	return !strings.HasPrefix(NormalizeURL(url), NormalizeURL(ctx.BaseURL))
+func (ctx Context) IsLocal(url string) bool {
+	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(ctx.BaseURL))
 }

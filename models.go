@@ -25,6 +25,7 @@ type User struct {
 	Tagline   string
 	Email     string
 	URL       string
+	TwtURL    string
 	CreatedAt time.Time
 
 	Feeds []string
@@ -96,8 +97,8 @@ func (u *User) CreateFeed(path, name string) error {
 	return nil
 }
 
-func (u *User) Is(username string) bool {
-	return NormalizeUsername(u.Username) == NormalizeUsername(username)
+func (u *User) Is(url string) bool {
+	return NormalizeURL(u.TwtURL) == NormalizeURL(url)
 }
 
 func (u *User) FollowedBy(url string) bool {

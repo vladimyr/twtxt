@@ -31,10 +31,14 @@
         <ol>
           {{ range $Nick, $URL := .User.Followers }}
             <li>
-              {{ if $.User.Is $Nick }}
-                <a href="{{ $URL }}">me</a>
+              {{ if $.User.Is $URL }}
+                <a href="{{ $.User.URL }}">me</a>
               {{ else }}
-                <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                {{ if $.IsLocal .Tweeter.URL }}
+                  <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                {{ else }}
+                  <a href="{{ $URL }}">{{ $Nick }}</a>
+                {{ end }}
                 (<a href="{{ $URL }}">{{ $URL }}</a>)
                 {{ if $.User.Follows $URL }}
                   <a href="/unfollow?nick={{ $Nick }}">
@@ -63,10 +67,14 @@
         <ol>
           {{ range $Nick, $URL := .User.Following }}
             <li>
-              {{ if $.User.Is $Nick }}
+              {{ if $.User.Is $URL }}
                 <a href="{{ $URL }}">me</a>
               {{ else }}
-                <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                {{ if $.IsLocal $URL }}
+                  <a href="{{ $URL | StripTwtURL }}">{{ $Nick }}</a>
+                {{ else }}
+                  <a href="{{ $URL }}">{{ $Nick }}</a>
+                {{ end }}
                 (<a href="{{ $URL }}">{{ $URL }}</a>)
                 <a href="/unfollow?nick={{ $Nick }}">
                   <i class="icss-minus"></i>

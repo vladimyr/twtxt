@@ -31,31 +31,32 @@
       <article>
         <hgroup>
           <h2>
-            {{ if $.User.Is .Tweeter.Nick }}
-              <a href="{{ .Tweeter.URL }}">
+            {{ if $.User.Is .Tweeter.TwtURL }}
+              <a href="{{ $.User.URL }}">
                 <i class="icss-user"></i>
                 me
               </a>
             {{ else }}
-              <a href="{{ .Tweeter.URL }}">
-                {{ if $.IsFeed .Tweeter.URL }}
-                  <i class="icss-rss"></i>
-                {{ else }}
+              {{ if $.IsLocal .Tweeter.URL }}
+                <a href="{{ .Tweeter.URL }}">
                   <i class="icss-user-circle"></i>
-                {{ end }}
-                {{ .Tweeter.Nick }}
+              {{ else }}
+                <a href="{{ .Tweeter.TwtURL }}">
+                  <i class="icss-rss"></i>
+              {{ end }}
+              {{ .Tweeter.Nick }}
               </a>
             {{ end }}
           </h2>
           <h3>
-            {{ if (and $.Authenticated (not ($.User.Is .Tweeter.Nick))) }}
+            {{ if (and $.Authenticated (not ($.User.Is .Tweeter.TwtURL))) }}
               &nbsp;
               [<a class="reply" href="#" data-reply="@{{ .Tweeter.Nick }} ">Reply</a>]
               &nbsp;
-              {{ if $.User.Follows .Tweeter.URL }}
+              {{ if $.User.Follows .Tweeter.TwtURL }}
                 [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]
               {{ else }}
-                [<a href="/follow?nick={{ .Tweeter.Nick }}&url={{ .Tweeter.URL }}">Follow</a>]
+                [<a href="/follow?nick={{ .Tweeter.Nick }}&url={{ .Tweeter.TwtURL }}">Follow</a>]
               {{ end }}
             {{ end }}
           </h3>

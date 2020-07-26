@@ -80,7 +80,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		tweets = append(tweets, cache.GetByURL(userProfile.URL)...)
+		tweets = append(tweets, cache.GetByURL(userProfile.TwtURL)...)
 
 		sort.Sort(sort.Reverse(tweets))
 
@@ -245,7 +245,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		// Update user's own timeline with their own new post.
 		sources := map[string]string{
-			user.Username: user.URL,
+			user.Username: user.TwtURL,
 		}
 
 		if err := func() error {
@@ -579,7 +579,8 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Password:  hash,
 			CreatedAt: time.Now(),
 
-			URL: URLForUser(s.config.BaseURL, username, true),
+			URL:    URLForUser(s.config.BaseURL, username, false),
+			TwtURL: URLForUser(s.config.BaseURL, username, true),
 		}
 
 		if err := s.db.SetUser(username, user); err != nil {
@@ -635,7 +636,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				if followee.Followers == nil {
 					followee.Followers = make(map[string]string)
 				}
-				followee.Followers[user.Username] = user.URL
+				followee.Followers[user.Username] = user.TwtURL
 				if err := s.db.SetUser(followee.Username, followee); err != nil {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}

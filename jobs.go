@@ -194,17 +194,14 @@ func (job *FixUserAccountsJob) Run() {
 			log.Infof("successfully migrated user account %s", normalizedUsername)
 		}
 
-		if user.URL == "" {
-			log.Infof("fixing URL for user %s", user.Username)
-			// Fix URL
-			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
-
-			if err := job.db.SetUser(normalizedUsername, user); err != nil {
-				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
-				return
-			}
-
-			log.Infof("successfully fixed URL for user %s", user.Username)
+		log.Infof("fixing URL and TwtURL for user %s", user.Username)
+		user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, false)
+		user.TwtURL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
+		if err := job.db.SetUser(normalizedUsername, user); err != nil {
+			log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
+			return
+		} else {
+			log.Infof("successfully fixed URLs for user %s", user.Username)
 		}
 
 		if strings.HasPrefix(user.URL, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {

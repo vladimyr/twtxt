@@ -20,8 +20,9 @@ const (
 )
 
 type Tweeter struct {
-	Nick string
-	URL  string
+	Nick   string
+	URL    string
+	TwtURL string
 }
 
 type Tweet struct {
@@ -121,8 +122,9 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 
 	for _, info := range files {
 		tweeter := Tweeter{
-			Nick: info.Name(),
-			URL:  URLForUser(conf.BaseURL, info.Name(), false),
+			Nick:   info.Name(),
+			URL:    URLForUser(conf.BaseURL, info.Name(), false),
+			TwtURL: URLForUser(conf.BaseURL, info.Name(), true),
 		}
 		fn := filepath.Join(p, info.Name())
 		f, err := os.Open(fn)
