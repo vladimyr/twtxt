@@ -17,7 +17,7 @@ func init() {
 	Jobs = map[string]JobFactory{
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
-		"@every 1m":  NewFixUserAccountsJob,
+		"@hourly":    NewFixUserAccountsJob,
 		"@daily":     NewStatsJob,
 	}
 }
@@ -261,7 +261,6 @@ func (job *FixUserAccountsJob) Run() {
 	if err != nil {
 		log.WithError(err).Warnf("error loading user object for AdminUser")
 	} else {
-		adminUser.Feeds = []string{}
 		for _, specialUser := range specialUsernames {
 			if !adminUser.OwnsFeed(specialUser) {
 				adminUser.Feeds = append(adminUser.Feeds, specialUser)
