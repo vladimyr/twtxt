@@ -135,23 +135,5 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *FixUserAccountsJob) Run() {
-	func() {
-		log.Info("fixing adminUser account feeds")
-		adminUser, err := job.db.GetUser(job.conf.AdminUser)
-		if err != nil {
-			log.WithError(err).Warnf("error loading user object for AdminUser")
-		} else {
-			adminUser.Feeds = []string{}
-			for _, specialUser := range specialUsernames {
-				if !adminUser.OwnsFeed(specialUser) {
-					adminUser.Feeds = append(adminUser.Feeds, specialUser)
-				}
-			}
-			if err := job.db.SetUser(adminUser.Username, adminUser); err != nil {
-				log.WithError(err).Warn("error saving user object for AdminUser")
-			} else {
-				log.Infof("updated AdminUser %s with %d specialUsername feeds", job.conf.AdminUser, len(specialUsernames))
-			}
-		}
-	}()
+	// Nothing to do here
 }
