@@ -17,7 +17,7 @@ func init() {
 	Jobs = map[string]JobFactory{
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
-		"@hourly":    NewFixUserAccountsJob,
+		"@every 1m":  NewFixUserAccountsJob,
 		"@daily":     NewStatsJob,
 	}
 }
@@ -213,6 +213,17 @@ func (job *FixUserAccountsJob) Run() {
 				followee := NormalizeUsername(NormalizeUsername(filepath.Base(url)))
 				followers[followee] = append(followers[followee], user.Username)
 			}
+		}
+
+		for nick, url := range user.Following {
+			if strings.HasPrefix(url, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
+				username := filepath.Base(url)
+				user.Following[nick] = URLForUser(job.conf.BaseURL, username, true)
+			}
+		}
+		if err := job.db.SetUser(normalizedUsername, user); err != nil {
+			log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
+			return
 		}
 	}
 
