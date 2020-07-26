@@ -261,6 +261,7 @@ func (job *FixUserAccountsJob) Run() {
 	if err != nil {
 		log.WithError(err).Warnf("error loading user object for AdminUser")
 	} else {
+		adminUser.Feeds = []string
 		for _, specialUser := range specialUsernames {
 			if !adminUser.OwnsFeed(specialUser) {
 				adminUser.Feeds = append(adminUser.Feeds, specialUser)
