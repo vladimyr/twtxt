@@ -129,6 +129,10 @@ func (s *Server) setupCronJobs() error {
 			return err
 		}
 	}
+
+	log.Info("running FixUserAccountsJob now...")
+	NewFixUserAccountsJob(s.config, s.db).Run()
+
 	return nil
 }
 
