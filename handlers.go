@@ -40,6 +40,91 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 	}
 }
 
+// ProfileHandler ...
+func (s *Server) ProfileHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			ctx.Error = true
+			ctx.Message = "No user specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		nick = NormalizeUsername(nick)
+
+		userProfile, err := s.db.GetUser(nick)
+		if err != nil {
+			log.WithError(err).Errorf("error loading user object for %s", nick)
+			ctx.Error = true
+			ctx.Message = "Error loading profile"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Profile = userProfile
+
+		var (
+			tweets Tweets
+			cache  Cache
+		)
+
+		cache, err = LoadCache(s.config.Data)
+		if err != nil {
+			log.WithError(err).Error("error loading cache")
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the profile"
+			s.render("error", w, ctx)
+			return
+		}
+
+		tweets = append(tweets, cache.GetByURL(userProfile.URL)...)
+
+		sort.Sort(sort.Reverse(tweets))
+
+		var pagedTweets Tweets
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading the  timeline"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Tweets = pagedTweets
+		ctx.Pager = pager
+
+		s.render("profile", w, ctx)
+	}
+}
+
+// OldTwtxtHandler ...
+// Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
+// TODO: Remove this after v1
+func (s *Server) OldTwtxtHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		newURI := fmt.Sprintf(
+			"%s/user/%s/twtxt.txt",
+			strings.TrimSuffix(s.config.BaseURL, "/"),
+			nick,
+		)
+
+		http.Redirect(w, r, newURI, http.StatusMovedPermanently)
+	}
+}
+
 // TwtxtHandler ...
 func (s *Server) TwtxtHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -92,7 +177,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 							"twtxt",
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-								nick, URLForUser(s.config.BaseURL, nick),
+								nick, URLForUser(s.config.BaseURL, nick, true),
 								followerClient.Nick, followerClient.URL,
 								followerClient.ClientName, followerClient.ClientVersion,
 							),
@@ -170,7 +255,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 				return err
 			}
 
-			cache.FetchTweets(sources)
+			cache.FetchTweets(s.config, sources)
 
 			if err := cache.Store(s.config.Data); err != nil {
 				log.WithError(err).Warn("error saving feed cache")
@@ -316,7 +401,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name))
+		ctx.User.Follow(name, URLForUser(s.config.BaseURL, name, true))
 
 		if err := s.db.SetUser(ctx.Username, ctx.User); err != nil {
 			ctx.Error = true
@@ -330,7 +415,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			"twtxt",
 			fmt.Sprintf(
 				"FEED: %s from @<%s %s>",
-				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username),
+				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -494,7 +579,7 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			Password:  hash,
 			CreatedAt: time.Now(),
 
-			URL: URLForUser(s.config.BaseURL, username),
+			URL: URLForUser(s.config.BaseURL, username, true),
 		}
 
 		if err := s.db.SetUser(username, user); err != nil {
@@ -559,8 +644,8 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					"twtxt",
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
-						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
+						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -690,8 +775,8 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					"twtxt",
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
-						followee.Username, URLForUser(s.config.BaseURL, followee.Username),
-						user.Username, URLForUser(s.config.BaseURL, user.Username),
+						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
+						user.Username, URLForUser(s.config.BaseURL, user.Username, false),
 						"twtxt", FullVersion(),
 					),
 				); err != nil {
@@ -718,6 +803,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		password := r.FormValue("password")
+		tagline := strings.TrimSpace(r.FormValue("tagline"))
 
 		user := ctx.User
 		if user == nil {
@@ -734,6 +820,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 			user.Password = hash
 		}
+
+		user.Tagline = tagline
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
