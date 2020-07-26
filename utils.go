@@ -50,6 +50,7 @@ var (
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.ReplaceAll(name, " ", "_")
+	name = strings.ToLower(name)
 	return name
 }
 
