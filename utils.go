@@ -130,6 +130,13 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
+func StripTwtURL(url string) string {
+	if strings.HasSuffix(url, "/twtxt.txt") {
+		return strings.TrimSuffix(url, "/twtxt.net")
+	}
+	return url
+}
+
 func URLForUser(baseURL, username string, feed bool) string {
 	url := fmt.Sprintf(
 		"%s/user/%s",

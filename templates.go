@@ -31,6 +31,7 @@ func NewTemplates() (*Templates, error) {
 
 	funcMap := map[string]interface{}{
 		"Time":        humanize.Time,
+		"StripTwtURL": StripTwtURL,
 		"FormatTweet": FormatTweet,
 	}
 
