@@ -1,4 +1,12 @@
 
+<a name="0.0.9"></a>
+## [0.0.9](https://github.com/prologic/twtxt/compare/0.0.8...0.0.9) (2020-07-26)
+
+### Features
+
+* Add user profile pages and **BREAKS** existing local user feed URIs ([#27](https://github.com/prologic/twtxt/issues/27))
+
+
 <a name="0.0.8"></a>
 ## [0.0.8](https://github.com/prologic/twtxt/compare/0.0.7...0.0.8) (2020-07-26)
 
@@ -42,6 +50,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
 * Update CHANGELOG for 0.0.8
