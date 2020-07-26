@@ -629,7 +629,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(url)))
+			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
 			if err != nil {
 				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
 			} else {
@@ -761,7 +761,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 		}
 
 		if strings.HasPrefix(url, s.config.BaseURL) {
-			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(url)))
+			followee, err := s.db.GetUser(NormalizeUsername(filepath.Base(StripTwtURL(url))))
 			if err != nil {
 				log.WithError(err).Warnf("error loading user object for followee %s", NormalizeUsername(filepath.Base(url)))
 			} else {

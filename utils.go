@@ -132,7 +132,7 @@ func NormalizeURL(url string) string {
 
 func StripTwtURL(url string) string {
 	if strings.HasSuffix(url, "/twtxt.txt") {
-		return strings.TrimSuffix(url, "/twtxt.net")
+		return strings.TrimSuffix(url, "/twtxt.txt")
 	}
 	return url
 }
