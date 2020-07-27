@@ -98,7 +98,10 @@ func (u *User) CreateFeed(path, name string) error {
 }
 
 func (u *User) Is(url string) bool {
-	return NormalizeURL(u.TwtURL) == NormalizeURL(url)
+	if NormalizeURL(url) == "" {
+		return false
+	}
+	return u.TwtURL == NormalizeURL(url)
 }
 
 func (u *User) FollowedBy(url string) bool {
