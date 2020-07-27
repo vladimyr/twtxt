@@ -18,6 +18,12 @@ func newBitcaskStore(path string) (*BitcaskStore, error) {
 		return nil, err
 	}
 
+	log.Info("merging and compacting data store...")
+	if err := db.Merge(); err != nil {
+		log.WithError(err).Error("error merging data store")
+		return nil, err
+	}
+
 	return &BitcaskStore{db: db}, nil
 }
 
