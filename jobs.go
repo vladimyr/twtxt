@@ -193,6 +193,9 @@ func (job *FixUserAccountsJob) Run() {
 	if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
 		log.WithError(err).Errorf("error fixing missing user feeds")
 	}
+	if err := fixMissingUserFeeds("prologic", []string{"home_datacenter"}); err != nil {
+		log.WithError(err).Errorf("error fixing missing user feeds")
+	}
 
 	users, err := job.db.GetAllUsers()
 	if err != nil {
