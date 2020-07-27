@@ -13,15 +13,17 @@
 [![Sourcegraph](https://sourcegraph.com/github.com/prologic/twtxt/-/badge.svg)](https://sourcegraph.com/github.com/prologic/twtxt?badge)
 [![TODOs](https://img.shields.io/endpoint?url=https://api.tickgit.com/badge?repo=github.com/prologic/twtxt)](https://www.tickgit.com/browse?repo=github.com/prologic/twtxt)
 
-twtxt is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
-of a web application. ~and command-line client. It supports multiple users and
-also hosts user feeds directly. It also  has a builtin registry and search.~
+📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content!
 
-`twtxt` provides a self-hosted, decentralised micro-blogging platform. No ads, no tracking, your content!
+Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
+of a web application. It supports multiple users and
+also hosts user feeds directly.
 
 There is also a publicly (_free_) service online available at:
 
 - https://twtxt.net/
+
+> __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) before singing up (_pretty striaght forward_) and happy Twt'ing! 🤗
 
 ![Screenshot 1](./screenshot1.png)
 ![Screenshot 2](./screenshot2.png)
