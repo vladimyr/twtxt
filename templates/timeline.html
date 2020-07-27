@@ -4,7 +4,7 @@
     <div>
       <form action="/post" method="POST">
         <div class="grid">
-          <textarea id="text" name="text" placeholder="What's on your mind?" rows=2 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
+          <textarea id="text" name="text" placeholder="{{ .TweetPrompt }}" rows=3 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
         </div>
         <div class="grid">
           <div></div>

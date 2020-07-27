@@ -3,25 +3,33 @@ package twtxt
 import (
 	"encoding/json"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"time"
 )
 
 // Config contains the server configuration parameters
 type Config struct {
-	Data            string `json:"data"`
-	Name            string `json:"name"`
-	Store           string `json:"store"`
-	Theme           string
-	BaseURL         string `json:"base_url"`
-	AdminUser       string
+	Data            string        `json:"data"`
+	Name            string        `json:"name"`
+	Store           string        `json:"store"`
+	Theme           string        `json:"theme"`
+	BaseURL         string        `json:"base_url"`
+	AdminUser       string        `json:"admin_user"`
 	FeedSources     []string      `json:"feed_sources"`
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`
 	CookieSecret    string        `json:"cookie_secret"`
+	TweetPrompts    []string      `json:"tweet_prompts"`
 	TweetsPerPage   int           `json:"tweets_per_page"`
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
+}
+
+// RandomTweetPrompt returns a random  Tweet Prompt for display by the UI
+func (c *Config) RandomTweetPrompt() string {
+	n := rand.Int() % len(c.TweetPrompts)
+	return c.TweetPrompts[n]
 }
 
 // Load loads a configuration from the given path

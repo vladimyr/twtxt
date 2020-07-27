@@ -14,6 +14,7 @@ type Context struct {
 	InstanceName            string
 	SoftwareVersion         string
 	TweetsPerPage           int
+	TweetPrompt             string
 	MaxTweetLength          int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
@@ -39,6 +40,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		InstanceName:     conf.Name,
 		SoftwareVersion:  FullVersion(),
 		TweetsPerPage:    conf.TweetsPerPage,
+		TweetPrompt:      conf.RandomTweetPrompt(),
 		MaxTweetLength:   conf.MaxTweetLength,
 		RegisterDisabled: !conf.Register,
 
