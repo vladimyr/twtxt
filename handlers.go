@@ -881,7 +881,14 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "User not found"
+
+			if err == ErrUserNotFound {
+				ctx.Message = "User not found"
+			} else {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Message = "Error loading profile"
+			}
+
 			s.render("error", w, ctx)
 
 			return
