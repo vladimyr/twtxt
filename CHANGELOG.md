@@ -1,10 +1,69 @@
 
+<a name="0.0.10"></a>
+## [0.0.10](https://github.com/prologic/twtxt/compare/0.0.9...0.0.10) (2020-07-27)
+
+### Bug Fixes
+
+* Fix bug in ExpandMentions
+* Fix incorrect log call
+* Fix server shutdown and signal handling to listen for SIGTERM and SIGINT
+* Fix twtxt.net missing user feeds for prologic (home_datacenter) wtf?!
+* Fix missing db.SetUser for fixUserURLs
+* Fix another bug in Profile template
+* Fix more bugs with User Profile view
+* Fix User Profile Latest Tweets
+* Fix build and remove unused vars in FixUserAccounts
+* Fix User URL and TwtURLs on twtxt.net  and reset them
+* Fix Context.IsLocal bug
+* Fix bug in User.Is function
+* Fix /settings view (again)
+* Fix build error (oops silly me)
+* Fix bug in /settings vieew
+* Fix missing feeds for [@rob](https://github.com/rob) and [@kt84](https://github.com/kt84)  that went missing from their accounts :/
+* Fix UI/UX bug in text input with erroneous spaces
+* Fix adminUser account on twtxt.net
+* Fix user feeds on twtxt.net
+* Fix bug with feed creation (case sensitivity)
+* Fix Follow/Unfollow local events post v0.9.0 release re URL/TwtURL changes
+* Fix numerous bugs post v0.8.0 release (sorry) due to complications  with User Profile URL vs. Feed URL (TwtURL)
+* Fix Tweeter.URL on /discover
+* Fix syntax error (oops)
+* Fix adminUser feeds on twtxt.net
+* Fix link to user profiles in user settings followers/following
+* Fix Tagline in User Settings so you users can see what they have entered (if it was set)
+* Fix User.Following URIs post v0.9.0 break in URIs
+
+### Features
+
+* Add fixAdminUser function to FixUserAccountsJob to add specialUser feeds to the configured AdminUser
+* Add SyncStore job to sync data to disk every 1m to prevent accidental data loss
+* Add logging when server is shutdown and store is synced/closed
+* Add local [@mention](https://github.com/mention) automatic linking for local users and local feeds without a user having to follow  them first
+
+### Updates
+
+* Update README.md
+* Update README.md
+* Update README.md
+* Update startup to merge data store
+* Update deps
+* Update the FixUserAccounts job and remove all fixes, but leave  the job (we might breka more things)
+* Update FixUserAccounts job and remov most of the migration code now that twtxt.net data is fixed
+* Update FixUserAccounts job schedule to [@hourly](https://github.com/hourly) and remove adminUser.Feeds hack
+* Update  FixUserAccountsJob to eif User URL(s)
+* Update FixUserAccounts job back to 1h schedule
+
+
 <a name="0.0.9"></a>
 ## [0.0.9](https://github.com/prologic/twtxt/compare/0.0.8...0.0.9) (2020-07-26)
 
 ### Features
 
 * Add user profile pages and **BREAKS** existing local user feed URIs ([#27](https://github.com/prologic/twtxt/issues/27))
+
+### Updates
+
+* Update CHANGELOG for 0.0.9
 
 
 <a name="0.0.8"></a>
