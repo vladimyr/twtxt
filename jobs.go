@@ -154,11 +154,5 @@ func (job *FixUserAccountsJob) Run() {
 		return nil
 	}
 
-	// Fix missing Feeds for @rob @kt84
-	if err := fixMissingUserFeeds("kt84", []string{"recipes", "local_wonders"}); err != nil {
-		log.WithError(err).Errorf("error fixing missing user feeds")
-	}
-	if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
-		log.WithError(err).Errorf("error fixing missing user feeds")
-	}
+	// Nothing to do...
 }
