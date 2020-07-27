@@ -805,6 +805,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		password := r.FormValue("password")
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
 		user := ctx.User
 		if user == nil {
@@ -823,6 +824,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		user.Tagline = tagline
+		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
@@ -872,12 +874,14 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 
 		nick := NormalizeUsername(p.ByName("nick"))
 
+
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		user, err := s.db.GetUser(nick)
+
 
 		if err != nil {
 			ctx.Error = true
@@ -891,6 +895,11 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 
 			s.render("error", w, ctx)
 
+			return
+		}
+
+		if !user.IsFollowersPubliclyVisible {
+			s.render("404", w, ctx)
 			return
 		}
 

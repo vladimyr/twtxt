@@ -20,6 +20,12 @@
             </label>
           </div>
         </div>
+        <div class="grid">
+          <label for="isFollowersPubliclyVisible">
+              <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers to public" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
+              Show followers to public
+          </label>
+        </div>
         <button type="submit" class="primary">Update</button>
       </form>
 
