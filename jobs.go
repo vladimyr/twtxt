@@ -226,5 +226,30 @@ func (job *FixUserAccountsJob) Run() {
 		}
 	*/
 
-	// Nothing to do...
+	fixAdminUser := func() error {
+		log.Info("fixing adminUser account %s", job.conf.AdminUser)
+		adminUser, err := job.db.GetUser(job.conf.AdminUser)
+		if err != nil {
+			log.WithError(err).Warnf("error loading user object for AdminUser")
+			return err
+		}
+
+		for _, specialUser := range specialUsernames {
+			if !adminUser.OwnsFeed(specialUser) {
+				adminUser.Feeds = append(adminUser.Feeds, specialUser)
+			}
+		}
+
+		if err := job.db.SetUser(adminUser.Username, adminUser); err != nil {
+			log.WithError(err).Warn("error saving user object for AdminUser")
+			return err
+		}
+
+		return nil
+	}
+
+	// Fix/Update the adminUser account
+	if err := fixAdminUser(); err != nil {
+		log.WithError(err).Errorf("error fixing adminUser %s", job.conf.AdminUser)
+	}
 }

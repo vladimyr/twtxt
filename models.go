@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -69,9 +68,9 @@ func LoadUser(data []byte) (user *User, err error) {
 }
 
 func (u *User) OwnsFeed(name string) bool {
-	name = strings.ToLower(name)
+	name = NormalizeFeedName(name)
 	for _, feed := range u.Feeds {
-		if strings.ToLower(feed) == name {
+		if NormalizeFeedName(feed) == name {
 			return true
 		}
 	}
