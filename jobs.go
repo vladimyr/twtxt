@@ -32,7 +32,7 @@ func NewSyncStoreJob(conf *Config, db Store) cron.Job {
 
 func (job *SyncStoreJob) Run() {
 	if err := job.db.Sync(); err != nil {
-		log.WithError(err).Error("error sycning store")
+		log.WithError(err).Warn("error sycning store")
 	}
 	log.Info("synced store")
 }
@@ -175,7 +175,7 @@ func (job *FixUserAccountsJob) Run() {
 			}
 
 			if err := job.db.SetUser(user.Username, user); err != nil {
-				log.WithError(err).Errorf("error updating user object %s", user.Username)
+				log.WithError(err).Warnf("error updating user object %s", user.Username)
 				return err
 			}
 
@@ -187,14 +187,14 @@ func (job *FixUserAccountsJob) Run() {
 		fixMissingUserFeeds := func(username string, feeds []string) error {
 			user, err := job.db.GetUser(username)
 			if err != nil {
-				log.WithError(err).Errorf("error loading user object for %s", username)
+				log.WithError(err).Warnf("error loading user object for %s", username)
 				return err
 			}
 
 			user.Feeds = feeds
 
 			if err := job.db.SetUser(username, user); err != nil {
-				log.WithError(err).Errorf("error updating user object %s", username)
+				log.WithError(err).Warnf("error updating user object %s", username)
 				return err
 			}
 
@@ -205,22 +205,22 @@ func (job *FixUserAccountsJob) Run() {
 
 		// Fix missing Feeds for @rob @kt84
 		if err := fixMissingUserFeeds("kt84", []string{"recipes", "local_wonders"}); err != nil {
-			log.WithError(err).Errorf("error fixing missing user feeds")
+			log.WithError(err).Warnf("error fixing missing user feeds")
 		}
 		if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
-			log.WithError(err).Errorf("error fixing missing user feeds")
+			log.WithError(err).Warnf("error fixing missing user feeds")
 		}
 		if err := fixMissingUserFeeds("prologic", []string{"home_datacenter"}); err != nil {
-			log.WithError(err).Errorf("error fixing missing user feeds")
+			log.WithError(err).Warnf("error fixing missing user feeds")
 		}
 
 		users, err := job.db.GetAllUsers()
 		if err != nil {
-			log.WithError(err).Errorf("error loading all user objects")
+			log.WithError(err).Warnf("error loading all user objects")
 		} else {
 			for _, user := range users {
 				if err := fixUserURLs(user); err != nil {
-					log.WithError(err).Errorf("error fixing user URLs for %s", user.Username)
+					log.WithError(err).Warnf("error fixing user URLs for %s", user.Username)
 				}
 			}
 		}
@@ -250,6 +250,6 @@ func (job *FixUserAccountsJob) Run() {
 
 	// Fix/Update the adminUser account
 	if err := fixAdminUser(); err != nil {
-		log.WithError(err).Errorf("error fixing adminUser %s", job.conf.AdminUser)
+		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
 	}
 }
