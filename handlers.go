@@ -66,21 +66,14 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Profile = userProfile
 
-		var (
-			tweets Tweets
-			cache  Cache
-		)
-
-		cache, err = LoadCache(s.config.Data)
+		tweets, err := GetUserTweets(s.config, userProfile.Username)
 		if err != nil {
-			log.WithError(err).Error("error loading cache")
+			log.WithError(err).Error("error loading tweets")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the profile"
 			s.render("error", w, ctx)
 			return
 		}
-
-		tweets = append(tweets, cache.GetByURL(userProfile.TwtURL)...)
 
 		sort.Sort(sort.Reverse(tweets))
 

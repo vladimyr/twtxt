@@ -105,6 +105,40 @@ func AppendTweet(path, text string, user *User) error {
 	return nil
 }
 
+func GetUserTweets(conf *Config, username string) (Tweets, error) {
+	p := filepath.Join(conf.Data, feedsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return nil, err
+	}
+
+	username = NormalizeUsername(username)
+
+	var tweets Tweets
+
+	tweeter := Tweeter{
+		Nick:   username,
+		URL:    URLForUser(conf.BaseURL, username, false),
+		TwtURL: URLForUser(conf.BaseURL, username, true),
+	}
+	fn := filepath.Join(p, username)
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Warnf("error opening feed: %s", fn)
+		return nil, err
+	}
+	s := bufio.NewScanner(f)
+	t, err := ParseFile(s, tweeter)
+	if err != nil {
+		log.WithError(err).Errorf("error processing feed %s", fn)
+		return nil, err
+	}
+	tweets = append(tweets, t...)
+	f.Close()
+
+	return tweets, nil
+}
+
 func GetAllTweets(conf *Config) (Tweets, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
