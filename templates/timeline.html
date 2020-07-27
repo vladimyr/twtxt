@@ -4,8 +4,7 @@
     <div>
       <form action="/post" method="POST">
         <div class="grid">
-          <textarea id="text" name="text" placeholder="What's on your mind?" rows=2 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required>
-          </textarea>
+          <textarea id="text" name="text" placeholder="{{ .TweetPrompt }}" rows=3 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
         </div>
         <div class="grid">
           <div></div>
@@ -28,38 +27,39 @@
 <div class="grid">
   <div>
     {{ range .Tweets }}
-      <article>
+      <article id="{{ .Hash }}">
         <hgroup>
           <h2>
-            {{ if $.User.Is .Tweeter.Nick }}
-              <a href="{{ .Tweeter.URL }}">
-                <i class="icss-user"></i>
+            {{ if $.User.Is .Tweeter.TwtURL }}
+              <a href="{{ $.User.URL }}">
+                <img src="/user/{{ $.User.Username }}/avatar.png" />
                 me
               </a>
             {{ else }}
-              <a href="{{ .Tweeter.URL }}">
-                {{ if $.IsFeed .Tweeter.URL }}
+              {{ if $.IsLocal .Tweeter.TwtURL }}
+                <a href="{{ .Tweeter.URL }}">
+                  <img src="/user/{{ .Tweeter.Nick }}/avatar.png" />
+              {{ else }}
+                <a href="{{ .Tweeter.TwtURL }}">
                   <i class="icss-rss"></i>
-                {{ else }}
-                  <i class="icss-user-circle"></i>
-                {{ end }}
-                {{ .Tweeter.Nick }}
+              {{ end }}
+              {{ .Tweeter.Nick }}
               </a>
             {{ end }}
           </h2>
           <h3>
-            {{ if (and $.Authenticated (not ($.User.Is .Tweeter.Nick))) }}
+            {{ if (and $.Authenticated (not ($.User.Is .Tweeter.TwtURL))) }}
               &nbsp;
               [<a class="reply" href="#" data-reply="@{{ .Tweeter.Nick }} ">Reply</a>]
               &nbsp;
-              {{ if $.User.Follows .Tweeter.URL }}
+              {{ if $.User.Follows .Tweeter.TwtURL }}
                 [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]
               {{ else }}
-                [<a href="/follow?nick={{ .Tweeter.Nick }}&url={{ .Tweeter.URL }}">Follow</a>]
+                [<a href="/follow?nick={{ .Tweeter.Nick }}&url={{ .Tweeter.TwtURL }}">Follow</a>]
               {{ end }}
             {{ end }}
           </h3>
-          <footer>({{ .Created | Time }})</footer>
+          <footer>(<a href="#{{ .Hash }}">{{ .Created | Time }}</a>)</footer>
         </hgroup>
         <p>{{ .Text | FormatTweet }}</p>
       </article>

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -25,6 +24,7 @@ type User struct {
 	Tagline                    string
 	Email                      string
 	URL                        string
+	TwtURL    string
 	CreatedAt                  time.Time
 	IsFollowersPubliclyVisible bool
 
@@ -69,9 +69,9 @@ func LoadUser(data []byte) (user *User, err error) {
 }
 
 func (u *User) OwnsFeed(name string) bool {
-	name = strings.ToLower(name)
+	name = NormalizeFeedName(name)
 	for _, feed := range u.Feeds {
-		if strings.ToLower(feed) == name {
+		if NormalizeFeedName(feed) == name {
 			return true
 		}
 	}
@@ -97,8 +97,11 @@ func (u *User) CreateFeed(path, name string) error {
 	return nil
 }
 
-func (u *User) Is(username string) bool {
-	return NormalizeUsername(u.Username) == NormalizeUsername(username)
+func (u *User) Is(url string) bool {
+	if NormalizeURL(url) == "" {
+		return false
+	}
+	return u.TwtURL == NormalizeURL(url)
 }
 
 func (u *User) FollowedBy(url string) bool {

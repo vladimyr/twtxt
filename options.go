@@ -24,6 +24,9 @@ const (
 	// DefaultRegister is the default user registration flag
 	DefaultRegister = false
 
+	// DefaultRegisterMessage is the default message displayed when  registrations are disabled
+	DefaultRegisterMessage = ""
+
 	// DefaultCookieSecret is the server's default cookie secret
 	DefaultCookieSecret = "PLEASE_CHANGE_ME!!!"
 
@@ -43,13 +46,32 @@ var (
 		"https://feeds.twtxt.net/we-are-feeds.txt",
 		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt",
 	}
+
+	// DefaultTweetPrompts are the set of default prompts  for tweet text(s)
+	DefaultTweetPrompts = []string{
+		`What's on your mind?`,
+		`Share something insightful!`,
+		`Good day to you! What's new?`,
+		`Did something cool lately? Share it!`,
+		`Hi! 👋 Don't forget to post a Twt today!`,
+	}
 )
 
 func NewConfig() *Config {
 	return &Config{
-		Data:    DefaultData,
-		Store:   DefaultStore,
-		BaseURL: DefaultBaseURL,
+		Name:            DefaultName,
+		Store:           DefaultStore,
+		Theme:           DefaultTheme,
+		BaseURL:         DefaultBaseURL,
+		AdminUser:       DefaultAdminUser,
+		FeedSources:     DefaultFeedSources,
+		Register:        DefaultRegister,
+		RegisterMessage: DefaultRegisterMessage,
+		CookieSecret:    DefaultCookieSecret,
+		TweetPrompts:    DefaultTweetPrompts,
+		TweetsPerPage:   DefaultTweetsPerPage,
+		MaxTweetLength:  DefaultMaxTweetLength,
+		SessionExpiry:   DefaultSessionExpiry,
 	}
 }
 

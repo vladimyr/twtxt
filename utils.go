@@ -50,6 +50,7 @@ var (
 func NormalizeFeedName(name string) string {
 	name = strings.TrimSpace(name)
 	name = strings.ReplaceAll(name, " ", "_")
+	name = strings.ToLower(name)
 	return name
 }
 
@@ -132,7 +133,7 @@ func NormalizeURL(url string) string {
 
 func StripTwtURL(url string) string {
 	if strings.HasSuffix(url, "/twtxt.txt") {
-		return strings.TrimSuffix(url, "/twtxt.net")
+		return strings.TrimSuffix(url, "/twtxt.txt")
 	}
 	return url
 }

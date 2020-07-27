@@ -2,10 +2,6 @@ package twtxt
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +11,7 @@ var Jobs map[string]JobFactory
 
 func init() {
 	Jobs = map[string]JobFactory{
+		"@every 1m":  NewSyncStoreJob,
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
 		"@hourly":    NewFixUserAccountsJob,
@@ -23,6 +20,22 @@ func init() {
 }
 
 type JobFactory func(conf *Config, store Store) cron.Job
+
+type SyncStoreJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewSyncStoreJob(conf *Config, db Store) cron.Job {
+	return &SyncStoreJob{conf: conf, db: db}
+}
+
+func (job *SyncStoreJob) Run() {
+	if err := job.db.Sync(); err != nil {
+		log.WithError(err).Warn("error sycning store")
+	}
+	log.Info("synced store")
+}
 
 type StatsJob struct {
 	conf *Config
@@ -58,7 +71,7 @@ func (job *StatsJob) Run() {
 		len(users), feeds, len(tweets),
 	)
 
-	if err := AppendSpecial(job.conf.Data, "stats", text); err != nil {
+	if err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
 		log.WithError(err).Warn("error updating stats feed")
 	}
 }
@@ -139,137 +152,104 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *FixUserAccountsJob) Run() {
-	users, err := job.db.GetAllUsers()
-	if err != nil {
-		log.WithError(err).Warn("unable to get all users from database")
-		return
-	}
+	/*
+		fixUserURLs := func(user *User) error {
+			baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
 
-	// followee -> list of followers
-	followers := make(map[string][]string)
+			// Reset User URL and TwtURL
+			user.URL = URLForUser(baseURL, user.Username, false)
+			user.TwtURL = URLForUser(baseURL, user.Username, true)
 
-	for _, user := range users {
-		fn := filepath.Join(filepath.Join(job.conf.Data, feedsDir, user.Username))
-		if _, err := os.Stat(fn); os.IsNotExist(err) {
-			if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
-				log.WithError(err).Warnf("error touching feed file for user %s", user.Username)
-			} else {
-				log.Infof("touched feed file for user %s", user.Username)
+			for nick, url := range user.Following {
+				url = NormalizeURL(url)
+				if strings.HasPrefix(url, fmt.Sprintf("%s/u/", baseURL)) {
+					user.Following[nick] = URLForUser(baseURL, nick, false)
+				}
 			}
+
+			for nick, url := range user.Followers {
+				url = NormalizeURL(url)
+				if strings.HasPrefix(url, fmt.Sprintf("%s/u/", baseURL)) {
+					user.Followers[nick] = URLForUser(baseURL, nick, false)
+				}
+			}
+
+			if err := job.db.SetUser(user.Username, user); err != nil {
+				log.WithError(err).Warnf("error updating user object %s", user.Username)
+				return err
+			}
+
+			log.Infof("fixed URLs for user %s", user.Username)
+
+			return nil
 		}
 
-		normalizedUsername := NormalizeUsername(user.Username)
-
-		if normalizedUsername != user.Username {
-			log.Infof("migrating user account %s -> %s", user.Username, normalizedUsername)
-
-			if err := job.db.DelUser(user.Username); err != nil {
-				log.WithError(err).Errorf("error deleting old user %s", user.Username)
-				return
+		fixMissingUserFeeds := func(username string, feeds []string) error {
+			user, err := job.db.GetUser(username)
+			if err != nil {
+				log.WithError(err).Warnf("error loading user object for %s", username)
+				return err
 			}
 
-			p := filepath.Join(filepath.Join(job.conf.Data, feedsDir))
+			user.Feeds = feeds
 
-			if err := os.Rename(filepath.Join(p, user.Username), filepath.Join(p, fmt.Sprintf("%s.tmp", user.Username))); err != nil {
-				log.WithError(err).Errorf("error renaming old feed for %s", user.Username)
-				return
+			if err := job.db.SetUser(username, user); err != nil {
+				log.WithError(err).Warnf("error updating user object %s", username)
+				return err
 			}
 
-			if err := os.Rename(filepath.Join(p, fmt.Sprintf("%s.tmp", user.Username)), filepath.Join(p, normalizedUsername)); err != nil {
-				log.WithError(err).Errorf("error renaming new feed for %s", user.Username)
-				return
-			}
+			log.Infof("fixed missing feeds for %s", username)
 
-			// Fix Username
-			user.Username = normalizedUsername
-
-			// Fix URL
-			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
-
-			if err := job.db.SetUser(normalizedUsername, user); err != nil {
-				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
-				return
-			}
-
-			log.Infof("successfully migrated user account %s", normalizedUsername)
+			return nil
 		}
 
-		if user.URL == "" {
-			log.Infof("fixing URL for user %s", user.Username)
-			// Fix URL
-			user.URL = URLForUser(job.conf.BaseURL, normalizedUsername, true)
-
-			if err := job.db.SetUser(normalizedUsername, user); err != nil {
-				log.WithError(err).Errorf("error migrating user %s", normalizedUsername)
-				return
-			}
-
-			log.Infof("successfully fixed URL for user %s", user.Username)
+		// Fix missing Feeds for @rob @kt84
+		if err := fixMissingUserFeeds("kt84", []string{"recipes", "local_wonders"}); err != nil {
+			log.WithError(err).Warnf("error fixing missing user feeds")
+		}
+		if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
+			log.WithError(err).Warnf("error fixing missing user feeds")
+		}
+		if err := fixMissingUserFeeds("prologic", []string{"home_datacenter"}); err != nil {
+			log.WithError(err).Warnf("error fixing missing user feeds")
 		}
 
-		if strings.HasPrefix(user.URL, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
-			log.Infof("fixing URL for user %s", user.Username)
-			user.URL = URLForUser(job.conf.BaseURL, user.Username, true)
-			if err := job.db.SetUser(normalizedUsername, user); err != nil {
-				log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
-				return
-			}
-		}
-
-		for _, url := range user.Following {
-			url = NormalizeURL(url)
-			if strings.HasPrefix(url, job.conf.BaseURL) {
-				followee := NormalizeUsername(NormalizeUsername(filepath.Base(url)))
-				followers[followee] = append(followers[followee], user.Username)
-			}
-		}
-
-		for nick, url := range user.Following {
-			if strings.HasPrefix(url, fmt.Sprintf("%s/u/", strings.TrimSuffix(job.conf.BaseURL, "/"))) {
-				username := filepath.Base(url)
-				user.Following[nick] = URLForUser(job.conf.BaseURL, username, true)
-			}
-		}
-		if err := job.db.SetUser(normalizedUsername, user); err != nil {
-			log.WithError(err).Errorf("error updating user object %s", normalizedUsername)
-			return
-		}
-	}
-
-	for followee, followers := range followers {
-		user, err := job.db.GetUser(followee)
+		users, err := job.db.GetAllUsers()
 		if err != nil {
-			log.WithError(err).Warnf("error loading user object for %s", followee)
-			continue
+			log.WithError(err).Warnf("error loading all user objects")
+		} else {
+			for _, user := range users {
+				if err := fixUserURLs(user); err != nil {
+					log.WithError(err).Warnf("error fixing user URLs for %s", user.Username)
+				}
+			}
+		}
+	*/
+
+	fixAdminUser := func() error {
+		log.Infof("fixing adminUser account %s", job.conf.AdminUser)
+		adminUser, err := job.db.GetUser(job.conf.AdminUser)
+		if err != nil {
+			log.WithError(err).Warnf("error loading user object for AdminUser")
+			return err
 		}
 
-		if user.Followers == nil {
-			user.Followers = make(map[string]string)
-		}
-		for _, follower := range followers {
-			user.Followers[follower] = URLForUser(job.conf.BaseURL, follower, true)
-		}
-
-		if err := job.db.SetUser(followee, user); err != nil {
-			log.WithError(err).Warnf("error saving user object for %s", followee)
-			continue
-		}
-		log.Infof("updating %d followers for %s", len(followers), followee)
-	}
-
-	adminUser, err := job.db.GetUser(job.conf.AdminUser)
-	if err != nil {
-		log.WithError(err).Warnf("error loading user object for AdminUser")
-	} else {
 		for _, specialUser := range specialUsernames {
 			if !adminUser.OwnsFeed(specialUser) {
 				adminUser.Feeds = append(adminUser.Feeds, specialUser)
 			}
 		}
+
 		if err := job.db.SetUser(adminUser.Username, adminUser); err != nil {
 			log.WithError(err).Warn("error saving user object for AdminUser")
-		} else {
-			log.Infof("updated AdminUser %s with %d specialUsername feeds", job.conf.AdminUser, len(specialUsernames))
+			return err
 		}
+
+		return nil
+	}
+
+	// Fix/Update the adminUser account
+	if err := fixAdminUser(); err != nil {
+		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
 	}
 }

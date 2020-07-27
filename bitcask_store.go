@@ -21,19 +21,30 @@ func newBitcaskStore(path string) (*BitcaskStore, error) {
 	return &BitcaskStore{db: db}, nil
 }
 
+// Sync ...
+func (bs *BitcaskStore) Sync() error {
+	return bs.db.Sync()
+}
+
 // Close ...
 func (bs *BitcaskStore) Close() error {
+	log.Info("syncing store ...")
 	if err := bs.db.Sync(); err != nil {
 		log.WithError(err).Error("error syncing store")
 		return err
 	}
 
+	log.Info("closing store ...")
 	if err := bs.db.Close(); err != nil {
 		log.WithError(err).Error("error closing store")
 		return err
 	}
 
 	return nil
+}
+
+func (bs *BitcaskStore) HasUser(username string) bool {
+	return bs.db.Has([]byte(fmt.Sprintf("/users/%s", username)))
 }
 
 func (bs *BitcaskStore) DelUser(username string) error {

@@ -4,6 +4,7 @@ package twtxt
 
 import (
 	"bufio"
+	"encoding/base32"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/blake2b"
 )
 
 const (
@@ -20,14 +22,32 @@ const (
 )
 
 type Tweeter struct {
-	Nick string
-	URL  string
+	Nick   string
+	URL    string
+	TwtURL string
 }
 
 type Tweet struct {
 	Tweeter Tweeter
 	Text    string
 	Created time.Time
+
+	hash string
+}
+
+func (tweet Tweet) Hash() string {
+	if tweet.hash != "" {
+		return tweet.hash
+	}
+
+	payload := tweet.Created.String() + "\n" + tweet.Text
+	sum := blake2b.Sum256([]byte(payload))
+
+	// Base32 is URL-safe, unlike Base64, and shorter than hex.
+	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
+	tweet.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
+
+	return tweet.hash
 }
 
 // typedef to be able to attach sort methods
@@ -55,30 +75,37 @@ func (tweets Tweets) Tags() map[string]int {
 }
 
 // Turns "@nick" into "@<nick URL>" if we're following nick.
-func ExpandMentions(text string, user *User) string {
+func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	re := regexp.MustCompile(`@([_a-zA-Z0-9]+)`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
-		mentionednick := parts[1]
+		mentionedNick := parts[1]
 
-		for followednick, followedurl := range user.Following {
-			if mentionednick == followednick {
-				return fmt.Sprintf("@<%s %s>", followednick, followedurl)
+		for followedNick, followedURL := range user.Following {
+			if mentionedNick == followedNick {
+				return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
 			}
 		}
-		// Not expanding if we're not following
-		return match
+
+		if db.HasUser(mentionedNick) {
+			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, false))
+		} else if FeedExists(conf, mentionedNick) {
+			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, true))
+		} else {
+			// Not expanding if we're not following
+			return match
+		}
 	})
 }
 
-func AppendSpecial(path, specialUser, text string) error {
-	user := &User{Username: specialUser}
+func AppendSpecial(conf *Config, db Store, specialUsername, text string) error {
+	user := &User{Username: specialUsername}
 	user.Following = make(map[string]string)
-	return AppendTweet(path, text, user)
+	return AppendTweet(conf, db, user, text)
 }
 
-func AppendTweet(path, text string, user *User) error {
-	p := filepath.Join(path, feedsDir)
+func AppendTweet(conf *Config, db Store, user *User, text string) error {
+	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
 		return err
@@ -90,7 +117,7 @@ func AppendTweet(path, text string, user *User) error {
 		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
 	}
 
-	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(text, user))
+	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(conf, db, user, text))
 	f, err := os.OpenFile(fn, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
@@ -102,6 +129,51 @@ func AppendTweet(path, text string, user *User) error {
 	}
 
 	return nil
+}
+
+func FeedExists(conf *Config, username string) bool {
+	fn := filepath.Join(conf.Data, feedsDir, NormalizeUsername(username))
+	if _, err := os.Stat(fn); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func GetUserTweets(conf *Config, username string) (Tweets, error) {
+	p := filepath.Join(conf.Data, feedsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return nil, err
+	}
+
+	username = NormalizeUsername(username)
+
+	var tweets Tweets
+
+	tweeter := Tweeter{
+		Nick:   username,
+		URL:    URLForUser(conf.BaseURL, username, false),
+		TwtURL: URLForUser(conf.BaseURL, username, true),
+	}
+	fn := filepath.Join(p, username)
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Warnf("error opening feed: %s", fn)
+		return nil, err
+	}
+	s := bufio.NewScanner(f)
+	t, err := ParseFile(s, tweeter)
+	if err != nil {
+		log.WithError(err).Errorf("error processing feed %s", fn)
+		return nil, err
+	}
+	tweets = append(tweets, t...)
+	f.Close()
+
+	return tweets, nil
 }
 
 func GetAllTweets(conf *Config) (Tweets, error) {
@@ -121,8 +193,9 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 
 	for _, info := range files {
 		tweeter := Tweeter{
-			Nick: info.Name(),
-			URL:  URLForUser(conf.BaseURL, info.Name(), false),
+			Nick:   info.Name(),
+			URL:    URLForUser(conf.BaseURL, info.Name(), false),
+			TwtURL: URLForUser(conf.BaseURL, info.Name(), true),
 		}
 		fn := filepath.Join(p, info.Name())
 		f, err := os.Open(fn)
