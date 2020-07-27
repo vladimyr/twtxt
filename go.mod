@@ -7,8 +7,6 @@ require (
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/aofei/cameron v1.1.4
-	github.com/coreos/go-etcd v2.0.0+incompatible // indirect
-	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec // indirect
@@ -21,13 +19,11 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.3
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/pflag v1.0.5
-	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8 // indirect
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
