@@ -23,7 +23,7 @@ There is also a publicly (_free_) service online available at:
 
 - https://twtxt.net/
 
-> __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) before singing up (_pretty striaght forward_) and happy Twt'ing! 🤗
+> __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
 
 ![Screenshot 1](./screenshot1.png)
 ![Screenshot 2](./screenshot2.png)
