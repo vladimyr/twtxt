@@ -13,7 +13,7 @@
 [![Sourcegraph](https://sourcegraph.com/github.com/prologic/twtxt/-/badge.svg)](https://sourcegraph.com/github.com/prologic/twtxt?badge)
 [![TODOs](https://img.shields.io/endpoint?url=https://api.tickgit.com/badge?repo=github.com/prologic/twtxt)](https://www.tickgit.com/browse?repo=github.com/prologic/twtxt)
 
-📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content!
+📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!
 
 Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
 of a web application. It supports multiple users and
