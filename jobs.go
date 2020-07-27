@@ -227,7 +227,7 @@ func (job *FixUserAccountsJob) Run() {
 	*/
 
 	fixAdminUser := func() error {
-		log.Info("fixing adminUser account %s", job.conf.AdminUser)
+		log.Infof("fixing adminUser account %s", job.conf.AdminUser)
 		adminUser, err := job.db.GetUser(job.conf.AdminUser)
 		if err != nil {
 			log.WithError(err).Warnf("error loading user object for AdminUser")
