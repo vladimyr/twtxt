@@ -141,12 +141,9 @@ func (job *FixUserAccountsJob) Run() {
 		userURL := NormalizeURL(user.URL)
 		userTwtURL := NormalizeURL(user.TwtURL)
 
-		if strings.HasPrefix(userURL, fmt.Sprintf("%s/u/", baseURL)) {
-			user.URL = URLForUser(baseURL, user.Username, false)
-		}
-		if userTwtURL == "" {
-			user.TwtURL = URLForUser(baseURL, user.Username, true)
-		}
+		// Reset User URL and TwtURL
+		user.URL = URLForUser(baseURL, user.Username, false)
+		user.TwtURL = URLForUser(baseURL, user.Username, true)
 
 		for nick, url := range user.Following {
 			url = NormalizeURL(url)
