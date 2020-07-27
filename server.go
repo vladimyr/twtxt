@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
@@ -88,9 +89,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 func (s *Server) Run() (err error) {
 	idleConnsClosed := make(chan struct{})
 	go func() {
-		sigint := make(chan os.Signal, 1)
-		signal.Notify(sigint, os.Interrupt)
-		<-sigint
+		sigch := make(chan os.Signal, 1)
+		signal.Notify(sigch, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigch
+		log.Infof("Recieved signal %s", sig)
 
 		log.Info("Shutting down...")
 
