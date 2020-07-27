@@ -138,8 +138,6 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 func (job *FixUserAccountsJob) Run() {
 	fixUserURLs := func(user *User) error {
 		baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
-		userURL := NormalizeURL(user.URL)
-		userTwtURL := NormalizeURL(user.TwtURL)
 
 		// Reset User URL and TwtURL
 		user.URL = URLForUser(baseURL, user.Username, false)
