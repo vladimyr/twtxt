@@ -157,6 +157,13 @@ func (job *FixUserAccountsJob) Run() {
 			}
 		}
 
+		if err := job.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Errorf("error updating user object %s", user.Username)
+			return err
+		}
+
+		log.Infof("fixed URLs for user %s", user.Username)
+
 		return nil
 	}
 
