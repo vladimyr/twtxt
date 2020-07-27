@@ -2,20 +2,28 @@
   <div class="grid">
     <div>
       <hgroup>
-        <h2>{{ .Profile.Username }}</h2>
-        <h3>
-          {{ if $.User.Follows .Profile.TwtURL }}
-            <a href="/unfollow?nick={{ .Profile.Username  }}">
-              <i class="icss-minus"></i>
-              Unfollow
-            </a>
-          {{ else }}
-            <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.TwtURL }}">
-              <i class="icss-plus"></i>
-              Follow
-            </a>
-          {{ end }}
-        </h3>
+        <h2>
+          {{  if $.User.Is .Profile.TwtURL }}
+          me
+          {{ else  }}
+            {{ .Profile.Username }}
+          {{ end}}
+        </h2>
+        {{ if not ($.User.Is .Profile.TwtURL) }}
+          <h3>
+            {{ if $.User.Follows .Profile.TwtURL }}
+              <a href="/unfollow?nick={{ .Profile.Username  }}">
+                <i class="icss-minus"></i>
+                Unfollow
+              </a>
+            {{ else }}
+              <a href="/follow?nick={{ .Profile.Username  }}&url={{ .Profile.TwtURL }}">
+                <i class="icss-plus"></i>
+                Follow
+              </a>
+            {{ end }}
+          </h3>
+        {{ end}}
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
