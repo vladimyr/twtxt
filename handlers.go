@@ -166,7 +166,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 				} else {
 					if !user.FollowedBy(followerClient.URL) {
 						if err := AppendSpecial(
-							s.config.Data,
+							s.config, s.db,
 							"twtxt",
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
@@ -220,10 +220,10 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		switch postas {
 		case "", "me":
-			err = AppendTweet(s.config.Data, text, user)
+			err = AppendTweet(s.config, s.db, user, text)
 		default:
 			if user.OwnsFeed(postas) {
-				err = AppendSpecial(s.config.Data, postas, text)
+				err = AppendSpecial(s.config, s.db, postas, text)
 			} else {
 				err = ErrFeedImposter
 			}
@@ -404,7 +404,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 		}
 
 		if err := AppendSpecial(
-			s.config.Data,
+			s.config, s.db,
 			"twtxt",
 			fmt.Sprintf(
 				"FEED: %s from @<%s %s>",
@@ -634,7 +634,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 				}
 				if err := AppendSpecial(
-					s.config.Data,
+					s.config, s.db,
 					"twtxt",
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
@@ -765,7 +765,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 					}
 				}
 				if err := AppendSpecial(
-					s.config.Data,
+					s.config, s.db,
 					"twtxt",
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",

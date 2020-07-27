@@ -36,6 +36,10 @@ func (bs *BitcaskStore) Close() error {
 	return nil
 }
 
+func (bs *BitcaskStore) HasUser(username string) bool {
+	return bs.db.Has([]byte(fmt.Sprintf("/users/%s", username)))
+}
+
 func (bs *BitcaskStore) DelUser(username string) error {
 	return bs.db.Delete([]byte(fmt.Sprintf("/users/%s", username)))
 }

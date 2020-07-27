@@ -15,6 +15,7 @@ type Store interface {
 	Close() error
 
 	DelUser(username string) error
+	HasUser(username string) bool
 	GetUser(username string) (*User, error)
 	SetUser(username string, user *User) error
 
