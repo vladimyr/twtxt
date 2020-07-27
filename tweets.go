@@ -65,15 +65,17 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 		for followedNick, followedURL := range user.Following {
 			if mentionedNick == followedNick {
 				return fmt.Sprintf("@<%s %s>", followedNick, followedURL)
-			} else if db.HasUser(mentionedNick) {
-				return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, false))
-			} else if FeedExists(conf, mentionedNick) {
-				return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, true))
 			}
 		}
 
-		// Not expanding if we're not following
-		return match
+		if db.HasUser(mentionedNick) {
+			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, false))
+		} else if FeedExists(conf, mentionedNick) {
+			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, true))
+		} else {
+			// Not expanding if we're not following
+			return match
+		}
 	})
 }
 
