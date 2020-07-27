@@ -95,8 +95,5 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 }
 
 func (ctx Context) IsLocal(url string) bool {
-	if NormalizeURL(url) == "" {
-		return false
-	}
 	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(ctx.BaseURL))
 }
