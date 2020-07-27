@@ -135,5 +135,30 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *FixUserAccountsJob) Run() {
-	// Nothing to do here
+	fixMissingUserFeeds := func(username string, feeds []string) error {
+		user, err := job.db.GetUser(username)
+		if err != nil {
+			log.WithError(err).Errorf("error loading user object for %s", username)
+			return err
+		}
+
+		user.Feeds = feeds
+
+		if err := job.db.SetUser(username, user); err != nil {
+			log.WithError(err).Errorf("error updating user object %s", username)
+			return err
+		}
+
+		log.Infof("fixed missing feeds for %s", username)
+
+		return nil
+	}
+
+	// Fix missing Feeds for @rob @kt84
+	if err := fixMissingUserFeeds("kt84", []string{"recipes", "local_wonders"}); err != nil {
+		log.WithError(err).Errorf("error fixing missing user feeds")
+	}
+	if err := fixMissingUserFeeds("rob", []string{"off_grid_living"}); err != nil {
+		log.WithError(err).Errorf("error fixing missing user feeds")
+	}
 }
