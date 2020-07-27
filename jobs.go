@@ -12,6 +12,7 @@ var Jobs map[string]JobFactory
 
 func init() {
 	Jobs = map[string]JobFactory{
+		"@every 1m":  NewSyncStoreJob,
 		"@every 5m":  NewUpdateFeedsJob,
 		"@every 15m": NewUpdateFeedSourcesJob,
 		"@hourly":    NewFixUserAccountsJob,
@@ -20,6 +21,22 @@ func init() {
 }
 
 type JobFactory func(conf *Config, store Store) cron.Job
+
+type SyncStoreJob struct {
+	conf *Config
+	db   Store
+}
+
+func NewSyncStoreJob(conf *Config, db Store) cron.Job {
+	return &SyncStoreJob{conf: conf, db: db}
+}
+
+func (job *SyncStoreJob) Run() {
+	if err := job.db.Sync(); err != nil {
+		log.WithError(err).Error("error sycning store")
+	}
+	log.Info("synced store")
+}
 
 type StatsJob struct {
 	conf *Config

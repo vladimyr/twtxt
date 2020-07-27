@@ -21,6 +21,11 @@ func newBitcaskStore(path string) (*BitcaskStore, error) {
 	return &BitcaskStore{db: db}, nil
 }
 
+// Sync ...
+func (bs *BitcaskStore) Sync() error {
+	return bs.db.Sync()
+}
+
 // Close ...
 func (bs *BitcaskStore) Close() error {
 	log.Info("syncing store ...")

@@ -13,6 +13,7 @@ var (
 
 type Store interface {
 	Close() error
+	Sync() error
 
 	DelUser(username string) error
 	HasUser(username string) bool
