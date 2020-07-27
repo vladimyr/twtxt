@@ -23,11 +23,13 @@ func newBitcaskStore(path string) (*BitcaskStore, error) {
 
 // Close ...
 func (bs *BitcaskStore) Close() error {
+	log.Info("syncing store ...")
 	if err := bs.db.Sync(); err != nil {
 		log.WithError(err).Error("error syncing store")
 		return err
 	}
 
+	log.Info("closing store ...")
 	if err := bs.db.Close(); err != nil {
 		log.WithError(err).Error("error closing store")
 		return err
