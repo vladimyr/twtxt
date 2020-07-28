@@ -234,9 +234,9 @@ func (job *FixUserAccountsJob) Run() {
 			return err
 		}
 
-		for _, specialUser := range specialUsernames {
-			if !adminUser.OwnsFeed(specialUser) {
-				adminUser.Feeds = append(adminUser.Feeds, specialUser)
+		for _, feed := range specialUsernames {
+			if err := CreateFeed(job.conf, job.db, adminUser, feed, true); err != nil {
+				log.WithError(err).Warnf("error creating new feed %s for adminUser", feed)
 			}
 		}
 
@@ -253,8 +253,8 @@ func (job *FixUserAccountsJob) Run() {
 		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
 	}
 
-	// Create twtxtBots and specialUsernames feeds
-	for _, feed := range append(specialUsernames, twtxtBots...) {
+	// Create twtxtBots feeds
+	for _, feed := range twtxtBots {
 		if err := CreateFeed(job.conf, job.db, nil, feed, true); err != nil {
 			log.WithError(err).Warnf("error creating new feed %s", feed)
 		}
