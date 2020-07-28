@@ -30,9 +30,10 @@ func NewTemplates() (*Templates, error) {
 	templates := make(map[string]*template.Template)
 
 	funcMap := map[string]interface{}{
-		"Time":        humanize.Time,
-		"StripTwtURL": StripTwtURL,
-		"FormatTweet": FormatTweet,
+		"Time":           humanize.Time,
+		"StripTwtURL":    StripTwtURL,
+		"FormatTweet":    FormatTweet,
+		"StripURISchema": StripURISchema,
 	}
 
 	box, err := rice.FindBox("templates")

@@ -131,14 +131,14 @@ func NewUpdateFeedSourcesJob(conf *Config, db Store) cron.Job {
 func (job *UpdateFeedSourcesJob) Run() {
 	log.Infof("updating %d feed sources", len(job.conf.FeedSources))
 
-	feeds := FetchFeeds(job.conf.FeedSources)
+	feedsources := FetchFeedSources(job.conf.FeedSources)
 
-	log.Infof("fetched %d feeds", len(feeds))
+	log.Infof("fetched %d feed sources", len(feedsources.Sources))
 
-	if err := SaveFeeds(feeds, job.conf.Data); err != nil {
-		log.WithError(err).Warn("error saving feeds")
+	if err := SaveFeedSources(feedsources, job.conf.Data); err != nil {
+		log.WithError(err).Warn("error saving feed sources")
 	} else {
-		log.Info("updated feeds")
+		log.Info("updated feed sources")
 	}
 }
 
@@ -234,9 +234,9 @@ func (job *FixUserAccountsJob) Run() {
 			return err
 		}
 
-		for _, specialUser := range specialUsernames {
-			if !adminUser.OwnsFeed(specialUser) {
-				adminUser.Feeds = append(adminUser.Feeds, specialUser)
+		for _, feed := range specialUsernames {
+			if err := CreateFeed(job.conf, job.db, adminUser, feed, true); err != nil {
+				log.WithError(err).Warnf("error creating new feed %s for adminUser", feed)
 			}
 		}
 
@@ -252,4 +252,12 @@ func (job *FixUserAccountsJob) Run() {
 	if err := fixAdminUser(); err != nil {
 		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
 	}
+
+	// Create twtxtBots feeds
+	for _, feed := range twtxtBots {
+		if err := CreateFeed(job.conf, job.db, nil, feed, true); err != nil {
+			log.WithError(err).Warnf("error creating new feed %s", feed)
+		}
+	}
+
 }

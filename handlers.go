@@ -59,18 +59,38 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		nick = NormalizeUsername(nick)
 
-		userProfile, err := s.db.GetUser(nick)
-		if err != nil {
-			log.WithError(err).Errorf("error loading user object for %s", nick)
+		var profile Profile
+
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = user.Profile()
+		} else if s.db.HasFeed(nick) {
+			feed, err := s.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+			profile = feed.Profile()
+		} else {
 			ctx.Error = true
-			ctx.Message = "Error loading profile"
-			s.render("error", w, ctx)
+			ctx.Message = "User or Feed Not Found"
+			s.render("404", w, ctx)
 			return
 		}
 
-		ctx.Profile = userProfile
+		ctx.Profile = profile
 
-		tweets, err := GetUserTweets(s.config, userProfile.Username)
+		tweets, err := GetUserTweets(s.config, profile.Username)
 		if err != nil {
 			log.WithError(err).Error("error loading tweets")
 			ctx.Error = true
@@ -194,7 +214,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					if !user.FollowedBy(followerClient.URL) {
 						if err := AppendSpecial(
 							s.config, s.db,
-							"twtxt",
+							twtxtBot,
 							fmt.Sprintf(
 								"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 								nick, URLForUser(s.config.BaseURL, nick, true),
@@ -414,7 +434,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		if err := ctx.User.CreateFeed(s.config.Data, name); err != nil {
+		if err := CreateFeed(s.config, s.db, ctx.User, name, false); err != nil {
 			ctx.Error = true
 			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
 			s.render("error", w, ctx)
@@ -432,10 +452,11 @@ func (s *Server) FeedHandler() httprouter.Handle {
 
 		if err := AppendSpecial(
 			s.config, s.db,
-			"twtxt",
+			twtxtBot,
 			fmt.Sprintf(
-				"FEED: %s from @<%s %s>",
-				name, ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
+				"FEED: @<%s %s> from @<%s %s>",
+				name, URLForUser(s.config.BaseURL, name, false),
+				ctx.User.Username, URLForUser(s.config.BaseURL, ctx.User.Username, false),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special FOLLOW post")
@@ -453,7 +474,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		feeds, err := LoadFeeds(s.config.Data)
+		feedsources, err := LoadFeedSources(s.config.Data)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading feed "
@@ -461,7 +482,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Feeds = feeds
+		ctx.FeedSources = feedsources.Sources
 
 		s.render("feeds", w, ctx)
 	}
@@ -565,9 +586,9 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := s.db.GetUser(username); err == nil {
+		if s.db.HasUser(username) || s.db.HasFeed(username) {
 			ctx.Error = true
-			ctx.Message = "User with that username already exists! Please pick another!"
+			ctx.Message = "User or Feed with that name already exists! Please pick another!"
 			s.render("error", w, ctx)
 			return
 		}
@@ -662,7 +683,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config, s.db,
-					"twtxt",
+					twtxtBot,
 					fmt.Sprintf(
 						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),
@@ -793,7 +814,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 				}
 				if err := AppendSpecial(
 					s.config, s.db,
-					"twtxt",
+					twtxtBot,
 					fmt.Sprintf(
 						"UNFOLLOW: @<%s %s> from @<%s %s> using %s/%s",
 						followee.Username, URLForUser(s.config.BaseURL, followee.Username, false),

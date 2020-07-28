@@ -21,17 +21,17 @@ type Context struct {
 
 	Username      string
 	User          *User
-	Profile       *User
+	Profile       Profile
 	Authenticated bool
 
 	Error   bool
 	Message string
 	Theme   string
 
-	Tweeter Tweeter
-	Tweets  Tweets
-	Feeds   Feeds
-	Pager   paginator.Paginator
+	Tweeter     Tweeter
+	Tweets      Tweets
+	FeedSources FeedSourceMap
+	Pager       paginator.Paginator
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {

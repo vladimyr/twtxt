@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -21,6 +22,10 @@ const (
 	helpSpecialUser    = "help"
 	supportSpecialUser = "support"
 
+	me       = "me"
+	twtxtBot = "twtxt"
+	statsBot = "stats"
+
 	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
 	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
 )
@@ -32,7 +37,13 @@ var (
 		supportSpecialUser,
 	}
 	reservedUsernames = []string{
-		"me", "stats", "twtxt",
+		me,
+		statsBot,
+		twtxtBot,
+	}
+	twtxtBots = []string{
+		statsBot,
+		twtxtBot,
 	}
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)
@@ -129,6 +140,16 @@ func NormalizeURL(url string) string {
 		return ""
 	}
 	return norm
+}
+
+func StripURISchema(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Warn("StripURISchema(): error parsing url: %s", uri)
+		return uri
+	}
+
+	return fmt.Sprintf("%s/%s", u.Hostname(), strings.TrimPrefix(u.EscapedPath(), "/"))
 }
 
 func StripTwtURL(url string) string {
