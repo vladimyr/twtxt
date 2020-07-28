@@ -29,7 +29,7 @@
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
             <li>TwtURL: <a href="{{ .Profile.TwtURL }}">{{ .Profile.TwtURL }}</a></li>
-            <li>Followers: {{ .Profile.Followers | len }}</li>
+            <li><a href="/user/{{ .User.Username }}/followers">Followers: {{ .Profile.Followers | len }}</a></li>
             <li>Following: {{ .Profile.Following | len }}</li>
           </ul>
         </footer>

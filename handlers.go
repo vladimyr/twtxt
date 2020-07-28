@@ -916,7 +916,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			return
 		}
 
-		if !user.IsFollowersPubliclyVisible && user.Username != ctx.User.Username {
+		if !user.IsFollowersPubliclyVisible && !ctx.User.Is(user.TwtURL) {
 			s.render("404", w, ctx)
 			return
 		}
