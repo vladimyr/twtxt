@@ -44,7 +44,7 @@ func (ms *MemoryStore) Get(sid SessionID, state SessionData) error {
 	if !found {
 		return ErrStateNotFound
 	}
-	return json.Unmarshal(j.([]byte), state)
+	return json.Unmarshal(j.([]byte), &state)
 }
 
 //Delete deletes all state data associated with the session id from the store.
