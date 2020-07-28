@@ -226,16 +226,6 @@ func (job *FixUserAccountsJob) Run() {
 		}
 	*/
 
-	fixUserFeed := func(user *User) error {
-		var err error
-		for _, feed := range user.Feeds {
-			if err = CreateFeed(job.conf, job.db, user, feed, true); err != nil {
-				log.WithError(err).Warnf("error creating new feed %s for user %s", feed, user.Username)
-			}
-		}
-		return err
-	}
-
 	fixAdminUser := func() error {
 		log.Infof("fixing adminUser account %s", job.conf.AdminUser)
 		adminUser, err := job.db.GetUser(job.conf.AdminUser)
@@ -263,15 +253,10 @@ func (job *FixUserAccountsJob) Run() {
 		log.WithError(err).Warnf("error fixing adminUser %s", job.conf.AdminUser)
 	}
 
-	// Fix Feeds
-	users, err := job.db.GetAllUsers()
-	if err != nil {
-		log.WithError(err).Warnf("error loading all user objects")
-	} else {
-		for _, user := range users {
-			if err := fixUserFeed(user); err != nil {
-				log.WithError(err).Warnf("error fixing user feed for %s", user.Username)
-			}
+	// Create twtxtBots and specialUsernames feeds
+	for _, feed := range append(specialUsernames, twtxtBots...) {
+		if err := CreateFeed(job.conf, job.db, nil, feed, true); err != nil {
+			log.WithError(err).Warnf("error creating new feed %s", feed)
 		}
 	}
 

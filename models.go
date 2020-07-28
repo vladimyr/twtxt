@@ -50,27 +50,35 @@ type User struct {
 }
 
 func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
-	if !force && len(user.Feeds) > maxUserFeeds {
-		return ErrTooManyFeeds
+	if user != nil {
+		if !force && len(user.Feeds) > maxUserFeeds {
+			return ErrTooManyFeeds
+		}
 	}
 
 	fn := filepath.Join(conf.Data, feedsDir, name)
-	_, err := os.Stat(fn)
+	stat, err := os.Stat(fn)
 
 	if err == nil && !force {
 		return ErrFeedAlreadyExists
 	}
 
-	if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
-		return err
+	if stat == nil {
+		if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+			return err
+		}
 	}
 
-	if !user.OwnsFeed(name) {
-		user.Feeds = append(user.Feeds, name)
+	if user != nil {
+		if !user.OwnsFeed(name) {
+			user.Feeds = append(user.Feeds, name)
+		}
 	}
 
 	followers := make(map[string]string)
-	followers[user.Username] = user.TwtURL
+	if user != nil {
+		followers[user.Username] = user.TwtURL
+	}
 
 	f := &Feed{
 		Name:        name,
@@ -85,7 +93,9 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 		return err
 	}
 
-	user.Follow(name, f.TwtURL)
+	if user != nil {
+		user.Follow(name, f.TwtURL)
+	}
 
 	return nil
 }

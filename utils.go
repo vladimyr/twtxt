@@ -41,6 +41,10 @@ var (
 		statsBot,
 		twtxtBot,
 	}
+	twtxtBots = []string{
+		statsBot,
+		twtxtBot,
+	}
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
