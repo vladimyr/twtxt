@@ -3,6 +3,7 @@ package twtxt
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image/png"
@@ -893,14 +894,12 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 
 		nick := NormalizeUsername(p.ByName("nick"))
 
-
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
 		user, err := s.db.GetUser(nick)
-
 
 		if err != nil {
 			ctx.Error = true

@@ -24,7 +24,7 @@ type User struct {
 	Tagline                    string
 	Email                      string
 	URL                        string
-	TwtURL    string
+	TwtURL                     string
 	CreatedAt                  time.Time
 	IsFollowersPubliclyVisible bool
 
