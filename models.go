@@ -49,13 +49,15 @@ type User struct {
 	sources map[string]string
 }
 
-func CreateFeed(conf *Config, db Store, user *User, name string) error {
-	if len(user.Feeds) > maxUserFeeds {
+func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
+	if !force && len(user.Feeds) > maxUserFeeds {
 		return ErrTooManyFeeds
 	}
 
 	fn := filepath.Join(conf.Data, feedsDir, name)
-	if _, err := os.Stat(fn); err == nil {
+	_, err := os.Stat(fn)
+
+	if err == nil && !force {
 		return ErrFeedAlreadyExists
 	}
 
@@ -63,7 +65,9 @@ func CreateFeed(conf *Config, db Store, user *User, name string) error {
 		return err
 	}
 
-	user.Feeds = append(user.Feeds, name)
+	if !user.OwnsFeed(name) {
+		user.Feeds = append(user.Feeds, name)
+	}
 
 	followers := make(map[string]string)
 	followers[user.Username] = user.TwtURL

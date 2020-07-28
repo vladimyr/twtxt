@@ -229,7 +229,7 @@ func (job *FixUserAccountsJob) Run() {
 	fixUserFeed := func(user *User) error {
 		var err error
 		for _, feed := range user.Feeds {
-			if err = CreateFeed(job.conf, job.db, user, feed); err != nil {
+			if err = CreateFeed(job.conf, job.db, user, feed, true); err != nil {
 				log.WithError(err).Warnf("error creating new feed %s for user %s", feed, user.Username)
 			}
 		}

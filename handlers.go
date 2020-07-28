@@ -433,7 +433,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		if err := CreateFeed(s.config, s.db, ctx.User, name); err != nil {
+		if err := CreateFeed(s.config, s.db, ctx.User, name, false); err != nil {
 			ctx.Error = true
 			ctx.Message = fmt.Sprintf("Error creating: %s", err.Error())
 			s.render("error", w, ctx)
