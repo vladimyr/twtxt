@@ -21,7 +21,7 @@ type Context struct {
 
 	Username      string
 	User          *User
-	Profile       *User
+	Profile       Profile
 	Authenticated bool
 
 	Error   bool

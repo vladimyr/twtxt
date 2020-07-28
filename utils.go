@@ -22,6 +22,10 @@ const (
 	helpSpecialUser    = "help"
 	supportSpecialUser = "support"
 
+	me       = "me"
+	twtxtBot = "twtxt"
+	statsBot = "stats"
+
 	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
 	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
 )
@@ -33,7 +37,9 @@ var (
 		supportSpecialUser,
 	}
 	reservedUsernames = []string{
-		"me", "stats", "twtxt",
+		me,
+		statsBot,
+		twtxtBot,
 	}
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_ ]*$`)

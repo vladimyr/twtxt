@@ -87,10 +87,8 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 			}
 		}
 
-		if db.HasUser(mentionedNick) {
+		if db.HasUser(mentionedNick) || db.HasFeed(mentionedNick) {
 			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, false))
-		} else if FeedExists(conf, mentionedNick) {
-			return fmt.Sprintf("@<%s %s>", mentionedNick, URLForUser(conf.BaseURL, mentionedNick, true))
 		} else {
 			// Not expanding if we're not following
 			return match

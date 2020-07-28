@@ -30,7 +30,9 @@
           <ul>
             <li>TwtURL: <a href="{{ .Profile.TwtURL }}">{{ .Profile.TwtURL }}</a></li>
             <li>Followers: {{ .Profile.Followers | len }}</li>
-            <li>Following: {{ .Profile.Following | len }}</li>
+            {{ if eq .Profile.Type "User" }}
+              <li>Following: {{ .Profile.Following | len }}</li>
+            {{ end}}
           </ul>
         </footer>
       </hgroup>
