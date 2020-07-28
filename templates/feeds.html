@@ -40,19 +40,25 @@
           </p>
         </footer>
       </hgroup>
-      <ul>
-        {{ range .Feeds }}
-          <li>
-            <a href="{{ .URL }}">{{ .Name }}</a>
-            &nbsp;
-            {{ if $.User.Follows .URL }}
-              [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-            {{ else }}
-              [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-            {{ end }}
-          </li>
-        {{ end }}
-      </ul>
+      {{ range $Source, $Feeds := .FeedSources }}
+        <hgroup>
+          <h3>{{ $Source | StripURISchema }}</h3>
+          <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
+        </hgroup>
+        <ul>
+          {{ range $Feeds }}
+            <li>
+              <a href="{{ .URL }}">{{ .Name }}</a>
+              &nbsp;
+              {{ if $.User.Follows .URL }}
+                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+              {{ else }}
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+              {{ end }}
+            </li>
+          {{ end }}
+        </ul>
+      {{ end}}
     </div>
   </article>
 {{end}}

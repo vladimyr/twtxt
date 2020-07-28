@@ -452,7 +452,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		feeds, err := LoadFeeds(s.config.Data)
+		feedsources, err := LoadFeedSources(s.config.Data)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading feed "
@@ -460,7 +460,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Feeds = feeds
+		ctx.FeedSources = feedsources.Sources
 
 		s.render("feeds", w, ctx)
 	}

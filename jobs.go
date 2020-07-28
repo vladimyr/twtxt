@@ -131,14 +131,14 @@ func NewUpdateFeedSourcesJob(conf *Config, db Store) cron.Job {
 func (job *UpdateFeedSourcesJob) Run() {
 	log.Infof("updating %d feed sources", len(job.conf.FeedSources))
 
-	feeds := FetchFeeds(job.conf.FeedSources)
+	feedsources := FetchFeedSources(job.conf.FeedSources)
 
-	log.Infof("fetched %d feeds", len(feeds))
+	log.Infof("fetched %d feed sources", len(feedsources.Sources))
 
-	if err := SaveFeeds(feeds, job.conf.Data); err != nil {
-		log.WithError(err).Warn("error saving feeds")
+	if err := SaveFeedSources(feedsources, job.conf.Data); err != nil {
+		log.WithError(err).Warn("error saving feed sources")
 	} else {
-		log.Info("updated feeds")
+		log.Info("updated feed sources")
 	}
 }
 

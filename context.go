@@ -28,10 +28,10 @@ type Context struct {
 	Message string
 	Theme   string
 
-	Tweeter Tweeter
-	Tweets  Tweets
-	Feeds   Feeds
-	Pager   paginator.Paginator
+	Tweeter     Tweeter
+	Tweets      Tweets
+	FeedSources FeedSourceMap
+	Pager       paginator.Paginator
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {

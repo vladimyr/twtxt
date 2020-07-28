@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -129,6 +130,16 @@ func NormalizeURL(url string) string {
 		return ""
 	}
 	return norm
+}
+
+func StripURISchema(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Warn("StripURISchema(): error parsing url: %s", uri)
+		return uri
+	}
+
+	return fmt.Sprintf("%s/%s", u.Hostname(), strings.TrimPrefix(u.EscapedPath(), "/"))
 }
 
 func StripTwtURL(url string) string {
