@@ -585,9 +585,9 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		if _, err := s.db.GetUser(username); err == nil {
+		if s.db.HasUser(username) || s.db.HasFeed(username) {
 			ctx.Error = true
-			ctx.Message = "User with that username already exists! Please pick another!"
+			ctx.Message = "User or Feed with that name already exists! Please pick another!"
 			s.render("error", w, ctx)
 			return
 		}
