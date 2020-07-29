@@ -310,7 +310,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
 	}
 }
 

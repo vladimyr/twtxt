@@ -146,6 +146,15 @@ func NormalizeURL(url string) string {
 	return norm
 }
 
+func RedirectURL(r *http.Request, conf *Config, defaultURL string) string {
+	referer := NormalizeURL(r.Header.Get("Referer"))
+	if referer != "" && strings.HasPrefix(referer, conf.BaseURL) {
+		return referer
+	}
+
+	return defaultURL
+}
+
 func PrettyURL(uri string) string {
 	u, err := url.Parse(uri)
 	if err != nil {
