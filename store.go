@@ -3,6 +3,8 @@ package twtxt
 import (
 	"errors"
 	"fmt"
+
+	"github.com/prologic/twtxt/session"
 )
 
 var (
@@ -29,8 +31,11 @@ type Store interface {
 	GetAllFeeds() ([]*Feed, error)
 	GetAllUsers() ([]*User, error)
 
-	GetSession(sid string) (*Session, error)
-	SetSession(sid string, session *Session) error
+	GetSession(sid string) (*session.Session, error)
+	SetSession(sid string, sess *session.Session) error
+	HasSession(sid string) bool
+	DelSession(sid string) error
+	SyncSession(sess *session.Session) error
 }
 
 func NewStore(store string) (Store, error) {
