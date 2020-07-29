@@ -38,7 +38,7 @@
           {{ range $Nick, $URL := .User.Followers }}
             <li>
               {{ if $.User.Is $URL }}
-                <a href="{{ $.User.URL }}">me</a>
+                <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">me</a>
               {{ else }}
                 {{ if $.IsLocal $URL }}
                   <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
@@ -74,7 +74,7 @@
           {{ range $Nick, $URL := .User.Following }}
             <li>
               {{ if $.User.Is $URL }}
-                <a href="{{ $URL }}">me</a>
+                <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">me</a>
               {{ else }}
                 {{ if $.IsLocal $URL }}
                   <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>

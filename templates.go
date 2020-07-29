@@ -33,7 +33,6 @@ func NewTemplates(conf *Config) (*Templates, error) {
 	funcMap := sprig.FuncMap()
 
 	funcMap["time"] = humanize.Time
-	funcMap["userURL"] = UserURL
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["formatTweet"] = FormatTweetFactory(conf)
 

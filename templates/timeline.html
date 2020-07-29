@@ -31,13 +31,13 @@
         <hgroup>
           <h2>
             {{ if $.User.Is .Tweeter.URL }}
-              <a href="{{ $.User.URL | userURL }}">
+              <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">
                 <img src="/user/{{ $.User.Username }}/avatar.png" />
                 me
               </a>
             {{ else }}
               {{ if $.IsLocal .Tweeter.URL }}
-                <a href="{{ .Tweeter.URL }}">
+                <a href="{{ .Tweeter.URL | trimSuffix "/twtxt.txt" }}">
                   <img src="/user/{{ .Tweeter.Nick }}/avatar.png" />
               {{ else }}
                 <a href="{{ .Tweeter.URL }}">
