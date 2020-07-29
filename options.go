@@ -38,6 +38,15 @@ const (
 
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
+
+	// DefaultMagicLinkSecret is the jwt magic link secret
+	DefaultMagicLinkSecret = "PLEASE_CHANGE_ME!!!"
+
+	// Default SMTP configuration
+	DefaultSMTPHost = "smtp.gmail.com"
+	DefaultSMTPPort = 587
+	DefaultSMTPUser = "PLEASE_CHANGE_ME!!!"
+	DefaultSMTPPass = "PLEASE_CHANGE_ME!!!"
 )
 
 var (
@@ -73,6 +82,11 @@ func NewConfig() *Config {
 		TweetsPerPage:   DefaultTweetsPerPage,
 		MaxTweetLength:  DefaultMaxTweetLength,
 		SessionExpiry:   DefaultSessionExpiry,
+		MagicLinkSecret: DefaultMagicLinkSecret,
+		SMTPHost:        DefaultSMTPHost,
+		SMTPPort:        DefaultSMTPPort,
+		SMTPUser:        DefaultSMTPUser,
+		SMTPPass:        DefaultSMTPPass,
 	}
 }
 
@@ -171,6 +185,46 @@ func WithMaxTweetLength(maxTweetLength int) Option {
 func WithSessionExpiry(expiry time.Duration) Option {
 	return func(cfg *Config) error {
 		cfg.SessionExpiry = expiry
+		return nil
+	}
+}
+
+// WithMagicLinkSecret sets the MagicLinkSecert used to create password reset tokens
+func WithMagicLinkSecret(secret string) Option {
+	return func(cfg *Config) error {
+		cfg.MagicLinkSecret = secret
+		return nil
+	}
+}
+
+// WithSMTPHost sets the SMTPHost to use for sending email
+func WithSMTPHost(host string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPHost = host
+		return nil
+	}
+}
+
+// WithSMTPPort sets the SMTPPort to use for sending email
+func WithSMTPPort(port int) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPPort = port
+		return nil
+	}
+}
+
+// WithSMTPUser sets the SMTPUser to use for sending email
+func WithSMTPUser(user string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPUser = user
+		return nil
+	}
+}
+
+// WithSMTPPass sets the SMTPPass to use for sending email
+func WithSMTPPass(pass string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPPass = pass
 		return nil
 	}
 }

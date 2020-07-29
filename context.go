@@ -34,6 +34,9 @@ type Context struct {
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator
+
+	// Reset Password Token
+	PasswordResetToken	string
 }
 
 func NewContext(conf *Config, db Store, req *http.Request) *Context {
