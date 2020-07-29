@@ -28,7 +28,7 @@
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
           <ul>
-            <li><a href="/user/{{ .User.Username }}/followers">Followers: {{ .Profile.Followers | len }}</a></li>
+            <li><a href="/user/{{ .Profile.Username }}/followers">Followers: {{ .Profile.Followers | len }}</a></li>
             {{ if eq .Profile.Type "User" }}
               <li>Following: {{ .Profile.Following | len }}</li>
             {{ end}}
