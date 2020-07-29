@@ -156,6 +156,8 @@ func (f *Feed) FollowedBy(url string) bool {
 
 func (f *Feed) Profile() Profile {
 	return Profile{
+		Type: "feed",
+
 		Username: f.Name,
 		Tagline:  f.Description,
 		URL:      f.URL,
@@ -212,6 +214,8 @@ func (u *User) Sources() map[string]string {
 
 func (u *User) Profile() Profile {
 	return Profile{
+		Type: "user",
+
 		Username: u.Username,
 		Tagline:  u.Tagline,
 		URL:      u.URL,
