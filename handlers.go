@@ -856,8 +856,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			return
 		}
 
-		password := r.FormValue("password")
+		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
+		password := r.FormValue("password")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
 		user := ctx.User
@@ -876,6 +877,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			user.Password = hash
 		}
 
+		user.Email = email
 		user.Tagline = tagline
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 

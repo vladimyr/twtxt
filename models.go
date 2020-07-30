@@ -31,12 +31,13 @@ type Feed struct {
 }
 
 type User struct {
-	Username                   string
-	Password                   string
-	Tagline                    string
-	Email                      string
-	URL                        string
-	CreatedAt                  time.Time
+	Username  string
+	Password  string
+	Tagline   string
+	Email     string
+	URL       string
+	CreatedAt time.Time
+
 	IsFollowersPubliclyVisible bool
 
 	Feeds []string
