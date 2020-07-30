@@ -12,81 +12,70 @@
     <title>twtxt :: {{ .InstanceName }}</title>
   </head>
 <body>
-  <nav class="container-fluid">
-    <ul>
-      <li>
-        <a href="/">
-          <i class="icss-home"></i>
-          twtxt
-        </a>
-      </li>
+  
+  <div class="nav">
+    <input type="checkbox" id="nav-check">
+    <div class="nav-header">
+      <div class="nav-title">
+        <a href="/"><i class="icss-home"></i>twtxt</a>
+      </div>
+    </div>
+    <div class="nav-btn">
+      <label for="nav-check">
+        <span></span>
+        <span></span>
+        <span></span>
+      </label>
+    </div>    
+    <div class="nav-links">
       {{ if .Authenticated }}
-        <li>
-          <a href="/discover">
-            <i class="icss-users"></i>
-            /discover
-          </a>
-        </li>
-        <li>
-          <a href="/feeds">
-            <i class="icss-rss"></i>
-            /feeds
-          </a>
-        </li>
+      <a href="/discover">
+        <i class="icss-users"></i>
+        /discover
+      </a>
+      <a href="/feeds">
+        <i class="icss-rss"></i>
+        /feeds
+      </a>
       {{ end }}
-    </ul>
-    <ul>
       {{ if .Authenticated }}
-        <li>
-          <a href="/follow">
-            <i class="icss-plus"></i>
-            /follow
-          </a>
-        </li>
-        <li>
-          <a class="secondary" href="/settings">
-            <i class="icss-gear"></i>
-            /settings
-          </a>
-        </li>
-        <li>
-          <a class="secondary" href="/logout">
-            <i class="icss-exit"></i>
-            /logout
-          </a>
-        </li>
+      <a href="/follow">
+        <i class="icss-plus"></i>
+        /follow
+      </a>   
+      <a class="secondary" href="/settings">
+        <i class="icss-gear"></i>
+        /settings
+      </a>   
+
+      <a class="secondary" href="/logout">
+        <i class="icss-exit"></i>
+        /logout
+      </a>
       {{ else }}
-        <li>
-          <a href="/login">
-            <i class="icss-key"></i>
-            /login
-          </a>
-        </li>
-        {{ if .RegisterDisabled }}
-          <li>
-            <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
-              <i class="icss-warning" style="color:red;"></i>
-              /register
-            </a>
-          </li>
-        {{ else }}
-          <li>
-            <a href="/register">
-              <i class="icss-smiley"></i>
-              /register
-            </a>
-          </li>
-        {{ end }}
+      <a href="/login">
+        <i class="icss-key"></i>
+        /login
+      </a>
+      {{ if .RegisterDisabled }}
+      <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
+        <i class="icss-warning" style="color:red;"></i>
+        /register
+      </a>
+      {{ else }}
+      <a href="/register">
+        <i class="icss-smiley"></i>
+        /register
+      </a>
       {{ end }}
-    </ul>
-    <ul>
-      <li>
-        <a href="https://github.com/prologic/twtxt" class="contrast" aria-label="Pico GitHub repository">
-          <i class="icss-github"></i>
-        </a>
-      </li>
-    </ul>
-  </nav>
+      {{ end }}
+      <a href="https://github.com/prologic/twtxt" class="contrast" aria-label="Pico GitHub repository">
+        <i class="icss-github"></i>
+      </a>
+      
+    </div>
+  </div>
+
   <main class="container">
     {{template "content" .}}
   </main>
