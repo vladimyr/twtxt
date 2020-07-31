@@ -7,12 +7,15 @@
     <link href="/css/theme-switcher.css" rel="stylesheet" />
     <link href="/css/twtxt.css" rel="stylesheet" />
     {{ template "stylesheets" . }}
+    <meta charset="UTF-8">
+    <meta name="description" content="📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!">
+    <meta name="keywords" content="twtxt, twt, blog, micro-blogging, social, decentralised">
+    <meta name="author" content="{{ .InstanceName }}">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {{ template "css" . }}
     <title>twtxt :: {{ .InstanceName }}</title>
   </head>
 <body>
-  
   <div class="nav">
     <input type="checkbox" id="nav-check">
     <div class="nav-header">
