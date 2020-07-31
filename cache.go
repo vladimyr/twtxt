@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -141,7 +142,8 @@ func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
-				scanner := bufio.NewScanner(resp.Body)
+				limitedReader := &io.LimitedReader{R: resp.Body, N: conf.MaxFetchLimit}
+				scanner := bufio.NewScanner(limitedReader)
 				tweeter := Tweeter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
 					tweeter.URL = URLForUser(conf.BaseURL, nick)

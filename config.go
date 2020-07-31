@@ -25,11 +25,14 @@ type Config struct {
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 	MagicLinkSecret string        `json:"magiclink_secret"`
-	SMTPHost        string        `json:"smtp_host"`
-	SMTPPort        int           `json:"smtp_port"`
-	SMTPUser        string        `json:"smtp_user"`
-	SMTPPass        string        `json:"smtp_pass"`
-	SMTPFrom        string        `json:"smtp_from"`
+
+	SMTPHost string `json:"smtp_host"`
+	SMTPPort int    `json:"smtp_port"`
+	SMTPUser string `json:"smtp_user"`
+	SMTPPass string `json:"smtp_pass"`
+	SMTPFrom string `json:"smtp_from"`
+
+	MaxFetchLimit int64 `json:"max_fetch_limit"`
 }
 
 // RandomTweetPrompt returns a random  Tweet Prompt for display by the UI

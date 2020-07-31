@@ -11,6 +11,7 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
+	humanize "github.com/dustin/go-humanize"
 	"github.com/julienschmidt/httprouter"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -331,6 +332,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("SMTP Port: %d", server.config.SMTPPort)
 	log.Infof("SMTP User: %s", server.config.SMTPUser)
 	log.Infof("SMTP From: %s", server.config.SMTPFrom)
+	log.Infof("Max Fetch Limit: %s", humanize.Bytes(uint64(server.config.MaxFetchLimit)))
 
 	// Warn about user registration being disabled.
 	if !server.config.Register {

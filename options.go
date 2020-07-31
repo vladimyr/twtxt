@@ -48,6 +48,9 @@ const (
 	DefaultSMTPUser = "PLEASE_CHANGE_ME!!!"
 	DefaultSMTPPass = "PLEASE_CHANGE_ME!!!"
 	DefaultSMTPFrom = "PLEASE_CHANGE_ME!!!"
+
+	// Default maximum fetch fetch limit in bytes
+	DefaultMaxFetchLimit = 1 << 21 // ~2MB (or more than enough for a year)
 )
 
 var (
@@ -234,6 +237,14 @@ func WithSMTPPass(pass string) Option {
 func WithSMTPFrom(from string) Option {
 	return func(cfg *Config) error {
 		cfg.SMTPFrom = from
+		return nil
+	}
+}
+
+// WithMaxFetchLimit sets the maximum feed fetch limit in bytes
+func WithMaxFetchLimit(limit int64) Option {
+	return func(cfg *Config) error {
+		cfg.MaxFetchLimit = limit
 		return nil
 	}
 }

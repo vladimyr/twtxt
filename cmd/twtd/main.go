@@ -18,24 +18,27 @@ var (
 	debug   bool
 	version bool
 
-	data            string
-	store           string
-	name            string
-	theme           string
-	register        bool
-	baseURL         string
-	adminUser       string
-	feedSources     []string
-	cookieSecret    string
-	tweetsPerPage   int
-	maxTweetLength  int
-	sessionExpiry   time.Duration
+	data           string
+	store          string
+	name           string
+	theme          string
+	register       bool
+	baseURL        string
+	adminUser      string
+	feedSources    []string
+	cookieSecret   string
+	tweetsPerPage  int
+	maxTweetLength int
+	sessionExpiry  time.Duration
+
 	magiclinkSecret string
 	smtpHost        string
 	smtpPort        int
 	smtpUser        string
 	smtpPass        string
 	smtpFrom        string
+
+	maxFetchLimit int64
 )
 
 func init() {
@@ -63,6 +66,8 @@ func init() {
 	flag.StringVar(&smtpUser, "smtp-user", twtxt.DefaultSMTPUser, "SMTP User to use for email sending")
 	flag.StringVar(&smtpPass, "smtp-pass", twtxt.DefaultSMTPPass, "SMTP Pass to use for email sending")
 	flag.StringVar(&smtpFrom, "smtp-from", twtxt.DefaultSMTPFrom, "SMTP From address to use for email sending")
+
+	flag.Int64Var(&maxFetchLimit, "max-fetch-limit", twtxt.DefaultMaxFetchLimit, "Maximum feed fetch limit in bytes")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -115,11 +120,14 @@ func main() {
 		twtxt.WithSessionExpiry(sessionExpiry),
 		twtxt.WithMaxTweetLength(maxTweetLength),
 		twtxt.WithMagicLinkSecret(magiclinkSecret),
+
 		twtxt.WithSMTPHost(smtpHost),
 		twtxt.WithSMTPPort(smtpPort),
 		twtxt.WithSMTPUser(smtpUser),
 		twtxt.WithSMTPPass(smtpPass),
 		twtxt.WithSMTPFrom(smtpFrom),
+
+		twtxt.WithMaxFetchLimit(maxFetchLimit),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")
