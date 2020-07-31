@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/robfig/cron"
@@ -153,6 +154,35 @@ func NewFixUserAccountsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *FixUserAccountsJob) Run() {
+	fixPossibleFeedFollowers := func(user *User) error {
+		baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
+
+		for _, url := range user.Following {
+			url = NormalizeURL(url)
+			if strings.HasPrefix(url, baseURL) {
+				url = strings.TrimSuffix(url, "/twtxt.txt")
+				feedName := NormalizeFeedName(filepath.Base(url))
+				if job.db.HasFeed(feedName) {
+					feed, err := job.db.GetFeed(feedName)
+					if err != nil {
+						log.WithError(err).Warnf("error loading feed object for %s", feedName)
+						return err
+					}
+
+					if !feed.FollowedBy(user.URL) {
+						feed.Followers[user.Username] = user.URL
+					}
+
+					if err := job.db.SetFeed(feedName, feed); err != nil {
+						log.WithError(err).Warnf("error updating feed object for %s", feedName)
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	}
+
 	fixUserURLs := func(user *User) error {
 		baseURL := NormalizeURL(strings.TrimSuffix(job.conf.BaseURL, "/"))
 
@@ -262,4 +292,13 @@ func (job *FixUserAccountsJob) Run() {
 		}
 	}
 
+	if err != nil {
+		log.WithError(err).Warnf("error loading all user objects")
+	} else {
+		for _, user := range users {
+			if err := fixPossibleFeedFollowers(user); err != nil {
+				log.WithError(err).Warnf("error fixing possible feed followers for user %s", user.Username)
+			}
+		}
+	}
 }
