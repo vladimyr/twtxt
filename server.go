@@ -327,6 +327,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("User Registrationg: %t", server.config.Register)
 	log.Infof("Max Tweets per Page: %d", server.config.TweetsPerPage)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTweetLength)
+	log.Infof("SMTP Host: %s", server.config.SMTPHost)
+	log.Infof("SMTP Port: %d", server.config.SMTPPort)
+	log.Infof("SMTP User: %s", server.config.SMTPUser)
+	log.Infof("SMTP From: %s", server.config.SMTPFrom)
 
 	// Warn about user registration being disabled.
 	if !server.config.Register {
