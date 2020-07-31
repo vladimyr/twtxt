@@ -29,6 +29,7 @@ type Config struct {
 	SMTPPort        int           `json:"smtp_port"`
 	SMTPUser        string        `json:"smtp_user"`
 	SMTPPass        string        `json:"smtp_pass"`
+	SMTPFrom        string        `json:"smtp_from"`
 }
 
 // RandomTweetPrompt returns a random  Tweet Prompt for display by the UI

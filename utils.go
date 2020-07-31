@@ -455,7 +455,7 @@ func FormatRequest(r *http.Request) string {
 
 func (c *Config) SendEmail(recipients []string, subject string, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "noreply@mills.io")
+	m.SetHeader("From", c.SMTPFrom)
 	m.SetHeader("To", recipients...)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/html", body)

@@ -35,6 +35,7 @@ var (
 	smtpPort        int
 	smtpUser        string
 	smtpPass        string
+	smtpFrom        string
 )
 
 func init() {
@@ -61,6 +62,7 @@ func init() {
 	flag.IntVar(&smtpPort, "smtp-port", twtxt.DefaultSMTPPort, "SMTP Port to use for email sending")
 	flag.StringVar(&smtpUser, "smtp-user", twtxt.DefaultSMTPUser, "SMTP User to use for email sending")
 	flag.StringVar(&smtpPass, "smtp-pass", twtxt.DefaultSMTPPass, "SMTP Pass to use for email sending")
+	flag.StringVar(&smtpFrom, "smtp-from", twtxt.DefaultSMTPFrom, "SMTP From address to use for email sending")
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -117,6 +119,7 @@ func main() {
 		twtxt.WithSMTPPort(smtpPort),
 		twtxt.WithSMTPUser(smtpUser),
 		twtxt.WithSMTPPass(smtpPass),
+		twtxt.WithSMTPFrom(smtpFrom),
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")

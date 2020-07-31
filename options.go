@@ -47,6 +47,7 @@ const (
 	DefaultSMTPPort = 587
 	DefaultSMTPUser = "PLEASE_CHANGE_ME!!!"
 	DefaultSMTPPass = "PLEASE_CHANGE_ME!!!"
+	DefaultSMTPFrom = "PLEASE_CHANGE_ME!!!"
 )
 
 var (
@@ -225,6 +226,14 @@ func WithSMTPUser(user string) Option {
 func WithSMTPPass(pass string) Option {
 	return func(cfg *Config) error {
 		cfg.SMTPPass = pass
+		return nil
+	}
+}
+
+// WithSMTPFrom sets the SMTPFrom address to use for sending email
+func WithSMTPFrom(from string) Option {
+	return func(cfg *Config) error {
+		cfg.SMTPFrom = from
 		return nil
 	}
 }
