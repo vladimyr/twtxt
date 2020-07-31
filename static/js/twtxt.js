@@ -17,4 +17,9 @@ function reply(e) {
 
 u(".reply").on("click", reply);
 
-
+u("#post").on("click", function(e) {
+  e.preventDefault();
+  u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Posting...");
+  u("#post").attr("disabled", true);
+  u("#post").closest("form").first().submit();
+});
