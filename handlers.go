@@ -918,6 +918,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		// Limit request body to ~1MB to prevent OOM
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+
 		if r.Method == "GET" {
 			s.render("settings", w, ctx)
 			return
