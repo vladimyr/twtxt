@@ -918,13 +918,13 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		// Limit request body to ~1MB to prevent OOM
-		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-
 		if r.Method == "GET" {
 			s.render("settings", w, ctx)
 			return
 		}
+
+		// Limit request body to ~1MB to prevent OOM
+		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
@@ -932,7 +932,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 
 		avatarFile, _, err := r.FormFile("avatar_file")
-		if err != nil {
+		if err != nil && err != http.ErrMissingFile {
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -954,17 +954,19 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			user.Password = hash
 		}
 
-		uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
-		_, err = StoreUploadedImage(
-			s.config, avatarFile,
-			avatarsDir, ctx.Username,
-			uploadOptions,
-		)
-		if err != nil {
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf("Error updating user: %s", err)
-			s.render("error", w, ctx)
-			return
+		if avatarFile != nil {
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
+			_, err = StoreUploadedImage(
+				s.config, avatarFile,
+				avatarsDir, ctx.Username,
+				uploadOptions,
+			)
+			if err != nil {
+				ctx.Error = true
+				ctx.Message = fmt.Sprintf("Error updating user: %s", err)
+				s.render("error", w, ctx)
+				return
+			}
 		}
 
 		user.Email = email
