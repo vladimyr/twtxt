@@ -7,7 +7,7 @@ var cookieName = 'complianceCookie';        // Name of our cookie
 var cookieValue = 'on';                     // Value of cookie
 
 function createDiv(){
-    u("body").preappend('<div id="cookie-law" class="container-fluid"><p>This website uses cookies. By continuing we assume your permission to deploy cookies, as detailed in our <a href="/privacy" rel="nofollow" title="Privacy Policy">privacy policy</a>. <a role="button" href="javascript:void(0);" onclick="removeMe();">Close</a></p></div>');
+    u("body").prepend('<div id="cookie-law" class="container-fluid"><p>This website uses cookies. By continuing we assume your permission to deploy cookies, as detailed in our <a href="/privacy" rel="nofollow" title="Privacy Policy">privacy policy</a>. <a role="button" href="javascript:void(0);" onclick="removeMe();">Close</a></p></div>');
     createCookie(window.cookieName,window.cookieValue, window.cookieDuration); // Create the cookie
 }
 
@@ -73,5 +73,27 @@ u("#post").on("click", function(e) {
   e.preventDefault();
   u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Posting...");
   u("#post").attr("disabled", true);
-  u("#post").closest("form").first().submit();
+  u("#tweetForm").first().submit();
+});
+
+
+u('#uploadMedia').on("change", function(e){
+    u('#uploadSubmit').removeClass('invisible')
+});
+
+u('#uploadForm').handle('submit', async e => {
+    e.preventDefault();
+
+    const body = new FormData(e.target);
+    const data = await fetch('/upload', {
+    method: 'POST', body
+  }).then(
+    res => res.json()
+  ).then(data => {
+        console.log(data);
+        u("#text").append(" ![](" + data.Path + ") ");
+        u('#uploadSubmit').addClass('invisible');
+    }).catch((error) => {
+        console.error('Error:', error);
+    });
 });

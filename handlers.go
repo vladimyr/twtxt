@@ -144,6 +144,49 @@ func (s *Server) OldTwtxtHandler() httprouter.Handle {
 	}
 }
 
+// MediaHandler ...
+func (s *Server) MediaHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		name := p.ByName("name")
+		if name == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		fn := filepath.Join(s.config.Data, mediaDir, name)
+		fileInfo, err := os.Stat(fn)
+		if err != nil {
+			log.WithError(err).Error("error reading media file info")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		etag := fmt.Sprintf("%s-%s", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+		if match := r.Header.Get("If-None-Match"); match != "" {
+			if strings.Contains(match, etag) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Error("error opening media file")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Etag", etag)
+		if _, err := io.Copy(w, f); err != nil {
+			log.WithError(err).Error("error writing media response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // AvatarHandler ...
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -934,8 +977,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			return
 		}
 
-		// Limit request body to ~1MB to prevent OOM
-		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
@@ -1259,5 +1302,43 @@ func (s *Server) NewPasswordHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
+	}
+}
+
+// UploadMediaHandler ...
+func (s *Server) UploadMediaHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		// Limit request body to to abuse
+		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
+
+		mediaFile, _, err := r.FormFile("media_file")
+		if err != nil && err != http.ErrMissingFile {
+			log.WithError(err).Error("error parsing form file")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var mediaURI string
+
+		if mediaFile != nil {
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: 240, ResizeH: 0}
+			mediaURI, err = StoreUploadedImage(
+				s.config, mediaFile,
+				mediaDir, "",
+				uploadOptions,
+			)
+		}
+
+		uri := URI{"mediaURI", mediaURI}
+		data, err := json.Marshal(uri)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+
+		return
 	}
 }
