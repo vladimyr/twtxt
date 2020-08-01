@@ -84,15 +84,25 @@ u('#uploadMedia').on("change", function(e){
 u('#uploadForm').handle('submit', async e => {
     e.preventDefault();
 
+    u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Uploading...");
+
     const body = new FormData(e.target);
     const data = await fetch('/upload', {
     method: 'POST', body
   }).then(
     res => res.json()
   ).then(data => {
-        console.log(data);
-        u("#text").append(" ![](" + data.Path + ") ");
         u('#uploadSubmit').addClass('invisible');
+
+        var el = u("textarea#text")
+        var text = document.getElementById("text");
+
+        text.value += " ![](" + data.Path + ") ";
+        el.scroll();
+        text.focus();
+
+        var size = el.text().length;
+        text.setSelectionRange(size, size);
     }).catch((error) => {
         console.error('Error:', error);
     });
