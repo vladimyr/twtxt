@@ -298,7 +298,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		switch postas {
-		case "", "me":
+		case "", user.Username:
 			err = AppendTweet(s.config, s.db, user, text)
 		default:
 			if user.OwnsFeed(postas) {

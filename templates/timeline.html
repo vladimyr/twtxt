@@ -10,7 +10,7 @@
           <div></div>
           <div>
             <select id="postas" class="postas" name="postas">
-              <option value="me" selected>Post as me</option>
+              <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
               {{ range $index, $Feed := .User.Feeds }}
                 <option value="{{ $Feed }}">{{ $Feed }}</option>
               {{ end }}
