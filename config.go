@@ -25,7 +25,8 @@ type Config struct {
 	MaxUploadSize   int64         `json:"max_upload_size"`
 	MaxTweetLength  int           `json:"max_tweet_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
-	MagicLinkSecret string        `json:"magiclink_secret"`
+
+	MagicLinkSecret string `json:"magiclink_secret"`
 
 	SMTPHost string `json:"smtp_host"`
 	SMTPPort int    `json:"smtp_port"`
@@ -34,6 +35,9 @@ type Config struct {
 	SMTPFrom string `json:"smtp_from"`
 
 	MaxFetchLimit int64 `json:"max_fetch_limit"`
+
+	APISessionTime time.Duration `json:"api_session_time"`
+	APISigningKey  []byte        `json:"api_signing_key"`
 }
 
 // RandomTweetPrompt returns a random  Tweet Prompt for display by the UI
