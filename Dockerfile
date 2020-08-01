@@ -30,7 +30,7 @@ COPY ./templates/* ./templates/
 COPY *.go ./
 COPY ./auth/*.go ./auth/
 COPY ./session/*.go ./session/
-COPY ./password/*.go ./password/
+COPY ./passwords/*.go ./passwords/
 COPY ./cmd/twtd/*.go ./cmd/twtd/
 
 # Version/Commit (there there is no .git in Docker build context)
