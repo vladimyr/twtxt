@@ -18,7 +18,7 @@
             <input form="uploadForm" id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
           </div>
           <div>
-            <select id="postas" class="postas" name="postas">
+            <select id="postas" class="postas" name="postas" form="tweetForm">
               <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
               {{ range $index, $Feed := .User.Feeds }}
                 <option value="{{ $Feed }}">{{ $Feed }}</option>
