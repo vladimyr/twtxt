@@ -2,6 +2,14 @@ article p img {
     display: block;
 }
 
+article hgroup h3 {
+    margin-left: 60px;
+}
+
+article hgroup footer {
+    margin-left: 60px;
+}
+
 .invisible {
     visibility:hidden;
     width:0;

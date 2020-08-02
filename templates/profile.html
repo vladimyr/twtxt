@@ -68,7 +68,6 @@
             </h2>
             <h3>
               {{ if (and $.Authenticated (not ($.User.Is .Tweeter.URL))) }}
-                &nbsp;
                 {{ if $.User.Follows .Tweeter.URL }}
                   [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]
                 {{ else }}
