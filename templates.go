@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	baseTemplate = "base.html"
-	baseName     = "base"
+	baseTemplate     = "base.html"
+	partialsTemplate = "_partials.html"
+	baseName         = "base"
 )
 
 type Templates struct {
@@ -49,10 +50,15 @@ func NewTemplates(conf *Config) (*Templates, error) {
 		}
 
 		if !info.IsDir() && info.Name() != baseTemplate {
+			if info.Name() == partialsTemplate {
+				return nil
+			}
+
 			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 			t := template.New(name)
 			t.Funcs(funcMap)
 			template.Must(t.Parse(box.MustString(info.Name())))
+			template.Must(t.Parse(box.MustString(partialsTemplate)))
 			template.Must(t.Parse(box.MustString(baseTemplate)))
 			templates[name] = t
 		}
