@@ -201,6 +201,8 @@ func (s *Server) MediaHandler() httprouter.Handle {
 // AvatarHandler ...
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		w.Header().Set("Content-Type", "image/png")
+
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -231,7 +233,6 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			}
 			defer f.Close()
 
-			w.Header().Set("Content-Type", "image/png")
 			w.Header().Set("Etag", etag)
 			if _, err := io.Copy(w, f); err != nil {
 				log.WithError(err).Error("error writing avatar response")
@@ -245,8 +246,6 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
 		png.Encode(&buf, img)
-
-		w.Header().Set("Content-Type", "image/png")
 		w.Write(buf.Bytes())
 	}
 }
