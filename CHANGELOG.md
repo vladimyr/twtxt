@@ -1,9 +1,22 @@
 
 <a name="0.0.11"></a>
-## [0.0.11](https://github.com/prologic/twtxt/compare/0.0.10...0.0.11) (2020-07-29)
+## [0.0.11](https://github.com/prologic/twtxt/compare/0.0.10...0.0.11) (2020-08-02)
 
 ### Bug Fixes
 
+* Fix size of external feed icons
+* Fix alignment of Twts a bit better (align the actions and Twt post time)
+* Fix alignment of uploaded media to be display: block; aligned
+* Fix postas functionality post Media Upload (Missing form= attr)
+* Fix downscale resolution of media
+* Fix bug with appending new media URI to text input
+* Fix misuse of pronoun in postas dropdown field
+* Fix sourcer links in README
+* Fix bad error handling in /settings endpoint for missing avatar_file (Fixes [#63](https://github.com/prologic/twtxt/issues/63))
+* Fix potential vulnerability and limit fetches to a configurable limit
+* Fix accidental double posting
+* Fix /settings handler to limit request body
+* Fix followers page ([#53](https://github.com/prologic/twtxt/issues/53))
 * Fix wording on settings re showing followers publicly
 * Fix bug that incorrectly redirects to the / when you're posting from /discover
 * Fix profile template and profile type to show followers correctly with correct link
@@ -21,6 +34,21 @@
 
 ### Features
 
+* Add /api/v1/follow endpoint
+* Add /api/v1/discover endpoint
+* Add /api/v1/timeline endpoint and content negogiation for general NotFound handler
+* Add a basic APIv1 set of endpoints ([#66](https://github.com/prologic/twtxt/issues/66))
+* Add Media Upload Support ([#69](https://github.com/prologic/twtxt/issues/69))
+* Add Etag in AvatarHandler ([#67](https://github.com/prologic/twtxt/issues/67))
+* Add meta tags to base template
+* Add improved mobile friendly top navbar
+* Add logging for SMTP configuration on startup
+* Add configuration options for SMTP From addresss used
+* Add fixPossibleFeedFollowers migration for twtxt.net
+* Add avatar upload to /settings ([#61](https://github.com/prologic/twtxt/issues/61))
+* Add update email to /settings (Fixees [#55](https://github.com/prologic/twtxt/issues/55)
+* Add Password Reset feature ([#51](https://github.com/prologic/twtxt/issues/51))
+* Add list of local (sub)Feeds to the /feeds view for better discovery of user created feeds
 * Add Feed model with feed profiles
 * Add link to followers
 * Add random tweet prompts for a nice variance on the text placeholder
@@ -30,6 +58,12 @@
 
 ### Updates
 
+* Update README.md
+* Update README
+* Update and improve handling to include conventional (re ...) ([#68](https://github.com/prologic/twtxt/issues/68))
+* Update pager wording
+* Update pager wording  (It's Twts)
+* Update CHANGELOG for 0.0.11
 * Update default list of external feeds and add we-are-twtxt
 * Update feed sources, refactor and improve the UI/UX by displaying feed sources by source instead of lumped together
 
