@@ -13,7 +13,7 @@
 [![Sourcegraph](https://sourcegraph.com/github.com/prologic/twtxt/-/badge.svg)](https://sourcegraph.com/github.com/prologic/twtxt?badge)
 [![TODOs](https://img.shields.io/endpoint?url=https://api.tickgit.com/badge?repo=github.com/prologic/twtxt)](https://www.tickgit.com/browse?repo=github.com/prologic/twtxt)
 
-📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!
+📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
 
 Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
 of a web application. It supports multiple users and
@@ -24,6 +24,10 @@ There is also a publicly (_free_) service online available at:
 - https://twtxt.net/
 
 > __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
+
+> **[Sponsor](#Sponsor)** this project to support the development of new features
+> the upcoming Mobile App and much more! Or contact [Support](https://twtxt.net)
+> for help with running your own Twtxt!
 
 ![Screenshot 1](./screenshot1.png)
 ![Screenshot 2](./screenshot2.png)
@@ -89,22 +93,33 @@ Then visit: http://localhost:8000/
 You can configure other options by specifying them on the command-line:
 
 ```console
-./twtd -h
+$ ./twtd -h
 Usage of ./twtd:
-  -u, --base-url string           base url to use (default "http://0.0.0.0:8000")
-  -b, --bind string               [int]:<port> to bind to (default "0.0.0.0:8000")
-  -S, --cookie-secret string      cookie secret to use (default "PLEASE_CHANGE_ME!!!")
-  -d, --data string               data directory (default "./data")
-  -D, --debug                     enable debug logging
-  -F, --feed-sources strings      external feed sources (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt])
-  -L, --max-tweet-length int      maximum length of posts (default 288)
-  -n, --name string               set the instance's name (default "twtxt.net")
-  -r, --register                  enable user registration
-  -E, --session-expiry duration   session expiry to use (default 24h0m0s)
-  -s, --store string              store to use (default "bitcask://twtxt.db")
-  -t, --theme string              set the default theme (default "dark")
-  -T, --tweets-per-page int       tweets per page to display (default 50)
-  -v, --version                   display version information
+  -A, --admin-user string           default admin user to use (default "admin")
+      --api-session-time duration   Maximum TTL for API tokens (default 240h0m0s)
+      --api-signing-key string      API JWT signing key for tokens (default "PLEASE_CHANGE_ME!!!")
+  -u, --base-url string             base url to use (default "http://0.0.0.0:8000")
+  -b, --bind string                 [int]:<port> to bind to (default "0.0.0.0:8000")
+  -S, --cookie-secret string        cookie secret to use (default "PLEASE_CHANGE_ME!!!")
+  -d, --data string                 data directory (default "./data")
+  -D, --debug                       enable debug logging
+  -F, --feed-sources strings        external feed sources (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
+      --magiclink-secret string     magiclink secret to use for password reset tokens (default "PLEASE_CHANGE_ME!!!")
+      --max-fetch-limit int         Maximum feed fetch limit in bytes (default 2097152)
+  -L, --max-tweet-length int        maximum length of posts (default 288)
+  -U, --max-upload-size int         maximum upload size of media (default 16777216)
+  -n, --name string                 set the instance's name (default "twtxt.net")
+  -r, --register                    enable user registration
+  -E, --session-expiry duration     session expiry to use (default 240h0m0s)
+      --smtp-from string            SMTP From address to use for email sending (default "PLEASE_CHANGE_ME!!!")
+      --smtp-host string            SMTP Host to use for email sending (default "smtp.gmail.com")
+      --smtp-pass string            SMTP Pass to use for email sending (default "PLEASE_CHANGE_ME!!!")
+      --smtp-port int               SMTP Port to use for email sending (default 587)
+      --smtp-user string            SMTP User to use for email sending (default "PLEASE_CHANGE_ME!!!")
+  -s, --store string                store to use (default "bitcask://twtxt.db")
+  -t, --theme string                set the default theme (default "dark")
+  -T, --tweets-per-page int         tweets per page to display (default 50)
+  -v, --version                     display version information
 pflag: help requested
 ```
 
@@ -113,8 +128,8 @@ pflag: help requested
 ### Docker Swarm
 
 You can deploy `twtxt` to a [Docker Swarm](https://docs.docker.com/engine/swarm/)
-cluster by utilsing the provided `twtxt.yaml` Docker Stack. This also depends on
-and uses the [Traefik](https://docs.traefik.io/) ingres load balancer so you must
+cluster by utilising the provided `twtxt.yaml` Docker Stack. This also depends on
+and uses the [Traefik](https://docs.traefik.io/) ingress load balancer so you must
 also have that configured and running in your cluster appropriately.
 
 ```console
@@ -125,14 +140,14 @@ docker stack deploy -c twtxt.yml
 
 [![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/twtxt)
 
-## Support
+## Sponsor
 
 Support the ongoing development of twtxt!
 
-**Sponser**
+**Sponsor**
 
 - Become a [Sponsor](https://www.patreon.com/prologic)
-- Contribute! See [TODO](/TODO.md)
+- Contribute! See [Issues](https://github.com/prologic/twtxt/issues)
 
 ## Contributors
 
@@ -155,4 +170,4 @@ You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to
 
 ## License
 
-twtwt is licensed under the terms of the [MIT License](/LICENSE)
+`twtxt` is licensed under the terms of the [MIT License](/LICENSE)
