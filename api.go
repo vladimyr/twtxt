@@ -155,6 +155,7 @@ func (a *API) initRoutes() {
 	router.POST("/auth", a.AuthEndpoint())
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
+	router.POST("/discover", a.TimelineEndpoint())
 }
 
 // CreateToken ...
@@ -427,6 +428,56 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(body)
+	}
+}
 
+// DiscoverEndpoint ...
+func (a *API) DiscoverEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		req, err := NewTimelineRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing post request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		tweets, err := GetAllTweets(a.config)
+		if err != nil {
+			log.WithError(err).Error("error loading local tweets")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		sort.Sort(sort.Reverse(tweets))
+
+		var pagedTweets Tweets
+
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), a.config.TweetsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			log.WithError(err).Error("error loading discover")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := TimelineResponse{
+			Tweets: pagedTweets,
+			Pager: PagerResponse{
+				Current:     pager.Page(),
+				MaxPages:    pager.PageNums(),
+				TotalTweets: pager.Nums(),
+			},
+		}
+
+		body, err := res.Bytes()
+		if err != nil {
+			log.WithError(err).Error("error serializing response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
 	}
 }
