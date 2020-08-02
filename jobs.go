@@ -7,15 +7,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var Jobs map[string]JobFactory
+// JobSpec ...
+type JobSpec struct {
+	Schedule string
+	Factory  JobFactory
+}
+
+func NewJobSpec(schedule string, factory JobFactory) JobSpec {
+	return JobSpec{schedule, factory}
+}
+
+var Jobs map[string]JobSpec
 
 func init() {
-	Jobs = map[string]JobFactory{
-		"@every 1m":  NewSyncStoreJob,
-		"@every 5m":  NewUpdateFeedsJob,
-		"@every 15m": NewUpdateFeedSourcesJob,
-		"@hourly":    NewFixUserAccountsJob,
-		"@daily":     NewStatsJob,
+	Jobs = map[string]JobSpec{
+		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
+		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
+		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
+		"Stats":             NewJobSpec("@daily", NewStatsJob),
 	}
 }
 

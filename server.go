@@ -129,11 +129,12 @@ func (s *Server) AddCronJob(spec string, job cron.Job) error {
 }
 
 func (s *Server) setupCronJobs() error {
-	for spec, factory := range Jobs {
-		job := factory(s.config, s.db)
-		if err := s.cron.AddJob(spec, job); err != nil {
+	for name, jobSpec := range Jobs {
+		job := jobSpec.Factory(s.config, s.db)
+		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
+		log.Infof("Started background job %s (%s)", name, jobSpec.Schedule)
 	}
 
 	log.Info("running FixUserAccountsJob now...")
