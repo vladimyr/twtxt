@@ -8,7 +8,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -131,6 +133,22 @@ func (res TimelineResponse) Bytes() ([]byte, error) {
 	return body, nil
 }
 
+// FollowRequest ...
+type FollowRequest struct {
+	Nick string `json:"nick"`
+	URL  string `json:"url"`
+}
+
+// NewFollowRequest ...
+func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
 // API ...
 type API struct {
 	router *Router
@@ -202,6 +220,7 @@ func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 func (a *API) PingEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
 		return
 	}
 }
@@ -479,5 +498,117 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(body)
+	}
+}
+
+// FollowEndpoing ...
+func (a *API) FollowEndpoing() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		token := r.Context().Value(TokenContextKey).(*jwt.Token)
+		claims := token.Claims.(jwt.MapClaims)
+
+		req, err := NewFollowRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing post request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		username := claims["username"].(string)
+
+		user, err := a.db.GetUser(username)
+		if err != nil {
+			log.WithError(err).Error("error loading user object")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		nick := strings.TrimSpace(req.Nick)
+		url := NormalizeURL(req.URL)
+
+		if nick == "" || url == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		user.Following[nick] = url
+
+		if err := a.db.SetUser(user.Username, user); err != nil {
+			log.WithError(err).Error("error saving user object")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		if strings.HasPrefix(url, a.config.BaseURL) {
+			url = UserURL(url)
+			nick := NormalizeUsername(filepath.Base(url))
+
+			if a.db.HasUser(nick) {
+				followee, err := a.db.GetUser(nick)
+				if err != nil {
+					log.WithError(err).Errorf("error loading user object for %s", nick)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				if followee.Followers == nil {
+					followee.Followers = make(map[string]string)
+				}
+
+				followee.Followers[user.Username] = user.URL
+
+				if err := a.db.SetUser(followee.Username, followee); err != nil {
+					log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				if err := AppendSpecial(
+					a.config, a.db,
+					twtxtBot,
+					fmt.Sprintf(
+						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						followee.Username, URLForUser(a.config.BaseURL, followee.Username),
+						user.Username, URLForUser(a.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			} else if a.db.HasFeed(nick) {
+				feed, err := a.db.GetFeed(nick)
+				if err != nil {
+					log.WithError(err).Errorf("error loading feed object for %s", nick)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				feed.Followers[user.Username] = user.URL
+
+				if err := a.db.SetFeed(feed.Name, feed); err != nil {
+					log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
+				if err := AppendSpecial(
+					a.config, a.db,
+					twtxtBot,
+					fmt.Sprintf(
+						"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+						feed.Name, URLForUser(a.config.BaseURL, feed.Name),
+						user.Username, URLForUser(a.config.BaseURL, user.Username),
+						"twtxt", FullVersion(),
+					),
+				); err != nil {
+					log.WithError(err).Warnf("error appending special FOLLOW post")
+				}
+			}
+		}
+
+		// No real response
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{}`))
+		return
 	}
 }
