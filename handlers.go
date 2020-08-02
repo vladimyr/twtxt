@@ -28,6 +28,11 @@ import (
 	"github.com/prologic/twtxt/session"
 )
 
+const (
+	MediaResolution  = 640 // 640x480
+	AvatarResolution = 60  // 60x60
+)
+
 var (
 	ErrFeedImposter = errors.New("error: imposter detected, you do not own this feed")
 )
@@ -1015,7 +1020,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		if avatarFile != nil {
-			uploadOptions := &UploadOptions{Resize: true, ResizeW: 60, ResizeH: 60}
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: 0}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,
 				avatarsDir, ctx.Username,
@@ -1327,7 +1332,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		var mediaURI string
 
 		if mediaFile != nil {
-			uploadOptions := &UploadOptions{Resize: true, ResizeW: 240, ResizeH: 0}
+			uploadOptions := &UploadOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
 				mediaDir, "",
