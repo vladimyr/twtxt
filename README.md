@@ -62,7 +62,7 @@ make
 ```
 
 __NOTE___: It is important you follow these steps and don't just simply attempt
-           `go get ...` this project as that will not work (#30) due to the
+           `go get ...` this project as that will not work ([#30](https://github.com/prologic/twtxt/issues/30)) due to the
            need to package templates and static assets which we use the
            [go.rice](https://github.com/GeertJohan/go.rice) tool for.
 
