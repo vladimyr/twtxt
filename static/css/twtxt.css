@@ -1,3 +1,7 @@
+article p img {
+    display: block;
+}
+
 .invisible {
     visibility:hidden;
     width:0;
