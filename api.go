@@ -8,11 +8,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
+	"github.com/vcraescu/go-paginator"
+	"github.com/vcraescu/go-paginator/adapter"
 
 	"github.com/prologic/twtxt/passwords"
 )
@@ -91,6 +94,43 @@ func (res PostResponse) Bytes() ([]byte, error) {
 	return body, nil
 }
 
+// TimelineRequest ...
+type TimelineRequest struct {
+	Page int `json:"page"`
+}
+
+// NewTimelineRequest ...
+func NewTimelineRequest(r io.Reader) (req TimelineRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
+}
+
+// PagerResponse ...
+type PagerResponse struct {
+	Current     int `json:"current_page"`
+	MaxPages    int `json:"max_pages"`
+	TotalTweets int `json:"total_tweets"`
+}
+
+// TimelineResponse ...
+type TimelineResponse struct {
+	Tweets []Tweet `json:"tweets"`
+	Pager  PagerResponse
+}
+
+// Bytes ...
+func (res TimelineResponse) Bytes() ([]byte, error) {
+	body, err := json.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	return body, nil
+}
+
 // API ...
 type API struct {
 	router *Router
@@ -111,9 +151,10 @@ func NewAPI(router *Router, config *Config, db Store, pm passwords.Passwords) *A
 func (a *API) initRoutes() {
 	router := a.router.Group("/api/v1")
 
-	router.GET("/ping", a.PingHandler())
-	router.POST("/auth", a.AuthHandler())
-	router.POST("/post", a.isAuthorized(a.PostHandler()))
+	router.GET("/ping", a.PingEndpoint())
+	router.POST("/auth", a.AuthEndpoint())
+	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
+	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 }
 
 // CreateToken ...
@@ -156,16 +197,16 @@ func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 	}
 }
 
-// PingHandler ...
-func (a *API) PingHandler() httprouter.Handle {
+// PingEndpoint ...
+func (a *API) PingEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
 		return
 	}
 }
 
-// AuthHandler ...
-func (a *API) AuthHandler() httprouter.Handle {
+// AuthEndpoint ...
+func (a *API) AuthEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		req, err := NewAuthRequest(r.Body)
 		if err != nil {
@@ -231,8 +272,8 @@ func (a *API) AuthHandler() httprouter.Handle {
 	}
 }
 
-// PostHandler ...
-func (a *API) PostHandler() httprouter.Handle {
+// PostEndpoint ...
+func (a *API) PostEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		token := r.Context().Value(TokenContextKey).(*jwt.Token)
 		claims := token.Claims.(jwt.MapClaims)
@@ -317,5 +358,75 @@ func (a *API) PostHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(body)
+	}
+}
+
+// TimelineEndpoint ...
+func (a *API) TimelineEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		token := r.Context().Value(TokenContextKey).(*jwt.Token)
+		claims := token.Claims.(jwt.MapClaims)
+
+		req, err := NewTimelineRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing post request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		username := claims["username"].(string)
+
+		user, err := a.db.GetUser(username)
+		if err != nil {
+			log.WithError(err).Error("error loading user object")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		cache, err := LoadCache(a.config.Data)
+		if err != nil {
+			log.WithError(err).Error("error loading cache")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		var tweets Tweets
+
+		for _, url := range user.Following {
+			tweets = append(tweets, cache.GetByURL(url)...)
+		}
+
+		sort.Sort(sort.Reverse(tweets))
+
+		var pagedTweets Tweets
+
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), a.config.TweetsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			log.WithError(err).Error("error loading timeline")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := TimelineResponse{
+			Tweets: pagedTweets,
+			Pager: PagerResponse{
+				Current:     pager.Page(),
+				MaxPages:    pager.PageNums(),
+				TotalTweets: pager.Nums(),
+			},
+		}
+
+		body, err := res.Bytes()
+		if err != nil {
+			log.WithError(err).Error("error serializing response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(body)
+
 	}
 }

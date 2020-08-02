@@ -33,6 +33,12 @@ var (
 )
 
 func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Accept") == "application/json" {
+		w.Header().Set("Content-Type", "application/json")
+		http.Error(w, "Endpoint Not Found", http.StatusNotFound)
+		return
+	}
+
 	ctx := NewContext(s.config, s.db, r)
 	w.WriteHeader(http.StatusNotFound)
 	s.render("404", w, ctx)
