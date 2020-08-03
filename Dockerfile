@@ -42,7 +42,6 @@ ARG VERSION="0.0.0"
 ARG COMMIT="HEAD"
 
 # Build binary
-RUN ls -LR
 RUN make build VERSION=$VERSION COMMIT=$COMMIT
 
 # Runtime
