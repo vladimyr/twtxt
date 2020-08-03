@@ -27,6 +27,7 @@ COPY ./internal/static/js/* ./internal/static/js/
 COPY ./internal/templates/* ./internal/templates/
 
 # Copy sources
+COPY *.go .
 COPY ./internal/*.go ./internal/
 COPY ./internal/auth/*.go ./internal/auth/
 COPY ./internal/session/*.go ./internal/session/
