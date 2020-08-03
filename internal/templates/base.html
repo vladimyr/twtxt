@@ -32,54 +32,47 @@
     </div>    
     <div class="nav-links">
       {{ if .Authenticated }}
-      <a href="/discover">
-        <i class="icss-users"></i>
-        /discover
-      </a>
-      <a href="/mentions">
-        <i class="icss-smiley"></i>
-        /mentions
-      </a>
-      <a href="/feeds">
-        <i class="icss-rss"></i>
-        /feeds
-      </a>
-      {{ end }}
-      {{ if .Authenticated }}
-      <a href="/follow">
-        <i class="icss-plus"></i>
-        /follow
-      </a>   
-      <a class="secondary" href="/settings">
-        <i class="icss-gear"></i>
-        /settings
-      </a>   
-
-      <a class="secondary" href="/logout">
-        <i class="icss-exit"></i>
-        /logout
-      </a>
+        <a href="/discover">
+          <i class="icss-users"></i>
+          /discover
+        </a>
+        <a href="/mentions">
+          <i class="icss-smiley"></i>
+          /mentions
+        </a>
+        <a href="/feeds">
+          <i class="icss-rss"></i>
+          /feeds
+        </a>
+        <a href="/follow">
+          <i class="icss-plus"></i>
+          /follow
+        </a>   
+        <a class="secondary" href="/settings">
+          <i class="icss-gear"></i>
+          /settings
+        </a>   
+        <a class="secondary" href="/logout">
+          <i class="icss-exit"></i>
+          /logout
+        </a>
       {{ else }}
-      <a href="/login">
-        <i class="icss-key"></i>
-        /login
-      </a>
-      {{ if .RegisterDisabled }}
-      <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
-        <i class="icss-warning" style="color:red;"></i>
-        /register
-      </a>
-      {{ else }}
-      <a href="/register">
-        <i class="icss-smiley"></i>
-        /register
-      </a>
+        <a href="/login">
+          <i class="icss-key"></i>
+          /login
+        </a>
+        {{ if .RegisterDisabled }}
+          <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
+            <i class="icss-warning" style="color:red;"></i>
+            /register
+          </a>
+        {{ else }}
+          <a href="/register">
+            <i class="icss-smiley"></i>
+            /register
+          </a>
+        {{ end }}
       {{ end }}
-      {{ end }}
-      <a href="https://github.com/prologic/twtxt" class="contrast" aria-label="Pico GitHub repository">
-        <i class="icss-github"></i>
-      </a>
-      
     </div>
   </div>
 
