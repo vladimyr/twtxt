@@ -25,7 +25,7 @@ import (
 	"github.com/vcraescu/go-paginator/adapter"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/prologic/twtxt/session"
+	"github.com/prologic/twtxt/internal/session"
 )
 
 const (

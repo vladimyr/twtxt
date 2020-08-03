@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 
-	"github.com/prologic/twtxt/session"
+	"github.com/prologic/twtxt/internal/session"
 )
 
 type Context struct {

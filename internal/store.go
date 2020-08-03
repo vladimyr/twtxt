@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/prologic/twtxt/session"
+	"github.com/prologic/twtxt/internal/session"
 )
 
 var (

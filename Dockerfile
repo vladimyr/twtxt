@@ -3,7 +3,7 @@ FROM golang:alpine AS build
 
 RUN apk add --no-cache -U build-base git make
 
-RUN mkdir /src
+RUN mkdir -p /src
 
 WORKDIR /src
 
@@ -19,18 +19,18 @@ RUN go get github.com/GeertJohan/go.rice/rice
 RUN go mod download
 
 # Copy static assets
-COPY ./static/css/* ./static/css/
-COPY ./static/img/* ./static/img/
-COPY ./static/js/* ./static/js/
+COPY ./internal/static/css/* ./internal/static/css/
+COPY ./internal/static/img/* ./internal/static/img/
+COPY ./internal/static/js/* ./internal/static/js/
 
 # Copy templates
-COPY ./templates/* ./templates/
+COPY ./internal/templates/* ./internal/templates/
 
 # Copy sources
-COPY *.go ./
-COPY ./auth/*.go ./auth/
-COPY ./session/*.go ./session/
-COPY ./passwords/*.go ./passwords/
+COPY ./internal/*.go ./internal/
+COPY ./internal/auth/*.go ./internal/auth/
+COPY ./internal/session/*.go ./internal/session/
+COPY ./internal/passwords/*.go ./internal/passwords/
 COPY ./cmd/twtd/*.go ./cmd/twtd/
 
 # Version/Commit (there there is no .git in Docker build context)
@@ -42,6 +42,7 @@ ARG VERSION="0.0.0"
 ARG COMMIT="HEAD"
 
 # Build binary
+RUN ls -LR
 RUN make build VERSION=$VERSION COMMIT=$COMMIT
 
 # Runtime

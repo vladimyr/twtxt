@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/prologic/twtxt/session"
+
+	"github.com/prologic/twtxt/internal/session"
 )
 
 // Options ...

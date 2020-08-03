@@ -17,9 +17,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
 
-	"github.com/prologic/twtxt/auth"
-	"github.com/prologic/twtxt/passwords"
-	"github.com/prologic/twtxt/session"
+	"github.com/prologic/twtxt/internal/auth"
+	"github.com/prologic/twtxt/internal/passwords"
+	"github.com/prologic/twtxt/internal/session"
 )
 
 // Server ...
