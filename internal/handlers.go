@@ -134,6 +134,116 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 	}
 }
 
+// ManageFeedHandler...
+func (s *Server) ManageFeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		feedName := NormalizeFeedName(p.ByName("name"))
+
+		if feedName == "" {
+			ctx.Error = true
+			ctx.Message = "No feed specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		feed, err := s.db.GetFeed(feedName)
+		if err != nil {
+			log.WithError(err).Errorf("error loading feed object for %s", feedName)
+			ctx.Error = true
+			if err == ErrFeedNotFound {
+				ctx.Message = "Feed not found"
+				s.render("404", w, ctx)
+			}
+
+			ctx.Message = "Error loading feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if !ctx.User.OwnsFeed(feed.Name) {
+			ctx.Error = true
+			s.render("401", w, ctx)
+			return
+		}
+
+		switch r.Method {
+		case http.MethodGet:
+			ctx.Profile = feed.Profile()
+			s.render("manageFeed", w, ctx)
+			return
+		case http.MethodPost:
+			description := r.FormValue("description")
+			feed.Description = description
+
+			if err := s.db.SetFeed(feed.Name, feed); err != nil {
+				log.WithError(err).Warnf("error updating user object for followee %s", feed.Name)
+
+				ctx.Error = true
+				ctx.Message = "Error updating feed"
+				s.render("error", w, ctx)
+				return
+			}
+
+			ctx.Error = false
+			ctx.Message = "Successfully updated feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = true
+		ctx.Message = "Not found"
+		s.render("404", w, ctx)
+	}
+}
+
+// ArchiveFeedHandler...
+func (s *Server) ArchiveFeedHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+		feedName := NormalizeFeedName(p.ByName("name"))
+
+		if feedName == "" {
+			ctx.Error = true
+			ctx.Message = "No feed specified"
+			s.render("error", w, ctx)
+			return
+		}
+
+		feed, err := s.db.GetFeed(feedName)
+		if err != nil {
+			log.WithError(err).Errorf("error loading feed object for %s", feedName)
+			ctx.Error = true
+			if err == ErrFeedNotFound {
+				ctx.Message = "Feed not found"
+				s.render("404", w, ctx)
+			}
+
+			ctx.Message = "Error loading feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		if !ctx.User.OwnsFeed(feed.Name) {
+			ctx.Error = true
+			s.render("401", w, ctx)
+			return
+		}
+
+		if err := DetachFeedFromOwner(s.db, ctx.User, feed); err != nil {
+			log.WithError(err).Warnf("Error detaching feed owner %s from feed %s", ctx.User.Username, feed.Name)
+			ctx.Error = true
+			ctx.Message = "Error archiving feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Error = false
+		ctx.Message = "Successfully archived feed"
+		s.render("error", w, ctx)
+	}
+}
+
 // OldTwtxtHandler ...
 // Redirect old URIs (twtxt <= v0.0.8) of the form /u/<nick> -> /user/<nick>/twtxt.txt
 // TODO: Remove this after v1
