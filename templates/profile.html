@@ -43,5 +43,5 @@
       <h3>Latest {{ .TweetsPerPage }} posts from {{ .Profile.Username }}</h3>
     </hgroup>
   </div>
-  {{ template "posts" }}
+  {{ template "posts"  .}}
 {{end}}
