@@ -199,6 +199,7 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/", s.TimelineHandler())
 
 	s.router.GET("/discover", s.am.MustAuth(s.DiscoverHandler()))
+	s.router.GET("/mentions", s.am.MustAuth(s.DiscoverHandler()))
 
 	s.router.GET("/feeds", s.am.MustAuth(s.FeedsHandler()))
 	s.router.POST("/feed", s.am.MustAuth(s.FeedHandler()))

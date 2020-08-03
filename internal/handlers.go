@@ -505,6 +505,51 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	}
 }
 
+// MentionsHandler ...
+func (s *Server) MentionsHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		var tweets Tweets
+
+		cache, err := LoadCache(s.config.Data)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading mentions"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for _, url := range ctx.User.Following {
+			for _, tweet := range cache.GetByURL(url) {
+				if HasString(tweet.Mentions(), ctx.User.Username) {
+					tweets = append(tweets, tweet)
+				}
+			}
+		}
+
+		sort.Sort(sort.Reverse(tweets))
+
+		var pagedTweets Tweets
+
+		page := SafeParseInt(r.FormValue("page"), 1)
+		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager.SetPage(page)
+
+		if err = pager.Results(&pagedTweets); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading mentions"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Tweets = pagedTweets
+		ctx.Pager = pager
+
+		s.render("timeline", w, ctx)
+	}
+}
+
 // FeedHandler ...
 func (s *Server) FeedHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

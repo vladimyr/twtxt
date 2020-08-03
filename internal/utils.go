@@ -80,6 +80,15 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+func HasString(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
+
 func UniqStrings(xs []string) []string {
 	set := make(map[string]bool)
 	for _, x := range xs {
