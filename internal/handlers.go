@@ -522,7 +522,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		for _, url := range ctx.User.Following {
 			for _, tweet := range cache.GetByURL(url) {
-				if HasString(tweet.Mentions(), ctx.User.Username) {
+				if HasString(UniqStrings(tweet.Mentions()), ctx.User.Username) {
 					tweets = append(tweets, tweet)
 				}
 			}
