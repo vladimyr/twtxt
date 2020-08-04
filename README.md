@@ -145,6 +145,18 @@ Support the ongoing development of twtxt!
 - Become a [Sponsor](https://www.patreon.com/prologic)
 - Contribute! See [Issues](https://github.com/prologic/twtxt/issues)
 
+## Contributing
+
+Interested in contributing to this project? You are welcome! Here are some ways
+you can contribute:
+
+- [File an Issue](https://github.com/prologic/twtxt/issues/new) -- For a bug,
+  or interesting idea you have for a new feature or just general questions.
+- Submit a Pull-Request or two! We welcome all PR(s) that improve the project!
+
+Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
+[Developer Documentation](https://dev.twtxt.net) or over at [/docs](/docs).
+
 ## Contributors
 
 Thank you to all those that have contributed to this project, battle-tested it, used it in their own projects or products, fixed bugs, improved performance and even fix tiny typos in documentation! Thank you and keep contributing!
