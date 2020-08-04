@@ -13,6 +13,10 @@ Currently twtxt consists of the following components:
   [julienschmidt/httprouter](https://github.com/julienschmidt/httprouter)
   mux library for routing of requests for both the frontend's backend and
   the API.
+- [Bitcask](https://github.com/prologic/bitcask) -- This is the primary
+  KV store that backs most of the "metadata" of [twtxt.net](https://twtxt.net).
+  It is a high-performance KV store designed for fast O(1) lookups of key/vaue
+  pairs of data with 1 Disk IOPS per key.
 - [PicoCSS](https://picocss.com) -- This is a "classless" CSS library that
   was chosen because of its very "lightweight" size and was quick to initially
   develop in as the primary author ([James Mills](https://github.com/prologic))
