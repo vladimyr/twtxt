@@ -61,7 +61,10 @@
             </h2>
             <h3>
               {{ if (and $.Authenticated (not ($.User.Is .Tweeter.URL))) }}
-                [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
+                {{ with $.Profile.Type }}
+                {{ else }}
+                  [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
+                {{ end }}
                 {{ if $.User.Follows .Tweeter.URL }}
                   [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]
                 {{ else }}
