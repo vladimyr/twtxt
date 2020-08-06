@@ -121,8 +121,9 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		pager.SetPage(page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
@@ -586,8 +587,9 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		}
 
 		if err != nil {
+			log.WithError(err).Error("error loading twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
@@ -601,16 +603,18 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		pager.SetPage(page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
 
 		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
 		if err != nil {
+			log.WithError(err).Error("error getting user last twt")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
@@ -635,6 +639,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		twts, err := GetAllTwts(s.config)
 		if err != nil {
+			log.WithError(err).Error("error loading local twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
@@ -650,16 +655,18 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 		pager.SetPage(page)
 
 		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
 
 		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
 		if err != nil {
+			log.WithError(err).Error("error getting user last twt")
 			ctx.Error = true
-			ctx.Message = "An error occurred while loading the  timeline"
+			ctx.Message = "An error occurred while loading the timeline"
 			s.render("error", w, ctx)
 			return
 		}
