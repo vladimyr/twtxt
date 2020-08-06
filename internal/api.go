@@ -616,7 +616,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 
 		req, err := NewFollowRequest(r.Body)
 		if err != nil {
-			log.WithError(err).Error("error parsing post request")
+			log.WithError(err).Error("error parsing follow request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
