@@ -102,19 +102,6 @@ func NewPostRequest(r io.Reader) (req PostRequest, err error) {
 	return
 }
 
-// PostResponse ...
-type PostResponse struct {
-}
-
-// Bytes ...
-func (res PostResponse) Bytes() ([]byte, error) {
-	body, err := json.Marshal(res)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
-}
-
 // TimelineRequest ...
 type TimelineRequest struct {
 	Page int `json:"page"`
@@ -485,17 +472,10 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			return
 		}
 
-		res := PostResponse{}
-
-		body, err := res.Bytes()
-		if err != nil {
-			log.WithError(err).Error("error serializing response")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
+		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		w.Write([]byte(`{}`))
+		return
 	}
 }
 
