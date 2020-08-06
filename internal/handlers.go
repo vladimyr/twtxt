@@ -441,6 +441,35 @@ func (s *Server) PostHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
+		defer func() {
+			if err := func() error {
+				cache, err := LoadCache(s.config.Data)
+				if err != nil {
+					log.WithError(err).Warn("error loading feed cache")
+					return err
+				}
+
+				// Update user's own timeline with their own new post.
+				sources := map[string]string{
+					ctx.User.Username: ctx.User.URL,
+				}
+
+				cache.FetchTwts(s.config, sources)
+
+				if err := cache.Store(s.config.Data); err != nil {
+					log.WithError(err).Warn("error saving feed cache")
+					return err
+				}
+				return nil
+			}(); err != nil {
+				log.WithError(err).Error("error updating feed cache")
+				ctx.Error = true
+				ctx.Message = "Error updating feed cache and timeline"
+				s.render("error", w, ctx)
+				return
+			}
+		}()
+
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
 
 		// TODO: Support deleting/patching last feed (`postas`) twt too.
@@ -510,33 +539,6 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		// Update user's own timeline with their own new post.
-		sources := map[string]string{
-			user.Username: user.URL,
-		}
-
-		if err := func() error {
-			cache, err := LoadCache(s.config.Data)
-			if err != nil {
-				log.WithError(err).Warn("error loading feed cache")
-				return err
-			}
-
-			cache.FetchTwts(s.config, sources)
-
-			if err := cache.Store(s.config.Data); err != nil {
-				log.WithError(err).Warn("error saving feed cache")
-				return err
-			}
-			return nil
-		}(); err != nil {
-			log.WithError(err).Error("error updating feed cache")
-			ctx.Error = true
-			ctx.Message = "Error updating feed cache and timeline"
-			s.render("error", w, ctx)
-			return
-		}
-
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
 	}
 }
@@ -564,9 +566,9 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		var (
-			twts Twts
-			cache  Cache
-			err    error
+			twts  Twts
+			cache Cache
+			err   error
 		)
 
 		if !ctx.Authenticated {
