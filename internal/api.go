@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
@@ -113,15 +112,15 @@ func NewTimelineRequest(r io.Reader) (req TimelineRequest, err error) {
 
 // PagerResponse ...
 type PagerResponse struct {
-	Current     int `json:"current_page"`
-	MaxPages    int `json:"max_pages"`
+	Current   int `json:"current_page"`
+	MaxPages  int `json:"max_pages"`
 	TotalTwts int `json:"total_twts"`
 }
 
 // TimelineResponse ...
 type TimelineResponse struct {
-	Twts []Twt `json:"twts"`
-	Pager  PagerResponse
+	Twts  []Twt `json:"twts"`
+	Pager PagerResponse
 }
 
 // Bytes ...
@@ -179,10 +178,7 @@ func (a *API) initRoutes() {
 // CreateToken ...
 func (a *API) CreateToken(user *User) (string, error) {
 	claims := jwt.MapClaims{}
-	claims["authorized"] = true
 	claims["username"] = user.Username
-	claims["feeds"] = user.Feeds
-	claims["expiery"] = time.Now().Add(a.config.APISessionTime).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(a.config.APISigningKey)
 	if err != nil {
@@ -432,8 +428,8 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		res := TimelineResponse{
 			Twts: pagedTwts,
 			Pager: PagerResponse{
-				Current:     pager.Page(),
-				MaxPages:    pager.PageNums(),
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
 				TotalTwts: pager.Nums(),
 			},
 		}
@@ -483,8 +479,8 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		res := TimelineResponse{
 			Twts: pagedTwts,
 			Pager: PagerResponse{
-				Current:     pager.Page(),
-				MaxPages:    pager.PageNums(),
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
 				TotalTwts: pager.Nums(),
 			},
 		}
