@@ -201,6 +201,8 @@ func (a *API) initRoutes() {
 func (a *API) CreateToken(user *User) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["username"] = user.Username
+	claims["userURL"] = user.URL
+	claims["userFeeds"] = user.Feeds
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(a.config.APISigningKey)
 	if err != nil {
@@ -377,6 +379,32 @@ func (a *API) PostEndpoint() httprouter.Handle {
 		token := r.Context().Value(TokenContextKey).(*jwt.Token)
 		claims := token.Claims.(jwt.MapClaims)
 
+		username := claims["username"].(string)
+		userURL := claims["userURL"].(string)
+
+		defer func() {
+			if err := func() error {
+				cache, err := LoadCache(a.config.Data)
+				if err != nil {
+					log.WithError(err).Warn("error loading feed cache")
+					return err
+				}
+
+				// Update user's own timeline with their own new post.
+				sources := map[string]string{username: userURL}
+
+				cache.FetchTwts(a.config, sources)
+
+				if err := cache.Store(a.config.Data); err != nil {
+					log.WithError(err).Warn("error saving feed cache")
+					return err
+				}
+				return nil
+			}(); err != nil {
+				log.WithError(err).Error("error updating feed cache")
+			}
+		}()
+
 		req, err := NewPostRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
@@ -390,8 +418,6 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-
-		username := claims["username"].(string)
 
 		user, err := a.db.GetUser(username)
 		if err != nil {
