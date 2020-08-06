@@ -20,10 +20,11 @@ type Config struct {
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`
 	CookieSecret    string        `json:"cookie_secret"`
-	TwtPrompts    []string      `json:"twt_prompts"`
-	TwtsPerPage   int           `json:"twts_per_page"`
+	TwtPrompts      []string      `json:"twt_prompts"`
+	TwtsPerPage     int           `json:"twts_per_page"`
 	MaxUploadSize   int64         `json:"max_upload_size"`
-	MaxTwtLength  int           `json:"max_twt_length"`
+	MaxTwtLength    int           `json:"max_twt_length"`
+	OpenProfiles    bool          `json:"open_profiles"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`

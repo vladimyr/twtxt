@@ -213,7 +213,11 @@ func (s *Server) initRoutes() {
 	s.router.GET("/u/:nick", s.OldTwtxtHandler())
 	s.router.HEAD("/u/:nick", s.OldTwtxtHandler())
 
-	s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
+	if s.config.OpenProfiles {
+		s.router.GET("/user/:nick", s.ProfileHandler())
+	} else {
+		s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
+	}
 	s.router.GET("/user/:nick/avatar.png", s.AvatarHandler())
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
@@ -348,6 +352,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("User Registrationg: %t", server.config.Register)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
+	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)
 	log.Infof("SMTP Host: %s", server.config.SMTPHost)
 	log.Infof("SMTP Port: %d", server.config.SMTPPort)
 	log.Infof("SMTP User: %s", server.config.SMTPUser)

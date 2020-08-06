@@ -36,6 +36,9 @@ const (
 	// DefaultMaxTwtLength is the default maximum length of posts permitted
 	DefaultMaxTwtLength = 288
 
+	// DefaultOpenProfiles is the default for whether or not to have open user profiles
+	DefaultOpenProfiles = false
+
 	// DefaultMaxUploadSize is the default maximum upload size permitted
 	DefaultMaxUploadSize = 1 << 24 // ~16MB (enough for high-res photos)
 
@@ -91,9 +94,10 @@ func NewConfig() *Config {
 		Register:        DefaultRegister,
 		RegisterMessage: DefaultRegisterMessage,
 		CookieSecret:    DefaultCookieSecret,
-		TwtPrompts:    DefaultTwtPrompts,
-		TwtsPerPage:   DefaultTwtsPerPage,
-		MaxTwtLength:  DefaultMaxTwtLength,
+		TwtPrompts:      DefaultTwtPrompts,
+		TwtsPerPage:     DefaultTwtsPerPage,
+		MaxTwtLength:    DefaultMaxTwtLength,
+		OpenProfiles:    DefaultOpenProfiles,
 		SessionExpiry:   DefaultSessionExpiry,
 		MagicLinkSecret: DefaultMagicLinkSecret,
 		SMTPHost:        DefaultSMTPHost,
@@ -190,6 +194,14 @@ func WithTwtsPerPage(twtsPerPage int) Option {
 func WithMaxTwtLength(maxTwtLength int) Option {
 	return func(cfg *Config) error {
 		cfg.MaxTwtLength = maxTwtLength
+		return nil
+	}
+}
+
+// WithOpenProfiles sets whether or not to have open user profiles
+func WithOpenProfiles(openProfiles bool) Option {
+	return func(cfg *Config) error {
+		cfg.OpenProfiles = openProfiles
 		return nil
 	}
 }
