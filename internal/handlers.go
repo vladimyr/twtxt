@@ -610,23 +610,20 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
-		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
-		if err != nil {
-			log.WithError(err).Error("error getting user last twt")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
-			s.render("error", w, ctx)
-			return
+		if ctx.Authenticated {
+			lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+			if err != nil {
+				log.WithError(err).Error("error getting user last twt")
+				ctx.Error = true
+				ctx.Message = "An error occurred while loading the timeline"
+				s.render("error", w, ctx)
+				return
+			}
+			ctx.LastTwt = lastTwt
 		}
 
-		ctx.LastTwt = lastTwt
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
-
-		log.Debugf("LastTwt.Hash(): %s", lastTwt.Hash())
-		for _, twt := range pagedTwts {
-			log.Debugf(" Twt.Hash(): %s", twt.Hash())
-		}
 
 		s.render("timeline", w, ctx)
 	}
@@ -662,16 +659,18 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			return
 		}
 
-		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
-		if err != nil {
-			log.WithError(err).Error("error getting user last twt")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
-			s.render("error", w, ctx)
-			return
+		if ctx.Authenticated {
+			lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+			if err != nil {
+				log.WithError(err).Error("error getting user last twt")
+				ctx.Error = true
+				ctx.Message = "An error occurred while loading the timeline"
+				s.render("error", w, ctx)
+				return
+			}
+			ctx.LastTwt = lastTwt
 		}
 
-		ctx.LastTwt = lastTwt
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
