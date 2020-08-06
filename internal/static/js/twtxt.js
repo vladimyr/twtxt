@@ -90,8 +90,6 @@ function deleteTwt(e) {
   e.preventDefault();
 
   if (confirm("Are you sure you want to delete this twt? This cannot be undone!")) {
-    u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Deleting...");
-    u("#post").attr("disabled", true);
     Twix.ajax({
       type: "DELETE",
       url: u("#twtForm").attr("action"),
