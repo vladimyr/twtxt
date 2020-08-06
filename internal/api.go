@@ -579,8 +579,8 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 	}
 }
 
-// FollowEndpoing ...
-func (a *API) FollowEndpoing() httprouter.Handle {
+// FollowEndpoint ...
+func (a *API) FollowEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		token := r.Context().Value(TokenContextKey).(*jwt.Token)
 		claims := token.Claims.(jwt.MapClaims)
