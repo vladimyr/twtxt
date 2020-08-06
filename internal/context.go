@@ -14,15 +14,15 @@ type Context struct {
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
-	TwtsPerPage           int
-	TwtPrompt             string
-	MaxTwtLength          int
+	TwtsPerPage             int
+	TwtPrompt               string
+	MaxTwtLength            int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
 
 	Username      string
 	User          *User
-	LastTwt     Twt
+	LastTwt       Twt
 	Profile       Profile
 	Authenticated bool
 
@@ -31,8 +31,8 @@ type Context struct {
 	Theme   string
 	Commit  string
 
-	Twter     Twter
-	Twts      Twts
+	Twter       Twter
+	Twts        Twts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator
@@ -46,9 +46,9 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  FullVersion(),
-		TwtsPerPage:    conf.TwtsPerPage,
-		TwtPrompt:      conf.RandomTwtPrompt(),
-		MaxTwtLength:   conf.MaxTwtLength,
+		TwtsPerPage:      conf.TwtsPerPage,
+		TwtPrompt:        conf.RandomTwtPrompt(),
+		MaxTwtLength:     conf.MaxTwtLength,
 		RegisterDisabled: !conf.Register,
 
 		Commit: Commit,

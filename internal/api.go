@@ -28,6 +28,7 @@ type ContextKey int
 
 const (
 	TokenContextKey ContextKey = iota
+	UserContextKey
 )
 
 var (
@@ -201,8 +202,6 @@ func (a *API) initRoutes() {
 func (a *API) CreateToken(user *User) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["username"] = user.Username
-	claims["userURL"] = user.URL
-	claims["userFeeds"] = user.Feeds
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString(a.config.APISigningKey)
 	if err != nil {
@@ -232,7 +231,27 @@ func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 		}
 
 		if token.Valid {
+			claims := token.Claims.(jwt.MapClaims)
+
+			username := claims["username"].(string)
+
+			user, err := a.db.GetUser(username)
+			if err != nil {
+				log.WithError(err).Error("error loading user object")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+
+			// Every registered new user follows themselves
+			// TODO: Make  this configurable server behaviour?
+			if user.Following == nil {
+				user.Following = make(map[string]string)
+			}
+			user.Following[user.Username] = user.URL
+
 			ctx := context.WithValue(r.Context(), TokenContextKey, token)
+			ctx = context.WithValue(ctx, UserContextKey, user)
+
 			endpoint(w, r.WithContext(ctx), p)
 		} else {
 			http.Error(w, "Invalid Token", http.StatusUnauthorized)
@@ -381,11 +400,7 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 // PostEndpoint ...
 func (a *API) PostEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		token := r.Context().Value(TokenContextKey).(*jwt.Token)
-		claims := token.Claims.(jwt.MapClaims)
-
-		username := claims["username"].(string)
-		userURL := claims["userURL"].(string)
+		user := r.Context().Value(UserContextKey).(*User)
 
 		defer func() {
 			if err := func() error {
@@ -396,7 +411,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 				}
 
 				// Update user's own timeline with their own new post.
-				sources := map[string]string{username: userURL}
+				sources := map[string]string{user.Username: user.URL}
 
 				cache.FetchTwts(a.config, sources)
 
@@ -424,15 +439,8 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			return
 		}
 
-		user, err := a.db.GetUser(username)
-		if err != nil {
-			log.WithError(err).Error("error loading user object")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
-		}
-
 		switch req.PostAs {
-		case "", "me":
+		case "", me:
 			err = AppendTwt(a.config, a.db, user, text)
 		default:
 			if user.OwnsFeed(req.PostAs) {
@@ -494,22 +502,12 @@ func (a *API) PostEndpoint() httprouter.Handle {
 // TimelineEndpoint ...
 func (a *API) TimelineEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		token := r.Context().Value(TokenContextKey).(*jwt.Token)
-		claims := token.Claims.(jwt.MapClaims)
+		user := r.Context().Value(UserContextKey).(*User)
 
 		req, err := NewTimelineRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		username := claims["username"].(string)
-
-		user, err := a.db.GetUser(username)
-		if err != nil {
-			log.WithError(err).Error("error loading user object")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
@@ -614,22 +612,12 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 // FollowEndpoint ...
 func (a *API) FollowEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		token := r.Context().Value(TokenContextKey).(*jwt.Token)
-		claims := token.Claims.(jwt.MapClaims)
+		user := r.Context().Value(UserContextKey).(*User)
 
 		req, err := NewFollowRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
-
-		username := claims["username"].(string)
-
-		user, err := a.db.GetUser(username)
-		if err != nil {
-			log.WithError(err).Error("error loading user object")
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
