@@ -214,24 +214,29 @@ func (a *API) CreateToken(user *User) (string, error) {
 
 func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		if r.Header["Token"] != nil {
-			token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
-				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("There was an error")
-				}
-				return a.config.APISigningKey, nil
-			})
-			if err != nil {
-				log.WithError(err).Error("error parsing token")
-				return
-			}
+		if r.Header["Token"][0] == "" {
+			http.Error(w, "No Token Provided", http.StatusUnauthorized)
+			return
+		}
 
-			if token.Valid {
-				ctx := context.WithValue(r.Context(), TokenContextKey, token)
-				endpoint(w, r.WithContext(ctx), p)
+		token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("There was an error")
 			}
+			return a.config.APISigningKey, nil
+		})
+		if err != nil {
+			log.WithError(err).Error("error parsing token")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		if token.Valid {
+			ctx := context.WithValue(r.Context(), TokenContextKey, token)
+			endpoint(w, r.WithContext(ctx), p)
 		} else {
-			fmt.Fprintf(w, "Not Authorized")
+			http.Error(w, "Invalid Token", http.StatusUnauthorized)
+			return
 		}
 	}
 }
