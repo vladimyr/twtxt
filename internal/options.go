@@ -30,11 +30,11 @@ const (
 	// DefaultCookieSecret is the server's default cookie secret
 	DefaultCookieSecret = "PLEASE_CHANGE_ME!!!"
 
-	// DefaultTweetsPerPage is the server's default tweets per page to display
-	DefaultTweetsPerPage = 50
+	// DefaultTwtsPerPage is the server's default twts per page to display
+	DefaultTwtsPerPage = 50
 
-	// DefaultMaxTweetLength is the default maximum length of posts permitted
-	DefaultMaxTweetLength = 288
+	// DefaultMaxTwtLength is the default maximum length of posts permitted
+	DefaultMaxTwtLength = 288
 
 	// DefaultMaxUploadSize is the default maximum upload size permitted
 	DefaultMaxUploadSize = 1 << 24 // ~16MB (enough for high-res photos)
@@ -70,8 +70,8 @@ var (
 		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt",
 	}
 
-	// DefaultTweetPrompts are the set of default prompts  for tweet text(s)
-	DefaultTweetPrompts = []string{
+	// DefaultTwtPrompts are the set of default prompts  for twt text(s)
+	DefaultTwtPrompts = []string{
 		`What's on your mind?`,
 		`Share something insightful!`,
 		`Good day to you! What's new?`,
@@ -91,9 +91,9 @@ func NewConfig() *Config {
 		Register:        DefaultRegister,
 		RegisterMessage: DefaultRegisterMessage,
 		CookieSecret:    DefaultCookieSecret,
-		TweetPrompts:    DefaultTweetPrompts,
-		TweetsPerPage:   DefaultTweetsPerPage,
-		MaxTweetLength:  DefaultMaxTweetLength,
+		TwtPrompts:    DefaultTwtPrompts,
+		TwtsPerPage:   DefaultTwtsPerPage,
+		MaxTwtLength:  DefaultMaxTwtLength,
 		SessionExpiry:   DefaultSessionExpiry,
 		MagicLinkSecret: DefaultMagicLinkSecret,
 		SMTPHost:        DefaultSMTPHost,
@@ -178,18 +178,18 @@ func WithCookieSecret(secret string) Option {
 	}
 }
 
-// WithTweetsPerPage sets the server's tweets per page
-func WithTweetsPerPage(tweetsPerPage int) Option {
+// WithTwtsPerPage sets the server's twts per page
+func WithTwtsPerPage(twtsPerPage int) Option {
 	return func(cfg *Config) error {
-		cfg.TweetsPerPage = tweetsPerPage
+		cfg.TwtsPerPage = twtsPerPage
 		return nil
 	}
 }
 
-// WithMaxTweetLength sets the maximum length of posts permitted on the server
-func WithMaxTweetLength(maxTweetLength int) Option {
+// WithMaxTwtLength sets the maximum length of posts permitted on the server
+func WithMaxTwtLength(maxTwtLength int) Option {
 	return func(cfg *Config) error {
-		cfg.MaxTweetLength = maxTweetLength
+		cfg.MaxTwtLength = maxTwtLength
 		return nil
 	}
 }

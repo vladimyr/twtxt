@@ -17,7 +17,7 @@ import (
 )
 
 type Cached struct {
-	Tweets       Tweets
+	Twts       Twts
 	Lastmodified string
 }
 
@@ -83,12 +83,12 @@ func LoadCache(path string) (Cache, error) {
 
 const maxfetchers = 50
 
-func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
+func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	var mu sync.RWMutex
 
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
-	tweetsch := make(chan Tweets, len(sources))
+	twtsch := make(chan Twts, len(sources))
 
 	var wg sync.WaitGroup
 	// max parallel http fetchers
@@ -107,7 +107,7 @@ func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 			req, err := http.NewRequest("GET", url, nil)
 			if err != nil {
 				log.WithError(err).Errorf("%s: http.NewRequest fail: %s", url, err)
-				tweetsch <- nil
+				twtsch <- nil
 				return
 			}
 
@@ -127,7 +127,7 @@ func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 			resp, err := client.Do(req)
 			if err != nil {
 				log.WithError(err).Errorf("%s: client.Do fail: %s", url, err)
-				tweetsch <- nil
+				twtsch <- nil
 				return
 			}
 			defer resp.Body.Close()
@@ -138,64 +138,64 @@ func (cache Cache) FetchTweets(conf *Config, sources map[string]string) {
 				url = actualurl
 			}
 
-			var tweets Tweets
+			var twts Twts
 
 			switch resp.StatusCode {
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: resp.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
-				tweeter := Tweeter{Nick: nick}
+				twter := Twter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
-					tweeter.URL = URLForUser(conf.BaseURL, nick)
+					twter.URL = URLForUser(conf.BaseURL, nick)
 				} else {
-					tweeter.URL = url
+					twter.URL = url
 				}
-				tweets, err := ParseFile(scanner, tweeter)
-				if len(tweets) == 0 {
+				twts, err := ParseFile(scanner, twter)
+				if len(twts) == 0 {
 					log.WithField("nick", nick).WithField("url", url).Warn("possibly bad feed")
-					tweetsch <- nil
+					twtsch <- nil
 					return
 				}
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
-					tweetsch <- nil
+					twtsch <- nil
 					return
 				}
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
-				cache[url] = Cached{Tweets: tweets, Lastmodified: lastmodified}
+				cache[url] = Cached{Twts: twts, Lastmodified: lastmodified}
 				mu.Unlock()
 			case http.StatusNotModified: // 304
 				mu.RLock()
-				tweets = cache[url].Tweets
+				twts = cache[url].Twts
 				mu.RUnlock()
 			}
 
-			tweetsch <- tweets
+			twtsch <- twts
 		}(nick, url)
 	}
 
-	// close tweets channel when all goroutines are done
+	// close twts channel when all goroutines are done
 	go func() {
 		wg.Wait()
-		close(tweetsch)
+		close(twtsch)
 	}()
 
-	for range tweetsch {
+	for range twtsch {
 	}
 }
 
-func (cache Cache) GetAll() Tweets {
-	var alltweets Tweets
+func (cache Cache) GetAll() Twts {
+	var alltwts Twts
 	for _, cached := range cache {
-		alltweets = append(alltweets, cached.Tweets...)
+		alltwts = append(alltwts, cached.Twts...)
 	}
-	return alltweets
+	return alltwts
 }
 
-func (cache Cache) GetByURL(url string) Tweets {
+func (cache Cache) GetByURL(url string) Twts {
 	if cached, ok := cache[url]; ok {
-		return cached.Tweets
+		return cached.Twts
 	}
-	return Tweets{}
+	return Twts{}
 }

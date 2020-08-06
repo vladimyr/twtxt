@@ -103,31 +103,31 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Profile = profile
 
-		tweets, err := GetUserTweets(s.config, profile.Username)
+		twts, err := GetUserTwts(s.config, profile.Username)
 		if err != nil {
-			log.WithError(err).Error("error loading tweets")
+			log.WithError(err).Error("error loading twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the profile"
 			s.render("error", w, ctx)
 			return
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the  timeline"
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx.Tweets = pagedTweets
+		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
 		s.render("profile", w, ctx)
@@ -443,11 +443,11 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
 
-		// TODO: Support deleting/patching last feed (`postas`) tweet too.
+		// TODO: Support deleting/patching last feed (`postas`) twt too.
 		if r.Method == http.MethodDelete || r.Method == http.MethodPatch {
-			if err := DeleteLastTweet(s.config, ctx.User); err != nil {
+			if err := DeleteLastTwt(s.config, ctx.User); err != nil {
 				ctx.Error = true
-				ctx.Message = "Error deleting last tweet"
+				ctx.Message = "Error deleting last twt"
 				s.render("error", w, ctx)
 			}
 
@@ -457,25 +457,25 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		hash := r.FormValue("hash")
-		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "Error deleting last tweet"
+			ctx.Message = "Error deleting last twt"
 			s.render("error", w, ctx)
 			return
 		}
 
-		if hash != "" && lastTweet.Hash() == hash {
-			if err := DeleteLastTweet(s.config, ctx.User); err != nil {
+		if hash != "" && lastTwt.Hash() == hash {
+			if err := DeleteLastTwt(s.config, ctx.User); err != nil {
 				ctx.Error = true
-				ctx.Message = "Error deleting last tweet"
+				ctx.Message = "Error deleting last twt"
 				s.render("error", w, ctx)
 			}
 		} else {
-			log.Warnf("hash mismatch %s != %s", lastTweet.Hash(), hash)
+			log.Warnf("hash mismatch %s != %s", lastTwt.Hash(), hash)
 		}
 
-		text := CleanTweet(r.FormValue("text"))
+		text := CleanTwt(r.FormValue("text"))
 		if text == "" {
 			ctx.Error = true
 			ctx.Message = "No post content provided!"
@@ -487,14 +487,14 @@ func (s *Server) PostHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)
 			ctx.Error = true
-			ctx.Message = "Error posting tweet"
+			ctx.Message = "Error posting twt"
 			s.render("error", w, ctx)
 			return
 		}
 
 		switch postas {
 		case "", user.Username:
-			err = AppendTweet(s.config, s.db, user, text)
+			err = AppendTwt(s.config, s.db, user, text)
 		default:
 			if user.OwnsFeed(postas) {
 				err = AppendSpecial(s.config, s.db, postas, text)
@@ -505,7 +505,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		if err != nil {
 			ctx.Error = true
-			ctx.Message = "Error posting tweet"
+			ctx.Message = "Error posting twt"
 			s.render("error", w, ctx)
 			return
 		}
@@ -522,7 +522,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 				return err
 			}
 
-			cache.FetchTweets(s.config, sources)
+			cache.FetchTwts(s.config, sources)
 
 			if err := cache.Store(s.config.Data); err != nil {
 				log.WithError(err).Warn("error saving feed cache")
@@ -564,20 +564,20 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		var (
-			tweets Tweets
+			twts Twts
 			cache  Cache
 			err    error
 		)
 
 		if !ctx.Authenticated {
-			tweets, err = GetAllTweets(s.config)
+			twts, err = GetAllTwts(s.config)
 		} else {
 			cache, err = LoadCache(s.config.Data)
 			if err == nil {
 				user := ctx.User
 				if user != nil {
 					for _, url := range user.Following {
-						tweets = append(tweets, cache.GetByURL(url)...)
+						twts = append(twts, cache.GetByURL(url)...)
 					}
 				}
 			}
@@ -590,22 +590,22 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the  timeline"
 			s.render("error", w, ctx)
 			return
 		}
 
-		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the  timeline"
@@ -613,13 +613,13 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.LastTweet = lastTweet
-		ctx.Tweets = pagedTweets
+		ctx.LastTwt = lastTwt
+		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
-		log.Debugf("LastTweet.Hash(): %s", lastTweet.Hash())
-		for _, tweet := range pagedTweets {
-			log.Debugf(" Tweet.Hash(): %s", tweet.Hash())
+		log.Debugf("LastTwt.Hash(): %s", lastTwt.Hash())
+		for _, twt := range pagedTwts {
+			log.Debugf(" Twt.Hash(): %s", twt.Hash())
 		}
 
 		s.render("timeline", w, ctx)
@@ -631,7 +631,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		tweets, err := GetAllTweets(s.config)
+		twts, err := GetAllTwts(s.config)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"
@@ -639,22 +639,22 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			return
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the  timeline"
 			s.render("error", w, ctx)
 			return
 		}
 
-		lastTweet, _, err := GetLastTweet(s.config, ctx.User)
+		lastTwt, _, err := GetLastTwt(s.config, ctx.User)
 		if err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the  timeline"
@@ -662,8 +662,8 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.LastTweet = lastTweet
-		ctx.Tweets = pagedTweets
+		ctx.LastTwt = lastTwt
+		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
 		s.render("timeline", w, ctx)
@@ -675,7 +675,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var tweets Tweets
+		var twts Twts
 
 		cache, err := LoadCache(s.config.Data)
 		if err != nil {
@@ -686,29 +686,29 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		}
 
 		for _, url := range ctx.User.Following {
-			for _, tweet := range cache.GetByURL(url) {
-				if HasString(UniqStrings(tweet.Mentions()), ctx.User.Username) {
-					tweets = append(tweets, tweet)
+			for _, twt := range cache.GetByURL(url) {
+				if HasString(UniqStrings(twt.Mentions()), ctx.User.Username) {
+					twts = append(twts, twt)
 				}
 			}
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), s.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading mentions"
 			s.render("error", w, ctx)
 			return
 		}
 
-		ctx.Tweets = pagedTweets
+		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
 		s.render("timeline", w, ctx)

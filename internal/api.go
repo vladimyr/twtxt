@@ -115,12 +115,12 @@ func NewTimelineRequest(r io.Reader) (req TimelineRequest, err error) {
 type PagerResponse struct {
 	Current     int `json:"current_page"`
 	MaxPages    int `json:"max_pages"`
-	TotalTweets int `json:"total_tweets"`
+	TotalTwts int `json:"total_twts"`
 }
 
 // TimelineResponse ...
 type TimelineResponse struct {
-	Tweets []Tweet `json:"tweets"`
+	Twts []Twt `json:"twts"`
 	Pager  PagerResponse
 }
 
@@ -305,7 +305,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			return
 		}
 
-		text := CleanTweet(req.Text)
+		text := CleanTwt(req.Text)
 		if text == "" {
 			log.Warn("no text provided for post")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
@@ -323,7 +323,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 
 		switch req.PostAs {
 		case "", "me":
-			err = AppendTweet(a.config, a.db, user, text)
+			err = AppendTwt(a.config, a.db, user, text)
 		default:
 			if user.OwnsFeed(req.PostAs) {
 				err = AppendSpecial(a.config, a.db, req.PostAs, text)
@@ -354,7 +354,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 				return err
 			}
 
-			cache.FetchTweets(a.config, sources)
+			cache.FetchTwts(a.config, sources)
 
 			if err := cache.Store(a.config.Data); err != nil {
 				log.WithError(err).Warn("error saving feed cache")
@@ -410,31 +410,31 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			return
 		}
 
-		var tweets Tweets
+		var twts Twts
 
 		for _, url := range user.Following {
-			tweets = append(tweets, cache.GetByURL(url)...)
+			twts = append(twts, cache.GetByURL(url)...)
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), a.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
 		pager.SetPage(req.Page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error loading timeline")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
 		res := TimelineResponse{
-			Tweets: pagedTweets,
+			Twts: pagedTwts,
 			Pager: PagerResponse{
 				Current:     pager.Page(),
 				MaxPages:    pager.PageNums(),
-				TotalTweets: pager.Nums(),
+				TotalTwts: pager.Nums(),
 			},
 		}
 
@@ -460,32 +460,32 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		tweets, err := GetAllTweets(a.config)
+		twts, err := GetAllTwts(a.config)
 		if err != nil {
-			log.WithError(err).Error("error loading local tweets")
+			log.WithError(err).Error("error loading local twts")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
-		sort.Sort(sort.Reverse(tweets))
+		sort.Sort(sort.Reverse(twts))
 
-		var pagedTweets Tweets
+		var pagedTwts Twts
 
-		pager := paginator.New(adapter.NewSliceAdapter(tweets), a.config.TweetsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
 		pager.SetPage(req.Page)
 
-		if err = pager.Results(&pagedTweets); err != nil {
+		if err = pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error loading discover")
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
 		res := TimelineResponse{
-			Tweets: pagedTweets,
+			Twts: pagedTwts,
 			Pager: PagerResponse{
 				Current:     pager.Page(),
 				MaxPages:    pager.PageNums(),
-				TotalTweets: pager.Nums(),
+				TotalTwts: pager.Nums(),
 			},
 		}
 

@@ -14,15 +14,15 @@ type Context struct {
 	BaseURL                 string
 	InstanceName            string
 	SoftwareVersion         string
-	TweetsPerPage           int
-	TweetPrompt             string
-	MaxTweetLength          int
+	TwtsPerPage           int
+	TwtPrompt             string
+	MaxTwtLength          int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
 
 	Username      string
 	User          *User
-	LastTweet     Tweet
+	LastTwt     Twt
 	Profile       Profile
 	Authenticated bool
 
@@ -31,8 +31,8 @@ type Context struct {
 	Theme   string
 	Commit  string
 
-	Tweeter     Tweeter
-	Tweets      Tweets
+	Twter     Twter
+	Twts      Twts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
 	Pager       paginator.Paginator
@@ -46,9 +46,9 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		BaseURL:          conf.BaseURL,
 		InstanceName:     conf.Name,
 		SoftwareVersion:  FullVersion(),
-		TweetsPerPage:    conf.TweetsPerPage,
-		TweetPrompt:      conf.RandomTweetPrompt(),
-		MaxTweetLength:   conf.MaxTweetLength,
+		TwtsPerPage:    conf.TwtsPerPage,
+		TwtPrompt:      conf.RandomTwtPrompt(),
+		MaxTwtLength:   conf.MaxTwtLength,
 		RegisterDisabled: !conf.Register,
 
 		Commit: Commit,
@@ -80,7 +80,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			log.WithError(err).Warnf("error loading user object for %s", ctx.Username)
 		}
 
-		ctx.Tweeter = Tweeter{
+		ctx.Twter = Twter{
 			Nick: user.Username,
 			URL:  URLForUser(conf.BaseURL, user.Username),
 		}
@@ -95,7 +95,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		ctx.User = user
 	} else {
 		ctx.User = &User{}
-		ctx.Tweeter = Tweeter{}
+		ctx.Twter = Twter{}
 	}
 
 	return ctx

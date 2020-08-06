@@ -67,7 +67,7 @@ function replyTo(e) {
   text.setSelectionRange(size, size);
 }
 
-function editTweet(e) {
+function editTwt(e) {
   e.preventDefault();
 
   var el = u("textarea#text")
@@ -83,18 +83,18 @@ function editTweet(e) {
 
   text.setSelectionRange(size, size);
 
-  u("#replaceTweet").first().value = u(e.target).data("hash");
+  u("#replaceTwt").first().value = u(e.target).data("hash");
 }
 
-function deleteTweet(e) {
+function deleteTwt(e) {
   e.preventDefault();
 
-  if (confirm("Are you sure you want to delete this tweet? This cannot be undone!")) {
+  if (confirm("Are you sure you want to delete this twt? This cannot be undone!")) {
     u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Deleting...");
     u("#post").attr("disabled", true);
     Twix.ajax({
       type: "DELETE",
-      url: u("#tweetForm").attr("action"),
+      url: u("#twtForm").attr("action"),
       success: function(data) {
         var hash = u(e.target).data("hash");
         u("#" + hash).remove();
@@ -104,14 +104,14 @@ function deleteTweet(e) {
 };
 
 u(".reply").on("click", replyTo);
-u(".edit").on("click", editTweet);
-u(".delete").on("click", deleteTweet);
+u(".edit").on("click", editTwt);
+u(".delete").on("click", deleteTwt);
 
 u("#post").on("click", function(e) {
   e.preventDefault();
   u("#post").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Posting...");
   u("#post").attr("disabled", true);
-  u("#tweetForm").first().submit();
+  u("#twtForm").first().submit();
 });
 
 

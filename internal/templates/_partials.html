@@ -1,14 +1,14 @@
 {{ define "post" }}
   {{ if .Authenticated }}
-    <form id="tweetForm" action="/post" method="POST">
-      <input type="hidden" id="replaceTweet" name="hash" value="" />
+    <form id="twtForm" action="/post" method="POST">
+      <input type="hidden" id="replaceTwt" name="hash" value="" />
     </form>
     <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST"></form>
 
     <div class="grid">
       <div>
         <div class="grid">
-          <textarea form="tweetForm" id="text" name="text" placeholder="{{ .TweetPrompt }}" rows=3 maxlength={{ .MaxTweetLength }} wrap="soft" autofocus required></textarea>
+          <textarea form="twtForm" id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
         </div>
         <div class="grid">
           <div class="imageUpload">
@@ -19,7 +19,7 @@
             <input form="uploadForm" id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
           </div>
           <div>
-            <select id="postas" class="postas" name="postas" form="tweetForm">
+            <select id="postas" class="postas" name="postas" form="twtForm">
               <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
               {{ range $index, $Feed := .User.Feeds }}
                 <option value="{{ $Feed }}">{{ $Feed }}</option>
@@ -27,7 +27,7 @@
             </select>
           </div>
           <div>
-            <button form="tweetForm" id="post" type="submit">Post</button>
+            <button form="twtForm" id="post" type="submit">Post</button>
           </div>
         </div>
       </div>
@@ -40,49 +40,49 @@
     <div>
       {{ template "pager" . }}
       
-      {{ range .Tweets }}
+      {{ range .Twts }}
         <article id="{{ .Hash }}">
           <hgroup>
             <h2>
-              {{ if $.User.Is .Tweeter.URL }}
+              {{ if $.User.Is .Twter.URL }}
                 <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}">
                   <img src="/user/{{ $.User.Username }}/avatar.png" />
                   me
                 </a>
               {{ else }}
-                {{ if $.IsLocal .Tweeter.URL }}
-                  <a href="{{ .Tweeter.URL | trimSuffix "/twtxt.txt" }}">
-                    <img src="/user/{{ .Tweeter.Nick }}/avatar.png" />
+                {{ if $.IsLocal .Twter.URL }}
+                  <a href="{{ .Twter.URL | trimSuffix "/twtxt.txt" }}">
+                    <img src="/user/{{ .Twter.Nick }}/avatar.png" />
                 {{ else }}
-                  <a href="{{ .Tweeter.URL }}">
+                  <a href="{{ .Twter.URL }}">
                     <i class="icss-rss" style="font-size:1.5em"></i>
                 {{ end }}
-                  {{ .Tweeter.Nick }}
+                  {{ .Twter.Nick }}
                 </a>
               {{ end }}
             </h2>
             {{ if $.Authenticated }}
               <h3>
-                {{ if eq $.LastTweet.Hash .Hash }}
+                {{ if eq $.LastTwt.Hash .Hash }}
                   [<a class="edit" href="#" data-hash="{{ .Hash }}" data-text="{{ .Text }}">Edit</a>]
                   [<a class="delete" href="#" data-hash="{{ .Hash }}">Delete</a>]
                 {{ end }}
-                {{ if (not ($.User.Is .Tweeter.URL)) }}
+                {{ if (not ($.User.Is .Twter.URL)) }}
                   {{ with $.Profile.Type }}
                   {{ else }}
                     [<a class="reply" href="#" data-reply="{{ $.User.Reply . }}">Reply</a>]
                   {{ end }}
-                  {{ if $.User.Follows .Tweeter.URL }}
-                    [<a href="/unfollow?nick={{ .Tweeter.Nick }}">Unfollow</a>]
+                  {{ if $.User.Follows .Twter.URL }}
+                    [<a href="/unfollow?nick={{ .Twter.Nick }}">Unfollow</a>]
                   {{ else }}
-                    [<a href="/follow?nick={{ .Tweeter.Nick }}&url={{ .Tweeter.URL }}">Follow</a>]
+                    [<a href="/follow?nick={{ .Twter.Nick }}&url={{ .Twter.URL }}">Follow</a>]
                   {{ end }}
                 {{ end }}
               </h3>
             {{ end }}
             <footer>(<a href="#{{ .Hash }}">{{ .Created | time }}</a>)</footer>
           </hgroup>
-          <p>{{ .Text | formatTweet }}</p>
+          <p>{{ .Text | formatTwt }}</p>
         </article>
       {{ end }}
       {{ template "pager" . }}

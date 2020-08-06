@@ -24,27 +24,27 @@ const (
 )
 
 var (
-	ErrInvalidTweetLine = errors.New("error: invalid tweet line parsed")
+	ErrInvalidTwtLine = errors.New("error: invalid twt line parsed")
 )
 
-type Tweeter struct {
+type Twter struct {
 	Nick string
 	URL  string
 }
 
-type Tweet struct {
-	Tweeter Tweeter
+type Twt struct {
+	Twter Twter
 	Text    string
 	Created time.Time
 
 	hash string
 }
 
-func (tweet Tweet) Mentions() []string {
+func (twt Twt) Mentions() []string {
 	var mentions []string
 
 	re := regexp.MustCompile(`@<(.*?) .*?>`)
-	matches := re.FindAllStringSubmatch(tweet.Text, -1)
+	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		mentions = append(mentions, match[1])
 	}
@@ -52,48 +52,48 @@ func (tweet Tweet) Mentions() []string {
 	return mentions
 }
 
-func (tweet Tweet) Subject() string {
+func (twt Twt) Subject() string {
 	re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
-	match := re.FindStringSubmatch(tweet.Text)
+	match := re.FindStringSubmatch(twt.Text)
 	if match != nil {
 		return match[2]
 	}
 	return ""
 }
 
-func (tweet Tweet) Hash() string {
-	if tweet.hash != "" {
-		return tweet.hash
+func (twt Twt) Hash() string {
+	if twt.hash != "" {
+		return twt.hash
 	}
 
-	payload := tweet.Created.String() + "\n" + tweet.Text
+	payload := twt.Created.String() + "\n" + twt.Text
 	sum := blake2b.Sum256([]byte(payload))
 
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.
 	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
-	tweet.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
+	twt.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
 
-	return tweet.hash
+	return twt.hash
 }
 
 // typedef to be able to attach sort methods
-type Tweets []Tweet
+type Twts []Twt
 
-func (tweets Tweets) Len() int {
-	return len(tweets)
+func (twts Twts) Len() int {
+	return len(twts)
 }
-func (tweets Tweets) Less(i, j int) bool {
-	return tweets[i].Created.Before(tweets[j].Created)
+func (twts Twts) Less(i, j int) bool {
+	return twts[i].Created.Before(twts[j].Created)
 }
-func (tweets Tweets) Swap(i, j int) {
-	tweets[i], tweets[j] = tweets[j], tweets[i]
+func (twts Twts) Swap(i, j int) {
+	twts[i], twts[j] = twts[j], twts[i]
 }
 
-func (tweets Tweets) Tags() map[string]int {
+func (twts Twts) Tags() map[string]int {
 	tags := make(map[string]int)
 	re := regexp.MustCompile(`#[-\w]+`)
-	for _, tweet := range tweets {
-		for _, tag := range re.FindAllString(tweet.Text, -1) {
+	for _, twt := range twts {
+		for _, tag := range re.FindAllString(twt.Text, -1) {
 			tags[strings.TrimLeft(tag, "#")]++
 		}
 	}
@@ -123,7 +123,7 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
-func DeleteLastTweet(conf *Config, user *User) error {
+func DeleteLastTwt(conf *Config, user *User) error {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -132,7 +132,7 @@ func DeleteLastTweet(conf *Config, user *User) error {
 
 	fn := filepath.Join(p, user.Username)
 
-	_, n, err := GetLastTweet(conf, user)
+	_, n, err := GetLastTwt(conf, user)
 	if err != nil {
 		return err
 	}
@@ -149,13 +149,13 @@ func DeleteLastTweet(conf *Config, user *User) error {
 func AppendSpecial(conf *Config, db Store, specialUsername, text string) error {
 	user := &User{Username: specialUsername}
 	user.Following = make(map[string]string)
-	return AppendTweet(conf, db, user, text)
+	return AppendTwt(conf, db, user, text)
 }
 
-func AppendTweet(conf *Config, db Store, user *User, text string) error {
+func AppendTwt(conf *Config, db Store, user *User, text string) error {
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return fmt.Errorf("cowardly refusing to tweet empty text, or only spaces")
+		return fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
 	}
 
 	p := filepath.Join(conf.Data, feedsDir)
@@ -192,7 +192,7 @@ func FeedExists(conf *Config, username string) bool {
 	return true
 }
 
-func GetLastTweet(conf *Config, user *User) (tweet Tweet, offset int, err error) {
+func GetLastTwt(conf *Config, user *User) (twt Twt, offset int, err error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err = os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -207,11 +207,11 @@ func GetLastTweet(conf *Config, user *User) (tweet Tweet, offset int, err error)
 		return
 	}
 
-	tweet, err = ParseLine(string(data), user.Tweeter())
+	twt, err = ParseLine(string(data), user.Twter())
 	return
 }
 
-func GetUserTweets(conf *Config, username string) (Tweets, error) {
+func GetUserTwts(conf *Config, username string) (Twts, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -220,9 +220,9 @@ func GetUserTweets(conf *Config, username string) (Tweets, error) {
 
 	username = NormalizeUsername(username)
 
-	var tweets Tweets
+	var twts Twts
 
-	tweeter := Tweeter{
+	twter := Twter{
 		Nick: username,
 		URL:  URLForUser(conf.BaseURL, username),
 	}
@@ -233,18 +233,18 @@ func GetUserTweets(conf *Config, username string) (Tweets, error) {
 		return nil, err
 	}
 	s := bufio.NewScanner(f)
-	t, err := ParseFile(s, tweeter)
+	t, err := ParseFile(s, twter)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)
 		return nil, err
 	}
-	tweets = append(tweets, t...)
+	twts = append(twts, t...)
 	f.Close()
 
-	return tweets, nil
+	return twts, nil
 }
 
-func GetAllTweets(conf *Config) (Tweets, error) {
+func GetAllTwts(conf *Config) (Twts, error) {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
 		log.WithError(err).Error("error creating feeds directory")
@@ -257,10 +257,10 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 		return nil, err
 	}
 
-	var tweets Tweets
+	var twts Twts
 
 	for _, info := range files {
-		tweeter := Tweeter{
+		twter := Twter{
 			Nick: info.Name(),
 			URL:  URLForUser(conf.BaseURL, info.Name()),
 		}
@@ -271,19 +271,19 @@ func GetAllTweets(conf *Config) (Tweets, error) {
 			continue
 		}
 		s := bufio.NewScanner(f)
-		t, err := ParseFile(s, tweeter)
+		t, err := ParseFile(s, twter)
 		if err != nil {
 			log.WithError(err).Errorf("error processing feed %s", fn)
 			continue
 		}
-		tweets = append(tweets, t...)
+		twts = append(twts, t...)
 		f.Close()
 	}
 
-	return tweets, nil
+	return twts, nil
 }
 
-func ParseLine(line string, tweeter Tweeter) (tweet Tweet, err error) {
+func ParseLine(line string, twter Twter) (twt Twt, err error) {
 	if line == "" {
 		return
 	}
@@ -296,12 +296,12 @@ func ParseLine(line string, tweeter Tweeter) (tweet Tweet, err error) {
 	// "Submatch 0 is the match of the entire expression, submatch 1 the
 	// match of the first parenthesized subexpression, and so on."
 	if len(parts) != 4 {
-		err = ErrInvalidTweetLine
+		err = ErrInvalidTwtLine
 		return
 	}
 
-	tweet = Tweet{
-		Tweeter: tweeter,
+	twt = Twt{
+		Twter: twter,
 		Created: ParseTime(parts[1]),
 		Text:    parts[3],
 	}
@@ -309,23 +309,23 @@ func ParseLine(line string, tweeter Tweeter) (tweet Tweet, err error) {
 	return
 }
 
-func ParseFile(scanner *bufio.Scanner, tweeter Tweeter) (Tweets, error) {
-	var tweets Tweets
+func ParseFile(scanner *bufio.Scanner, twter Twter) (Twts, error) {
+	var twts Twts
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		tweet, err := ParseLine(line, tweeter)
+		twt, err := ParseLine(line, twter)
 		if err != nil {
-			log.Warnf("could not parse: '%s' (source:%s)\n", line, tweeter.URL)
+			log.Warnf("could not parse: '%s' (source:%s)\n", line, twter.URL)
 			continue
 		}
 
-		tweets = append(tweets, tweet)
+		twts = append(twts, twt)
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, err
 	}
-	return tweets, nil
+	return twts, nil
 }
 
 func ParseTime(timestr string) time.Time {

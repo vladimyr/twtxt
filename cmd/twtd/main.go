@@ -18,19 +18,19 @@ var (
 	debug   bool
 	version bool
 
-	data           string
-	store          string
-	name           string
-	theme          string
-	register       bool
-	baseURL        string
-	adminUser      string
-	feedSources    []string
-	cookieSecret   string
-	tweetsPerPage  int
-	maxTweetLength int
-	maxUploadSize  int64
-	sessionExpiry  time.Duration
+	data          string
+	store         string
+	name          string
+	theme         string
+	register      bool
+	baseURL       string
+	adminUser     string
+	feedSources   []string
+	cookieSecret  string
+	twtsPerPage   int
+	maxTwtLength  int
+	maxUploadSize int64
+	sessionExpiry time.Duration
 
 	magiclinkSecret string
 	smtpHost        string
@@ -59,9 +59,9 @@ func init() {
 	flag.StringVarP(&adminUser, "admin-user", "A", twtxt.DefaultAdminUser, "default admin user to use")
 	flag.StringSliceVarP(&feedSources, "feed-sources", "F", twtxt.DefaultFeedSources, "external feed sources")
 	flag.StringVarP(&cookieSecret, "cookie-secret", "S", twtxt.DefaultCookieSecret, "cookie secret to use")
-	flag.IntVarP(&maxTweetLength, "max-tweet-length", "L", twtxt.DefaultMaxTweetLength, "maximum length of posts")
+	flag.IntVarP(&maxTwtLength, "max-twt-length", "L", twtxt.DefaultMaxTwtLength, "maximum length of posts")
 	flag.Int64VarP(&maxUploadSize, "max-upload-size", "U", twtxt.DefaultMaxUploadSize, "maximum upload size of media")
-	flag.IntVarP(&tweetsPerPage, "tweets-per-page", "T", twtxt.DefaultTweetsPerPage, "tweets per page to display")
+	flag.IntVarP(&twtsPerPage, "twts-per-page", "T", twtxt.DefaultTwtsPerPage, "twts per page to display")
 	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", twtxt.DefaultSessionExpiry, "session expiry to use")
 
 	flag.StringVar(&magiclinkSecret, "magiclink-secret", twtxt.DefaultMagicLinkSecret, "magiclink secret to use for password reset tokens")
@@ -124,9 +124,9 @@ func main() {
 		twtxt.WithAdminUser(adminUser),
 		twtxt.WithFeedSources(feedSources),
 		twtxt.WithCookieSecret(cookieSecret),
-		twtxt.WithTweetsPerPage(tweetsPerPage),
+		twtxt.WithTwtsPerPage(twtsPerPage),
 		twtxt.WithSessionExpiry(sessionExpiry),
-		twtxt.WithMaxTweetLength(maxTweetLength),
+		twtxt.WithMaxTwtLength(maxTwtLength),
 		twtxt.WithMaxUploadSize(maxUploadSize),
 		twtxt.WithMagicLinkSecret(magiclinkSecret),
 

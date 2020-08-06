@@ -373,9 +373,9 @@ func ValidateUsername(username string) error {
 	return nil
 }
 
-// CleanTweet cleans a tweet's text, replacing new lines with spaces and
+// CleanTwt cleans a twt's text, replacing new lines with spaces and
 // stripping surrounding spaces.
-func CleanTweet(text string) string {
+func CleanTwt(text string) string {
 	text = strings.ReplaceAll(text, "\r\n", " ")
 	text = strings.ReplaceAll(text, "\n", " ")
 	text = strings.TrimSpace(text)
@@ -383,8 +383,8 @@ func CleanTweet(text string) string {
 	return text
 }
 
-// FormatTweet formats a tweet into a valid HTML snippet
-func FormatTweetFactory(conf *Config) func(text string) template.HTML {
+// FormatTwt formats a twt into a valid HTML snippet
+func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 	isLocal := func(url string) bool {
 		if NormalizeURL(url) == "" {
 			return false

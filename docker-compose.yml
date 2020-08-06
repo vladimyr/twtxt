@@ -16,6 +16,6 @@ services:
             REGISTER: "true"
             DEBUG: "false"
             THEME: "dark"
-            MAX_TWEET_LENGTH: 288
-            TWEETS_PER_PAGE: 50
+            MAX_TWT_LENGTH: 288
+            TWTS_PER_PAGE: 50
             # See more in the documentation

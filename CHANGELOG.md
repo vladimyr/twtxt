@@ -51,7 +51,7 @@
 * Add list of local (sub)Feeds to the /feeds view for better discovery of user created feeds
 * Add Feed model with feed profiles
 * Add link to followers
-* Add random tweet prompts for a nice variance on the text placeholder
+* Add random twt prompts for a nice variance on the text placeholder
 * Add user Avatars to the User Profile view as well
 * Add Identicons and support for Profile Avatars ([#43](https://github.com/prologic/twtxt/issues/43))
 * Add a flag that allows users to set if the public can see who follows them
@@ -80,7 +80,7 @@
 * Fix missing db.SetUser for fixUserURLs
 * Fix another bug in Profile template
 * Fix more bugs with User Profile view
-* Fix User Profile Latest Tweets
+* Fix User Profile Latest Twts
 * Fix build and remove unused vars in FixUserAccounts
 * Fix User URL and TwtURLs on twtxt.net  and reset them
 * Fix Context.IsLocal bug
@@ -95,7 +95,7 @@
 * Fix bug with feed creation (case sensitivity)
 * Fix Follow/Unfollow local events post v0.9.0 release re URL/TwtURL changes
 * Fix numerous bugs post v0.8.0 release (sorry) due to complications  with User Profile URL vs. Feed URL (TwtURL)
-* Fix Tweeter.URL on /discover
+* Fix Twter.URL on /discover
 * Fix syntax error (oops)
 * Fix adminUser feeds on twtxt.net
 * Fix link to user profiles in user settings followers/following
@@ -256,7 +256,7 @@
 * Add /feeds view with configurable feed sources for discoverability of other sources of feeds
 * Add username validation to prevent more potential bad data
 * Add configurable theme (site-wide) and persist user-defined (vai cookies) theme selection ([#16](https://github.com/prologic/twtxt/issues/16))
-* Add configurable maximum tweet length and cleanup tweets before they are stored to replace new lines, etc
+* Add configurable maximum twt length and cleanup twts before they are stored to replace new lines, etc
 
 
 <a name="0.0.4"></a>
@@ -272,7 +272,7 @@
 ### Features
 
 * Add delete account support
-* Add better layout of tweets so they stand out more
+* Add better layout of twts so they stand out more
 * Add support for Markdown formatting ([#10](https://github.com/prologic/twtxt/issues/10))
 * Add pagination support ([#9](https://github.com/prologic/twtxt/issues/9))
 * Add Follow/Unfollow to /discover view that understands the state of who a user follows or doesn't ([#8](https://github.com/prologic/twtxt/issues/8))
@@ -313,7 +313,7 @@
 * Fix the  follow self behaviour to actually work
 * Fix defaults to use the same  ones in twtxt's options
 * Fix  URL() of User objects
-* Fix import and hard-code no. of tweets to display
+* Fix import and hard-code no. of twts to display
 
 ### Features
 

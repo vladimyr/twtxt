@@ -70,15 +70,15 @@ func (job *StatsJob) Run() {
 		feeds += len(user.Feeds)
 	}
 
-	tweets, err := GetAllTweets(job.conf)
+	twts, err := GetAllTwts(job.conf)
 	if err != nil {
-		log.WithError(err).Warnf("error calculating number of tweets")
+		log.WithError(err).Warnf("error calculating number of twts")
 		return
 	}
 
 	text := fmt.Sprintf(
 		"🧮  USERS:%d FEEDS:%d POSTS:%d",
-		len(users), feeds, len(tweets),
+		len(users), feeds, len(twts),
 	)
 
 	if err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
@@ -120,7 +120,7 @@ func (job *UpdateFeedsJob) Run() {
 		return
 	}
 
-	cache.FetchTweets(job.conf, sources)
+	cache.FetchTwts(job.conf, sources)
 
 	if err := cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")

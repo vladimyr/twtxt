@@ -20,10 +20,10 @@ type Config struct {
 	Register        bool          `json:"register"`
 	RegisterMessage string        `json:"register_message"`
 	CookieSecret    string        `json:"cookie_secret"`
-	TweetPrompts    []string      `json:"tweet_prompts"`
-	TweetsPerPage   int           `json:"tweets_per_page"`
+	TwtPrompts    []string      `json:"twt_prompts"`
+	TwtsPerPage   int           `json:"twts_per_page"`
 	MaxUploadSize   int64         `json:"max_upload_size"`
-	MaxTweetLength  int           `json:"max_tweet_length"`
+	MaxTwtLength  int           `json:"max_twt_length"`
 	SessionExpiry   time.Duration `json:"session_expiry"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
@@ -40,10 +40,10 @@ type Config struct {
 	APISigningKey  []byte        `json:"api_signing_key"`
 }
 
-// RandomTweetPrompt returns a random  Tweet Prompt for display by the UI
-func (c *Config) RandomTweetPrompt() string {
-	n := rand.Int() % len(c.TweetPrompts)
-	return c.TweetPrompts[n]
+// RandomTwtPrompt returns a random  Twt Prompt for display by the UI
+func (c *Config) RandomTwtPrompt() string {
+	n := rand.Int() % len(c.TwtPrompts)
+	return c.TwtPrompts[n]
 }
 
 // Load loads a configuration from the given path

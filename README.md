@@ -102,7 +102,7 @@ Usage of ./twtd:
   -F, --feed-sources strings        external feed sources (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
       --magiclink-secret string     magiclink secret to use for password reset tokens (default "PLEASE_CHANGE_ME!!!")
       --max-fetch-limit int         Maximum feed fetch limit in bytes (default 2097152)
-  -L, --max-tweet-length int        maximum length of posts (default 288)
+  -L, --max-twt-length int        maximum length of posts (default 288)
   -U, --max-upload-size int         maximum upload size of media (default 16777216)
   -n, --name string                 set the instance's name (default "twtxt.net")
   -r, --register                    enable user registration
@@ -114,7 +114,7 @@ Usage of ./twtd:
       --smtp-user string            SMTP User to use for email sending (default "PLEASE_CHANGE_ME!!!")
   -s, --store string                store to use (default "bitcask://twtxt.db")
   -t, --theme string                set the default theme (default "dark")
-  -T, --tweets-per-page int         tweets per page to display (default 50)
+  -T, --twts-per-page int         twts per page to display (default 50)
   -v, --version                     display version information
 pflag: help requested
 ```

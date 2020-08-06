@@ -261,17 +261,17 @@ func (u *User) Profile() Profile {
 	}
 }
 
-func (u *User) Tweeter() Tweeter {
-	return Tweeter{Nick: u.Username, URL: u.URL}
+func (u *User) Twter() Twter {
+	return Twter{Nick: u.Username, URL: u.URL}
 }
 
-func (u *User) Reply(tweet Tweet) string {
+func (u *User) Reply(twt Twt) string {
 	mentions := []string{}
-	for _, mention := range RemoveString(UniqStrings(append(tweet.Mentions(), tweet.Tweeter.Nick)), u.Username) {
+	for _, mention := range RemoveString(UniqStrings(append(twt.Mentions(), twt.Twter.Nick)), u.Username) {
 		mentions = append(mentions, fmt.Sprintf("@%s", mention))
 	}
 
-	subject := tweet.Subject()
+	subject := twt.Subject()
 
 	if subject != "" {
 		return fmt.Sprintf("%s %s ", strings.Join(mentions, " "), subject)
