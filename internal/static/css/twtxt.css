@@ -1,3 +1,7 @@
+i[class*=icss-] {
+    margin: .2em .2em;
+}
+
 article p img {
     display: block;
 }
