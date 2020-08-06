@@ -8,9 +8,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/julienschmidt/httprouter"
@@ -64,6 +66,23 @@ func (res AuthResponse) Bytes() ([]byte, error) {
 		return nil, err
 	}
 	return body, nil
+}
+
+// RegisterRequest ...
+type RegisterRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+// NewRegisterRequest ...
+func NewRegisterRequest(r io.Reader) (req RegisterRequest, err error) {
+	body, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(body, &req)
+	return
 }
 
 // PostRequest ...
@@ -170,6 +189,8 @@ func (a *API) initRoutes() {
 
 	router.GET("/ping", a.PingEndpoint())
 	router.POST("/auth", a.AuthEndpoint())
+	router.POST("/register", a.RegisterEndpoint())
+
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
 	router.POST("/discover", a.TimelineEndpoint())
@@ -218,6 +239,67 @@ func (a *API) PingEndpoint() httprouter.Handle {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
 		return
+	}
+}
+
+// RegisterEndpoint ...
+func (a *API) RegisterEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		req, err := NewRegisterRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing register request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		username := NormalizeUsername(req.Username)
+		password := req.Password
+		email := req.Email
+
+		if err := ValidateUsername(username); err != nil {
+			http.Error(w, "Bad Username", http.StatusBadRequest)
+			return
+		}
+
+		if a.db.HasUser(username) || a.db.HasFeed(username) {
+			http.Error(w, "Username Exists", http.StatusBadRequest)
+			return
+		}
+
+		fn := filepath.Join(a.config.Data, feedsDir, username)
+		if _, err := os.Stat(fn); err == nil {
+			http.Error(w, "Feed Exists", http.StatusBadRequest)
+			return
+		}
+
+		if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+			log.WithError(err).Error("error creating new user feed")
+			http.Error(w, "Feed Creation Failed", http.StatusInternalServerError)
+			return
+		}
+
+		hash, err := a.pm.CreatePassword(password)
+		if err != nil {
+			log.WithError(err).Error("error creating password hash")
+			http.Error(w, "Passwrod Creation Failed", http.StatusInternalServerError)
+			return
+		}
+
+		user := &User{
+			Username:  username,
+			Email:     email,
+			Password:  hash,
+			URL:       URLForUser(a.config.BaseURL, username),
+			CreatedAt: time.Now(),
+		}
+
+		if err := a.db.SetUser(username, user); err != nil {
+			log.WithError(err).Error("error saving user object for new user")
+			http.Error(w, "User Creation Failed", http.StatusInternalServerError)
+			return
+		}
+
+		log.Infof("user registered: %v", user)
 	}
 }
 
