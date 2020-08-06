@@ -194,7 +194,7 @@ func (a *API) initRoutes() {
 	router.POST("/post", a.isAuthorized(a.PostEndpoint()))
 	router.POST("/follow", a.isAuthorized(a.FollowEndpoint()))
 	router.POST("/timeline", a.isAuthorized(a.TimelineEndpoint()))
-	router.POST("/discover", a.TimelineEndpoint())
+	router.POST("/discover", a.DiscoverEndpoint())
 }
 
 // CreateToken ...
