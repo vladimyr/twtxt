@@ -117,17 +117,16 @@ u('#uploadMedia').on("change", function(e){
     u('#uploadSubmit').removeClass('invisible')
 });
 
-u('#uploadForm').handle('submit', async e => {
+u('#uploadForm').on('submit', function(e) {
     e.preventDefault();
 
-    u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>&nbsp;Uploading...");
+    u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>Add");
 
-    const body = new FormData(e.target);
-    const data = await fetch('/upload', {
-    method: 'POST', body
-  }).then(
-    res => res.json()
-  ).then(data => {
+    Twix.ajax({
+      type: "POST",
+      url: u("#uploadForm").attr("action"),
+      data: new FormData(e.target),
+      success: function(data) {
         u('#uploadSubmit').addClass('invisible');
 
         var el = u("textarea#text")
@@ -139,7 +138,12 @@ u('#uploadForm').handle('submit', async e => {
 
         var size = el.text().length;
         text.setSelectionRange(size, size);
-    }).catch((error) => {
-        console.error('Error:', error);
+
+        u("#uploadSubmit").html("Add");
+      },
+      error: function (statusCode, statusText) {
+        alert("An error occurred uploading your media: " + statusCode + " " + statusText);
+        u("#uploadSubmit").html("Add");
+      }
     });
 });
