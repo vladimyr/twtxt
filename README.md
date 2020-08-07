@@ -1,5 +1,9 @@
 # twtxt
 
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/prologic/twtxt)
+![Docker Pulls](https://img.shields.io/docker/pulls/prologic/twtxt)
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/prologic/twtxt)
+
 ![](https://github.com/prologic/twtxt/workflows/Coverage/badge.svg)
 ![](https://github.com/prologic/twtxt/workflows/Docker/badge.svg)
 ![](https://github.com/prologic/twtxt/workflows/Go/badge.svg)
