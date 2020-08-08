@@ -19,6 +19,7 @@ import (
 
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
+	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
@@ -102,6 +103,24 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		}
 
 		ctx.Profile = profile
+
+		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
+			Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s Atom Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
+			},
+			Alternative{
+				Type:  "application/json",
+				Title: fmt.Sprintf("%s JSON Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/feed.json", UserURL(profile.URL)),
+			},
+			Alternative{
+				Type:  "application/rss+xml",
+				Title: fmt.Sprintf("%s RSS Feed", profile.Username),
+				URL:   fmt.Sprintf("%s/rss.xml", UserURL(profile.URL)),
+			},
+		}...)
 
 		twts, err := GetUserTwts(s.config, profile.Username)
 		if err != nil {
@@ -1590,5 +1609,101 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		w.Write(data)
 
 		return
+	}
+}
+
+// SyndicationHandler ...
+func (s *Server) SyndicationHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		var (
+			twts    Twts
+			profile Profile
+			err     error
+		)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick != "" {
+			if s.db.HasUser(nick) {
+				twts, err = GetUserTwts(s.config, nick)
+				if user, err := s.db.GetUser(nick); err == nil {
+					profile = user.Profile()
+				} else {
+					log.WithError(err).Error("error loading user object")
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			} else if s.db.HasFeed(nick) {
+				twts, err = GetUserTwts(s.config, nick)
+				if feed, err := s.db.GetFeed(nick); err == nil {
+					profile = feed.Profile()
+				} else {
+					log.WithError(err).Error("error loading user object")
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+			} else {
+				http.Error(w, "Feed Not Found", http.StatusNotFound)
+				return
+			}
+		} else {
+			twts, err = GetAllTwts(s.config)
+			profile = Profile{
+				Type:     "Local",
+				Username: s.config.Name,
+				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?
+				URL:      s.config.BaseURL,
+			}
+		}
+
+		if err != nil {
+			log.WithError(err).Errorf("errorloading feeds for %s", nick)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		sort.Sort(sort.Reverse(twts))
+
+		if r.Method == http.MethodHead {
+			defer r.Body.Close()
+			w.Header().Set(
+				"Last-Modified",
+				twts[len(twts)].Created.Format(http.TimeFormat),
+			)
+			return
+		}
+
+		now := time.Now()
+
+		feed := &feeds.Feed{
+			Title:       fmt.Sprintf("%s Twtxt Atom Feed", profile.Username),
+			Link:        &feeds.Link{Href: profile.URL},
+			Description: profile.Tagline,
+			Author:      &feeds.Author{Name: profile.Username},
+			Created:     now,
+		}
+
+		var items []*feeds.Item
+
+		for _, twt := range twts {
+			items = append(items, &feeds.Item{
+				Id:      twt.Hash(),
+				Title:   twt.Text,
+				Link:    &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
+				Author:  &feeds.Author{Name: twt.Twter.Nick},
+				Created: twt.Created,
+			},
+			)
+		}
+		feed.Items = items
+
+		w.Header().Set("Content-Type", "application/atom+xml")
+		data, err := feed.ToAtom()
+		if err != nil {
+			log.WithError(err).Error("error serializing feed")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Write([]byte(data))
 	}
 }
