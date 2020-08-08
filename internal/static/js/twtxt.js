@@ -112,6 +112,101 @@ u("#post").on("click", function(e) {
   u("#twtForm").first().submit();
 });
 
+u.prototype.getSelection = function() {
+  var e = this.first();
+
+  return (
+    /* mozilla / dom 3.0 */
+    ('selectionStart' in e && function() {
+      var l = e.selectionEnd - e.selectionStart;
+      return { start: e.selectionStart, end: e.selectionEnd, length: l, text: e.value.substr(e.selectionStart, l) }; }) ||
+    /* exploder */
+    (document.selection && function() {
+      e.focus();
+
+      var r = document.selection.createRange();
+      if (r === null) {
+        return { start: 0, end: e.value.length, length: 0 }
+      }
+
+      var re = e.createTextRange();
+      var rc = re.duplicate();
+      re.moveToBookmark(r.getBookmark());
+      rc.setEndPoint('EndToStart', re);
+
+      return { start: rc.text.length, end: rc.text.length + r.text.length, length: r.text.length, text: r.text };
+  }) ||
+    /* browser not supported */
+    function() { return null; }
+  )();
+}
+
+u.prototype.replaceSelection = function() {
+  var e = this.first();
+
+  var text = arguments[0] || '';
+
+  return (
+    /* mozilla / dom 3.0 */
+    ('selectionStart' in e && function() {
+      e.value = e.value.substr(0, e.selectionStart) + text + e.value.substr(e.selectionEnd, e.value.length);
+      return this;
+    }) ||
+      /* exploder */
+      (document.selection && function() {
+        e.focus();
+        document.selection.createRange().text = text;
+        return this;
+    }) ||
+      /* browser not supported */
+      function() {
+        e.value += text;
+        return jQuery(e);
+      }
+  )();
+}
+
+function formatText(selector, fmt) {
+    var finalText = "";
+
+    var selectedText = selector.getSelection().text;
+
+    if (selectedText.length == 0) {
+        finalText = fmt + "text" + fmt;
+    } else {
+        finalText = fmt + selectedText + fmt;
+    }
+
+    selector.replaceSelection(finalText , true);
+    selector.first().focus();
+}
+
+function insertText(selector, text) {
+  selector.replaceSelection(selector.text() + text, true);
+  selector.scroll();
+  selector.first().focus();
+  selector.first().setSelectionRange(-1 ,-1);
+}
+
+u('#bBtn').on("click", function(e) {
+  e.preventDefault();
+  formatText(u("textarea#text"), "**");
+});
+
+u('#iBtn').on("click", function(e) {
+  e.preventDefault();
+  formatText(u("textarea#text"), "*");
+});
+
+u('#lnkBtn').on("click", function(e) {
+  e.preventDefault();
+  insertText(u("textarea#text"), "[title](https://)");
+});
+
+u('#imgBtn').on("click", function(e) {
+  e.preventDefault();
+  insertText(u("textarea#text"), "![](https://)");
+});
 
 u('#uploadMedia').on("change", function(e){
     u("#uploadMediaButton").removeClass("icss-camera");
