@@ -22,11 +22,13 @@ type Store interface {
 	HasFeed(name string) bool
 	GetFeed(name string) (*Feed, error)
 	SetFeed(name string, user *Feed) error
+	SearchFeeds(prefix string) []string
 
 	DelUser(username string) error
 	HasUser(username string) bool
 	GetUser(username string) (*User, error)
 	SetUser(username string, user *User) error
+	SearchUsers(prefix string) []string
 
 	GetAllFeeds() ([]*Feed, error)
 	GetAllUsers() ([]*User, error)

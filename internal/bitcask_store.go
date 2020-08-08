@@ -2,6 +2,7 @@ package twtxt
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/prologic/bitcask"
 	log "github.com/sirupsen/logrus"
@@ -80,6 +81,19 @@ func (bs *BitcaskStore) SetFeed(name string, feed *Feed) error {
 	return nil
 }
 
+func (bs *BitcaskStore) SearchFeeds(prefix string) []string {
+	var keys []string
+
+	bs.db.Scan([]byte("/feeds/"), func(key []byte) error {
+		if strings.HasPrefix(string(key), prefix) {
+			keys = append(keys, strings.TrimPrefix(string(key), "/feeds/"))
+		}
+		return nil
+	})
+
+	return keys
+}
+
 func (bs *BitcaskStore) GetAllFeeds() ([]*Feed, error) {
 	var feeds []*Feed
 
@@ -129,6 +143,19 @@ func (bs *BitcaskStore) SetUser(username string, user *User) error {
 		return err
 	}
 	return nil
+}
+
+func (bs *BitcaskStore) SearchUsers(prefix string) []string {
+	var keys []string
+
+	bs.db.Scan([]byte("/users/"), func(key []byte) error {
+		if strings.HasPrefix(string(key), prefix) {
+			keys = append(keys, strings.TrimPrefix(string(key), "/users/"))
+		}
+		return nil
+	})
+
+	return keys
 }
 
 func (bs *BitcaskStore) GetAllUsers() ([]*User, error) {

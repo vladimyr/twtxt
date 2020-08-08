@@ -976,6 +976,45 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 	}
 }
 
+// LookupHandler ...
+func (s *Server) LookupHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		prefix := r.URL.Query().Get("prefix")
+
+		users := s.db.SearchUsers(prefix)
+		feeds := s.db.SearchFeeds(prefix)
+
+		user := ctx.User
+
+		var nicks []string
+		for nick := range user.Following {
+			if strings.HasPrefix(nick, prefix) {
+				nicks = append(nicks, nick)
+			}
+		}
+
+		var matches []string
+
+		matches = append(matches, users...)
+		matches = append(matches, feeds...)
+		matches = append(matches, nicks...)
+
+		matches = UniqStrings(matches)
+
+		data, err := json.Marshal(matches)
+		if err != nil {
+			log.WithError(err).Error("error serializing lookup response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
 // FollowHandler ...
 func (s *Server) FollowHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

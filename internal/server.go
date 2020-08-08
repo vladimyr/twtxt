@@ -252,6 +252,9 @@ func (s *Server) initRoutes() {
 	s.router.GET("/media/:name", s.MediaHandler())
 	s.router.POST("/upload", s.am.MustAuth(s.UploadMediaHandler()))
 
+	// User/Feed Lookups
+	s.router.GET("/lookup", s.am.MustAuth(s.LookupHandler()))
+
 	s.router.GET("/follow", s.am.MustAuth(s.FollowHandler()))
 	s.router.POST("/follow", s.am.MustAuth(s.FollowHandler()))
 
