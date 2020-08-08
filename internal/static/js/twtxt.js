@@ -117,15 +117,18 @@ u('#uploadMedia').on("change", function(e){
     u('#uploadSubmit').removeClass('invisible')
 });
 
-u('#uploadForm').on('submit', function(e) {
+u('#uploadSubmit').on('click', function(e) {
     e.preventDefault();
 
     u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>Add");
 
+    // Polyfill the #uploadForm so things work correctly across all browsers (IE)
+    u("#uploadForm").append(u("#uploadMedia"))
+
     Twix.ajax({
       type: "POST",
       url: u("#uploadForm").attr("action"),
-      data: new FormData(e.target),
+      data: new FormData(u("#uploadForm").first()),
       success: function(data) {
         u('#uploadSubmit').addClass('invisible');
 

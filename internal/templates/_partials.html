@@ -1,37 +1,37 @@
 {{ define "post" }}
   {{ if .Authenticated }}
+    <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST"></form>
     <form id="twtForm" action="/post" method="POST">
       <input type="hidden" id="replaceTwt" name="hash" value="" />
-    </form>
-    <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST"></form>
 
-    <div class="grid">
-      <div>
-        <div class="grid">
-          <textarea form="twtForm" id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
-        </div>
-        <div class="grid">
-          <div class="imageUpload">
-            <label for="uploadMedia">
-              <i class="icss-camera" style="font-size:3em"></i>
-              <button form="uploadForm" id="uploadSubmit" class="invisible uploadSubmit floatRight" type="submit">Add</button>
-            </label>
-            <input form="uploadForm" id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
+      <div class="grid">
+        <div>
+          <div class="grid">
+            <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
           </div>
-          <div>
-            <select id="postas" class="postas" name="postas" form="twtForm">
-              <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
-              {{ range $index, $Feed := .User.Feeds }}
-                <option value="{{ $Feed }}">{{ $Feed }}</option>
-              {{ end }}
-            </select>
-          </div>
-          <div>
-            <button form="twtForm" id="post" type="submit">Post</button>
+          <div class="grid">
+            <div class="imageUpload">
+              <label for="uploadMedia">
+                <i class="icss-camera" style="font-size:3em"></i>
+                <button id="uploadSubmit" class="invisible uploadSubmit floatRight">Add</button>
+              </label>
+              <input id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
+            </div>
+            <div>
+              <select id="postas" class="postas" name="postas">
+                <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
+                {{ range $index, $Feed := .User.Feeds }}
+                  <option value="{{ $Feed }}">{{ $Feed }}</option>
+                {{ end }}
+              </select>
+            </div>
+            <div>
+              <button id="post" type="submit">Post</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   {{ end }}
 {{ end }}
 
