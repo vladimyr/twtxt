@@ -67,15 +67,17 @@ func (job *StatsJob) Run() {
 
 	var (
 		feeds     int
-		followers int
-		following int
+		followers []string
+		following []string
 	)
 
 	for _, user := range users {
 		feeds += len(user.Feeds)
-		followers += len(user.Followers)
-		following += len(user.Following)
+		followers = append(followers, MapStrings(StringValues(user.Followers), NormalizeURL)...)
+		following = append(following, MapStrings(StringValues(user.Following), NormalizeURL)...)
 	}
+	followers = UniqStrings(followers)
+	following = UniqStrings(following)
 
 	twts, err := GetAllTwts(job.conf)
 	if err != nil {
@@ -85,7 +87,7 @@ func (job *StatsJob) Run() {
 
 	text := fmt.Sprintf(
 		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
-		len(users), feeds, len(twts), followers, following,
+		len(users), feeds, len(twts), len(followers), len(following),
 	)
 
 	if err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {

@@ -80,6 +80,30 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+func StringKeyes(kv map[string]string) []string {
+	var res []string
+	for k := range kv {
+		res = append(res, k)
+	}
+	return res
+}
+
+func StringValues(kv map[string]string) []string {
+	var res []string
+	for _, v := range kv {
+		res = append(res, v)
+	}
+	return res
+}
+
+func MapStrings(xs []string, f func(s string) string) []string {
+	var res []string
+	for _, x := range xs {
+		res = append(res, f(x))
+	}
+	return res
+}
+
 func HasString(a []string, x string) bool {
 	for _, n := range a {
 		if x == n {
