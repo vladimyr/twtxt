@@ -65,9 +65,16 @@ func (job *StatsJob) Run() {
 
 	log.Infof("updating stats")
 
-	var feeds int
+	var (
+		feeds     int
+		followers int
+		following int
+	)
+
 	for _, user := range users {
 		feeds += len(user.Feeds)
+		followers += len(user.Followers)
+		following += len(user.Following)
 	}
 
 	twts, err := GetAllTwts(job.conf)
@@ -77,8 +84,8 @@ func (job *StatsJob) Run() {
 	}
 
 	text := fmt.Sprintf(
-		"🧮  USERS:%d FEEDS:%d POSTS:%d",
-		len(users), feeds, len(twts),
+		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
+		len(users), feeds, len(twts), followers, following,
 	)
 
 	if err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
