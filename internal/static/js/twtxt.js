@@ -123,7 +123,7 @@ u('#uploadSubmit').on('click', function(e) {
     u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>Add");
 
     // Polyfill the #uploadForm so things work correctly across all browsers (IE)
-    u("#uploadForm").append(u("#uploadMedia"))
+    u("#uploadForm").append(u("#uploadMedia").first())
 
     Twix.ajax({
       type: "POST",
