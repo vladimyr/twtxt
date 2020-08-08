@@ -198,6 +198,17 @@ u('#iBtn').on("click", function(e) {
   formatText(u("textarea#text"), "*");
 });
 
+u('#sBtn').on("click", function(e) {
+  e.preventDefault();
+  formatText(u("textarea#text"), "~~");
+});
+
+
+u('#cBtn').on("click", function(e) {
+  e.preventDefault();
+  formatText(u("textarea#text"), "`");
+});
+
 u('#lnkBtn').on("click", function(e) {
   e.preventDefault();
   insertText(u("textarea#text"), "[title](https://)");
