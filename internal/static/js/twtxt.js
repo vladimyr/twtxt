@@ -114,21 +114,15 @@ u("#post").on("click", function(e) {
 
 
 u('#uploadMedia').on("change", function(e){
-    u('#uploadSubmit').removeClass('invisible')
-});
+    u("#uploadMediaButton").removeClass("icss-camera");
+    u("#uploadMediaButton").addClass("icss-spinner icss-pulse");
 
-u('#uploadSubmit').on('click', function(e) {
-    e.preventDefault();
-
-    u("#uploadSubmit").html("<i class=\"icss-spinner icss-pulse\"></i>Add");
-
+    u("#uploadMedia").html("<i class=\"icss-spinner icss-pulse\"></i>");
     Twix.ajax({
       type: "POST",
       url: u("#uploadForm").attr("action"),
       data: new FormData(u("#uploadForm").first()),
       success: function(data) {
-        u('#uploadSubmit').addClass('invisible');
-
         var el = u("textarea#text")
         var text = document.getElementById("text");
 
@@ -139,11 +133,13 @@ u('#uploadSubmit').on('click', function(e) {
         var size = el.text().length;
         text.setSelectionRange(size, size);
 
-        u("#uploadSubmit").html("Add");
+        u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
+        u("#uploadMediaButton").addClass("icss-camera");
       },
       error: function (statusCode, statusText) {
+        u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
+        u("#uploadMediaButton").addClass("icss-camera");
         alert("An error occurred uploading your media: " + statusCode + " " + statusText);
-        u("#uploadSubmit").html("Add");
       }
     });
 });
