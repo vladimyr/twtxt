@@ -1,17 +1,24 @@
 {{ define "post" }}
   {{ if .Authenticated }}
-    <form id="uploadForm" class="test" action="/upload" enctype="multipart/form-data" method="POST">
-      <div class="grid">
-        <div></div>
-        <div>
-          <label for="uploadMedia">
-            <i id="uploadMediaButton" class="icss-camera"></i>
-          </label>
-          <input id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
-        </div>
-        <div></div>
-      </div>
-    </form>
+    <nav>
+      <ul>
+        <li><a id="bBtn" href="#"><i class="icss-text-bold"></i></a></li>
+        <li><a id="iBtn" href="#"><i class="icss-text-italic"></i></a></li>
+        <li><a id="uBtn" href="#"><i class="icss-text-underline"></i></a></li>
+        <li></li>
+        <li><a id="linkBtn" href="#"><i class="icss-link"></i></a></li>
+        <li><a id="imageBtn" href="#"><i class="icss-image"></i></a></li>
+        <li></li>
+        <li>
+          <form id="uploadForm" action="/upload" enctype="multipart/form-data" method="POST">
+            <label for="uploadMedia">
+              <i id="uploadMediaButton" class="icss-camera"></i>
+            </label>
+            <input id="uploadMedia" class="invisible" type="file" accept="image/png, image/jpeg" name="media_file" />
+          </form>
+        </li>
+      </ul>
+    </nav>
     <form id="twtForm" action="/post" method="POST">
       <input type="hidden" id="replaceTwt" name="hash" value="" />
       <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>

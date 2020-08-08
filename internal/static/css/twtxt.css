@@ -15,3 +15,16 @@ article hgroup footer {
     width:0;
     height:0;
 }
+
+#uploadForm {
+    display: inline;
+}
+
+#uploadForm label {
+    display: inline;
+}
+
+#uploadMedia {
+    margin: 0;
+    padding: 0;
+}
