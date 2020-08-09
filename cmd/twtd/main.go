@@ -149,7 +149,7 @@ func main() {
 		log.WithError(err).Fatal("error creating server")
 	}
 
-	log.Infof("%s listening on http://%s", path.Base(os.Args[0]), bind)
+	log.Infof("%s v%s listening on http://%s", path.Base(os.Args[0]), twtxt.FullVersion(), bind)
 	if err := svr.Run(); err != nil {
 		log.WithError(err).Fatal("error running or shutting down server")
 	}
