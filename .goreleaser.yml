@@ -1,6 +1,7 @@
 ---
 builds:
-  - binary: twt
+  - id: twt
+    binary: twt
     main: ./cmd/twt
     flags: -tags "static_build"
     ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
@@ -19,7 +20,8 @@ builds:
     goarm:
       - 6
       - 7
-  - binary: twtd
+  - id: twtd
+    binary: twtd
     main: ./cmd/twtd
     flags: -tags "static_build"
     ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
