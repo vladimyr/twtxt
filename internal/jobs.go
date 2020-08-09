@@ -57,25 +57,34 @@ func NewStatsJob(conf *Config, db Store) cron.Job {
 }
 
 func (job *StatsJob) Run() {
+	var (
+		followers []string
+		following []string
+	)
+
+	log.Infof("updating stats")
+
+	feeds, err := job.db.GetAllFeeds()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all feeds from database")
+		return
+	}
+
 	users, err := job.db.GetAllUsers()
 	if err != nil {
 		log.WithError(err).Warn("unable to get all users from database")
 		return
 	}
 
-	log.Infof("updating stats")
-
-	var (
-		feeds     int
-		followers []string
-		following []string
-	)
+	for _, feed := range feeds {
+		followers = append(followers, MapStrings(StringValues(feed.Followers), NormalizeURL)...)
+	}
 
 	for _, user := range users {
-		feeds += len(user.Feeds)
 		followers = append(followers, MapStrings(StringValues(user.Followers), NormalizeURL)...)
 		following = append(following, MapStrings(StringValues(user.Following), NormalizeURL)...)
 	}
+
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
@@ -87,7 +96,7 @@ func (job *StatsJob) Run() {
 
 	text := fmt.Sprintf(
 		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
-		len(users), feeds, len(twts), len(followers), len(following),
+		len(users), len(feeds), len(twts), len(followers), len(following),
 	)
 
 	if err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
