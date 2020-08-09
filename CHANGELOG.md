@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* Fix and simplify goreleaser config
 * Fix avatar upload handler to resize (disproportionally?) to 60x60
 * Fix config file loading for CLI
 * Fix install Makefile target
@@ -101,6 +102,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.12
 * Update CHANGELOG for 0.0.12
 * Update /about page
 * Update issue templates
