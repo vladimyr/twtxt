@@ -33,7 +33,8 @@ generate:
 	@rice -i ./internal embed-go
 
 install: build
-	@go install
+	@go install ./cmd/twt/...
+	@go install ./cmd/twtd/...
 
 image:
 	@docker build -f Dockerfile.twt -t prologic/twt .
