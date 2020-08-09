@@ -201,12 +201,12 @@ func (a *API) CreateToken(user *User) (string, error) {
 
 func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		if r.Header["Token"][0] == "" {
+		if r.Header.Get("Token") == "" {
 			http.Error(w, "No Token Provided", http.StatusUnauthorized)
 			return
 		}
 
-		token, err := jwt.Parse(r.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(r.Header.Get("Token"), func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("There was an error")
 			}
