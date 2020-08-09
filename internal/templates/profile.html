@@ -3,7 +3,7 @@
     <div>
       <hgroup>
         <h2>
-          <img src="/user/{{ .Profile.Username }}/avatar.png" />
+          <img class="avatar" src="/user/{{ .Profile.Username }}/avatar.png" />
           {{  if $.User.Is .Profile.URL }}
           me
           {{ else  }}
