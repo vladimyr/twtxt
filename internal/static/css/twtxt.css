@@ -16,6 +16,10 @@ article hgroup footer {
     height:0;
 }
 
+.nav {
+    z-index: 1050;
+}
+
 #uploadForm {
     display: inline;
 }
