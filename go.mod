@@ -12,7 +12,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/aofei/cameron v1.1.4
-	github.com/apex/log v1.8.0
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec // indirect
@@ -27,8 +26,8 @@ require (
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/jinzhu/gorm v1.9.15 // indirect
 	github.com/jinzhu/now v1.1.1 // indirect
-	github.com/jpillora/backoff v1.0.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.4
 	github.com/microcosm-cc/bluemonday v1.0.3
@@ -37,14 +36,13 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
-	github.com/prologic/msgbus v0.1.1
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
+	github.com/smartystreets/assertions v1.0.0 // indirect
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.7.0
-	github.com/stretchr/testify v1.6.1
 	github.com/tebeka/selenium v0.9.9
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3
@@ -54,6 +52,8 @@ require (
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect
 	golang.org/x/text v0.3.3 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20200605160147-a5ece683394c // indirect
 )
