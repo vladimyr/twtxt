@@ -33,7 +33,7 @@ type Twter struct {
 }
 
 type Twt struct {
-	Twter Twter
+	Twter   Twter
 	Text    string
 	Created time.Time
 
@@ -44,6 +44,18 @@ func (twt Twt) Mentions() []string {
 	var mentions []string
 
 	re := regexp.MustCompile(`@<(.*?) .*?>`)
+	matches := re.FindAllStringSubmatch(twt.Text, -1)
+	for _, match := range matches {
+		mentions = append(mentions, match[1])
+	}
+
+	return mentions
+}
+
+func (twt Twt) Tags() []string {
+	var mentions []string
+
+	re := regexp.MustCompile(`#<(.*?) .*?>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
 		mentions = append(mentions, match[1])
@@ -123,6 +135,17 @@ func ExpandMentions(conf *Config, db Store, user *User, text string) string {
 	})
 }
 
+// Turns #tag into "@<tag URL>"
+func ExpandTag(conf *Config, db Store, user *User, text string) string {
+	re := regexp.MustCompile(`#([-\w]+)`)
+	return re.ReplaceAllStringFunc(text, func(match string) string {
+		parts := re.FindStringSubmatch(match)
+		mentionedTag := parts[1]
+
+		return fmt.Sprintf("#<%s %s>", mentionedTag, URLForTag(conf.BaseURL, mentionedTag))
+	})
+}
+
 func DeleteLastTwt(conf *Config, user *User) error {
 	p := filepath.Join(conf.Data, feedsDir)
 	if err := os.MkdirAll(p, 0755); err != nil {
@@ -172,9 +195,10 @@ func AppendTwt(conf *Config, db Store, user *User, text string) error {
 	}
 	defer f.Close()
 
-	text = fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339), ExpandMentions(conf, db, user, text))
-
-	if _, err = f.WriteString(text); err != nil {
+	if _, err = f.WriteString(
+		fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339),
+			ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text))),
+	); err != nil {
 		return err
 	}
 
@@ -301,7 +325,7 @@ func ParseLine(line string, twter Twter) (twt Twt, err error) {
 	}
 
 	twt = Twt{
-		Twter: twter,
+		Twter:   twter,
 		Created: ParseTime(parts[1]),
 		Text:    parts[3],
 	}
