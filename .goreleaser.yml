@@ -1,7 +1,6 @@
 ---
 builds:
-  - id: twt
-    binary: twt
+  - binary: twt
     main: ./cmd/twt
     flags: -tags "static_build"
     ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
@@ -20,8 +19,7 @@ builds:
     goarm:
       - 6
       - 7
-  - id: twtd
-    binary: twtd
+  - binary: twtd
     main: ./cmd/twtd
     flags: -tags "static_build"
     ldflags: -w -X github.com/prologic/twtxt.Version={{.Version}} -X github.com/prologic/twtxt.Commit={{.Commit}}
@@ -46,15 +44,11 @@ signs:
   - artifacts: checksum
 brews:
   -
-    ids:
-      - twt
     github:
       owner: prologic
-      name: homebrew-twt
+      name: homebrew-twtxt
     homepage: "https://github.io/prologic/twtxt"
     description: |
-      twt is the command-line client for the Twtxt.net API.
-
       📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging
       platform. No ads, no tracking, your content, your data!
 release:
