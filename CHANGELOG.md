@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* Fix duplicate build ids for goreleaser config
 * Fix and simplify goreleaser config
 * Fix avatar upload handler to resize (disproportionally?) to 60x60
 * Fix config file loading for CLI
@@ -102,6 +103,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.12
 * Update CHANGELOG for 0.0.12
 * Update CHANGELOG for 0.0.12
 * Update /about page
