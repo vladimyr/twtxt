@@ -45,9 +45,9 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVarP(
-		&configFile, "config", "c", "$HOME/.twt.yaml",
-		"config file",
+	RootCmd.PersistentFlags().StringVar(
+		&configFile, "config", "",
+		"config file (default: $HOME/.twt.yaml)",
 	)
 
 	RootCmd.PersistentFlags().BoolP(
@@ -80,6 +80,13 @@ func initConfig() {
 	if configFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(configFile)
+
+		// If a config file is found, read it in.
+		if err := viper.ReadInConfig(); err != nil {
+			log.WithError(err).Errorf("error loading config file")
+			os.Exit(1)
+		}
+		log.Infof("Using config file: %s", viper.ConfigFileUsed())
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -89,17 +96,18 @@ func initConfig() {
 		}
 
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".twt.yaml")
+		viper.SetConfigName(".twt")
+
+		// If a config file is found, read it in.
+		if err := viper.ReadInConfig(); err != nil {
+			log.WithError(err).Warn("error loading config file")
+		} else {
+			log.Infof("Using config file: %s", viper.ConfigFileUsed())
+		}
 	}
 
 	// from the environment
 	viper.SetEnvPrefix("TWT")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		log.WithError(err).Errorf("error loading config file")
-	}
-	log.Infof("Using config file: %s", viper.ConfigFileUsed())
 }
