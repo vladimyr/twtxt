@@ -40,6 +40,28 @@ There is also a publicly (_free_) service online available at:
 As a first point, please try to use one of the pre-built binaries  that are
 available on the [Releases](https://github.com/prologic/twtxt/releases) page.
 
+### Using Homebrew
+
+We provide [Homewbrew](https://brew.sh) formulae for macOS users for both the
+command-line client (`twt`) as well as the server (`twtd`).
+
+```console
+brew tap prologic/twtxt
+brew install twtxt
+```
+
+Run the server:
+
+```console
+twtd
+```
+
+Run the commanad-line client:
+
+```console
+twt
+```
+
 ### Building from source
 
 This is an option if you are familiar with [Go](https://golang.org) development.
