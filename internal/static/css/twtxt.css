@@ -32,3 +32,91 @@ article hgroup footer {
     margin: 0;
     padding: 0;
 }
+
+.textarea-container {
+  position: relative;
+}
+
+.users-list {
+  border-radius: 10px;
+  display: none;
+  flex-direction: column;
+  position: absolute;
+  z-index: 1040;
+  background-color: var(--background);
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--primary-inverse);
+}
+
+.users-list.show {
+  display: block;
+}
+
+.user-list__user {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 60px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  max-width: 350px;
+}
+
+.user-list__user:first-child {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+.user-list__user:last-child {
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.user-list__user:hover {
+  cursor: pointer;
+  background-color: var(--input-border);
+}
+
+.mentioned-list-content {
+  max-height: 180px;
+  overflow: auto;
+}
+
+.user-list__user .avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #ccc;
+  margin-right: 15px;
+  border-radius: 50%;
+  background-size: cover;
+}
+
+.user-list__user .info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-list__user .info .name {
+  color: var(--text);
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.user-list__user .info .nickname {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.user-list__user .nickname {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.mentioned-list-content::-webkit-scrollbar  {
+  width: 2px;
+}
+
+.mentioned-list-content::-webkit-scrollbar-thumb {
+  color: #ccc;
+}

@@ -6,11 +6,14 @@ var cookieDuration = 14;                    // Number of days before the cookie 
 var cookieName = 'complianceCookie';        // Name of our cookie
 var cookieValue = 'on';                     // Value of cookie
 
+
+var $mentionedList = u("#mentioned-list").first() // node list of mentioned users
+var lastSymbol = '' // last char in textarea
+
 function createDiv(){
     u("body").prepend('<div id="cookie-law" class="container-fluid"><p>This website uses cookies. By continuing we assume your permission to deploy cookies, as detailed in our <a href="/privacy" rel="nofollow" title="Privacy Policy">privacy policy</a>. <a role="button" href="javascript:void(0);" onclick="removeMe();">Close</a></p></div>');
     createCookie(window.cookieName,window.cookieValue, window.cookieDuration); // Create the cookie
 }
-
 
 function createCookie(name,value,days) {
     if (days) {
@@ -166,6 +169,17 @@ u.prototype.replaceSelection = function() {
   )();
 }
 
+function createMentionedUserNode(username) {
+  return `
+              <div class="user-list__user">
+                <div class="avatar" style="background-image: url('/user/${username}/avatar.png')"></div>
+                <div class="info">
+                  <div class="nickname">${username}</div>
+                </div>
+              </div>
+  `
+}
+
 function formatText(selector, fmt) {
     var finalText = "";
 
@@ -185,11 +199,42 @@ function formatText(selector, fmt) {
 }
 
 function insertText(selector, text) {
-  selector.replaceSelection(selector.text() + text, true);
-  selector.scroll();
+  selector.replaceSelection(text, true);
+  // selector.scroll();
   selector.first().focus();
-  selector.first().setSelectionRange(-1 ,-1);
-  selector.first().selectionEnd = selector.first().value.length - 1
+  // selector.first().setSelectionRange(-1 ,-1);
+  var selectorLength = selector.first().value.length;
+
+  selector.first().selectionEnd = selector.first().value.substr(-1) === ')'
+      ? selectorLength - 1
+      : selectorLength;
+}
+
+function getUsers(searchStr) {
+  let requestUrl = '/lookup';
+
+  if(searchStr) {
+    requestUrl += '?prefix=' + searchStr;
+  }
+
+  Twix.ajax({
+    type: "GET",
+    url: requestUrl,
+    success: function(data) {
+      var nodes = data.map(function (user) {
+        return createMentionedUserNode(user);
+      }).join('')
+      u('#mentioned-list-content').first().innerHTML = nodes;
+    }
+  });
+}
+
+function getLastMentionIndex(value) {
+  var regex = /@/gi, result, indices = [];
+  while ((result = regex.exec(value)) ) {
+    indices.push(result.index);
+  }
+  return indices.slice(-1)[0] + 1;
 }
 
 u('#bBtn').on("click", function(e) {
@@ -222,6 +267,75 @@ u('#imgBtn').on("click", function(e) {
   e.preventDefault();
   insertText(u("textarea#text"), "![](https://)");
 });
+
+u('#usrBtn').on("click", function (e) {
+  e.preventDefault();
+  if(!$mentionedList.classList.contains('show')) {
+    insertText(u("textarea#text"), "@");
+    lastSymbol = u("textarea#text").first().value.slice(-1);
+  } else {
+    $mentionedList.classList.remove('show');
+  }
+})
+
+u("textarea#text").on("focus", (e) => {
+  if(e.relatedTarget === u('#usrBtn').first()) {
+    u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
+    u("#mentioned-list").first().classList.add('show');
+    getUsers();
+  }
+})
+
+u("textarea#text").on("input", (e) => {
+  var value = u("textarea#text").first().value;
+
+  if($mentionedList.classList.contains('show')) {
+    var lastIndex = getLastMentionIndex(value);
+    if(e.inputType === 'deleteContentBackward' && lastSymbol === '@') {
+      u("textarea#text").first().value = u("textarea#text").first().value.slice(lastIndex - 1);
+      $mentionedList.classList.remove('show');
+    } else {
+      var searchStr = value.slice(lastIndex)
+      if(searchStr && searchStr !== '@') {
+        getUsers(searchStr);
+      } else {
+        getUsers()
+      }
+    }
+  } else {
+    if(e.target.value.slice(-1) === '@') {
+      $mentionedList.classList.add('show');
+      u("#mentioned-list").first().style.top = u("textarea#text").first().clientHeight + 2 + 'px';
+      getUsers();
+    }
+  }
+  lastSymbol = value.slice(-1);
+})
+
+
+u("body").on('keyup', function (e) {
+  if(e.keyCode === 9 && $mentionedList.classList.contains('show')) {
+    var value = u("textarea#text").first().value;
+    if(u(".mentioned-list-content").length) {
+      var lastIndex = getLastMentionIndex(value);
+      u("textarea#text").first().value = value.slice(0, lastIndex);
+
+      insertText(u("textarea#text"), u(".mentioned-list-content .user-list__user").nodes[0].innerText.trim());
+      $mentionedList.classList.remove('show');
+    }
+  }
+
+})
+
+u("#mentioned-list").on('click', function (e) {
+  var value = u("textarea#text").first().value;
+
+  var lastIndex = getLastMentionIndex(value);
+  u("textarea#text").first().value = value.slice(0, lastIndex);
+
+  insertText(u("textarea#text"), e.target.innerText.trim());
+  u("#mentioned-list").first().classList.remove('show');
+})
 
 u('#uploadMedia').on("change", function(e){
     u("#uploadMediaButton").removeClass("icss-camera");
