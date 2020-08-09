@@ -101,6 +101,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.12
 * Update /about page
 * Update issue templates
 * Update README.md
