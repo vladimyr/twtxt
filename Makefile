@@ -20,14 +20,14 @@ cli:
 		-X $(shell go list).Commit=$(COMMIT)" \
 		./cmd/twt/...
 
-server:
+server: generate
 	@go build -tags "netgo static_build" -installsuffix netgo \
 		-ldflags "-w \
 		-X $(shell go list).Version=$(VERSION) \
 		-X $(shell go list).Commit=$(COMMIT)" \
 		./cmd/twtd/...
 
-build: generate cli server
+build: cli server
 
 generate:
 	@rice -i ./internal embed-go
