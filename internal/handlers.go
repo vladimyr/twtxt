@@ -691,15 +691,18 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		for _, twt := range localTwts {
+		for _, twt := range cachedTwts {
 			if twt.Hash() == hash {
 				twts = append(twts, twt)
 			}
 		}
 
-		for _, twt := range cachedTwts {
-			if twt.Hash() == hash {
-				twts = append(twts, twt)
+		// If the twt is not in the cache look for it across all local users
+		if len(twts) == 0 {
+			for _, twt := range localTwts {
+				if twt.Hash() == hash {
+					twts = append(twts, twt)
+				}
 			}
 		}
 
@@ -708,15 +711,11 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			ctx.Message = "No matching twt found!"
 			s.render("404", w, ctx)
 			return
-		} else if len(twts) == 1 {
-			ctx.Twts = twts
-			s.render("timeline", w, ctx)
-			return
-		} else {
-			log.Warnf("duplicate twts found with same hash %s", hash)
-			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-			return
 		}
+
+		ctx.Twts = twts
+		s.render("timeline", w, ctx)
+		return
 	}
 }
 
