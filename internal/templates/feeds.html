@@ -36,9 +36,7 @@
                   [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
                 {{ end }}
 
-                {{ if $.User.OwnsFeed .Name }}
-                  [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
-                {{ end }}
+                [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
               </li>
             {{ end }}
           {{ end }}
@@ -64,19 +62,17 @@
       </hgroup>
       <ul>
         {{ range .Feeds }}
-          <li>
-            <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
-            &nbsp;
-            {{ if $.User.Follows .URL }}
-              [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-            {{ else }}
-              [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-            {{ end }}
-
-            {{ if $.User.OwnsFeed .Name }}
-              [<a href="/feed/{{ .Name  }}/manage">Manage</a>]
-            {{ end }}
-          </li>
+          {{ if not ($.User.OwnsFeed .Name) }}
+            <li>
+              <a href="{{ .URL | trimSuffix "/twtxt.txt" }}">{{ .Name }}</a>
+              &nbsp;
+              {{ if $.User.Follows .URL }}
+                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+              {{ else }}
+                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+              {{ end }}
+            </li>
+          {{ end }}
         {{ end }}
       </ul>
     </div>
