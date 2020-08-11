@@ -186,6 +186,11 @@ you can contribute:
 Please see the [Contributing Guidelines](/CONTRIBUTING.md) and checkout the
 [Developer Documentation](https://dev.twtxt.net) or over at [/docs](/docs).
 
+> __Please note:__ If you wish to contribute to this proejct off-[Github](https://github.com)
+> please get in touch with us and let us know! We have this project mirroed to
+> private Git hosting using [Gitea](https://gitea.io/en-us/) and can fully support
+> external collaborator this way (_even via email!_).
+
 ## Contributors
 
 Thank you to all those that have contributed to this project, battle-tested it, used it in their own projects or products, fixed bugs, improved performance and even fix tiny typos in documentation! Thank you and keep contributing!
