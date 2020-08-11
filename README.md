@@ -17,7 +17,7 @@
 
 📕 twtxt is a Self-Hosted, Twitter™-like Decentralised micro-Blogging platform. No ads, no tracking, your content, your data!
 
-![](https://twtxt.net/media/pjj6SWEK76Ak4Dee23uGTF.png)
+![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
 
 Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
 of a web application. It supports multiple users and
