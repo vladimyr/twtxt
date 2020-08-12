@@ -1821,7 +1821,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			items = append(items, &feeds.Item{
 				Id:      twt.Hash(),
 				Title:   twt.Text,
-				Link:    &feeds.Link{Href: fmt.Sprintf("%s/#%s", s.config.BaseURL, twt.Hash())},
+				Link:    &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
 				Author:  &feeds.Author{Name: twt.Twter.Nick},
 				Created: twt.Created,
 			},

@@ -357,6 +357,14 @@ func UserURL(url string) string {
 	return url
 }
 
+func URLForTwt(baseURL, hash string) string {
+	return fmt.Sprintf(
+		"%s/twt/%s",
+		strings.TrimSuffix(baseURL, "/"),
+		hash,
+	)
+}
+
 func URLForUser(baseURL, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
