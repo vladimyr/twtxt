@@ -556,10 +556,18 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		switch postas {
 		case "", user.Username:
-			err = AppendTwt(s.config, s.db, user, text)
+			if hash != "" && lastTwt.Hash() == hash {
+				err = AppendTwt(s.config, s.db, user, text, lastTwt.Created)
+			} else {
+				err = AppendTwt(s.config, s.db, user, text)
+			}
 		default:
 			if user.OwnsFeed(postas) {
-				err = AppendSpecial(s.config, s.db, postas, text)
+				if hash != "" && lastTwt.Hash() == hash {
+					err = AppendSpecial(s.config, s.db, postas, text, lastTwt.Created)
+				} else {
+					err = AppendSpecial(s.config, s.db, postas, text)
+				}
 			} else {
 				err = ErrFeedImposter
 			}

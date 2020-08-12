@@ -84,13 +84,13 @@ func DeleteLastTwt(conf *Config, user *User) error {
 	return f.Truncate(int64(n))
 }
 
-func AppendSpecial(conf *Config, db Store, specialUsername, text string) error {
+func AppendSpecial(conf *Config, db Store, specialUsername, text string, args ...interface{}) error {
 	user := &User{Username: specialUsername}
 	user.Following = make(map[string]string)
-	return AppendTwt(conf, db, user, text)
+	return AppendTwt(conf, db, user, text, args)
 }
 
-func AppendTwt(conf *Config, db Store, user *User, text string) error {
+func AppendTwt(conf *Config, db Store, user *User, text string, args ...interface{}) error {
 	text = strings.TrimSpace(text)
 	if text == "" {
 		return fmt.Errorf("cowardly refusing to twt empty text, or only spaces")
@@ -110,8 +110,16 @@ func AppendTwt(conf *Config, db Store, user *User, text string) error {
 	}
 	defer f.Close()
 
+	// Support replacing/editing an existing Twt whilst preserving Created Timestamp
+	now := time.Now()
+	if len(args) == 1 {
+		if t, ok := args[0].(time.Time); ok {
+			now = t
+		}
+	}
+
 	if _, err = f.WriteString(
-		fmt.Sprintf("%s\t%s\n", time.Now().Format(time.RFC3339),
+		fmt.Sprintf("%s\t%s\n", now.Format(time.RFC3339),
 			ExpandTag(conf, db, user, ExpandMentions(conf, db, user, text))),
 	); err != nil {
 		return err
