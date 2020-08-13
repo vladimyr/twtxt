@@ -13,6 +13,7 @@ require (
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/aofei/cameron v1.1.4
 	github.com/apex/log v1.8.0
+	github.com/creasty/defaults v1.5.0
 	github.com/cyphar/filepath-securejoin v0.2.2
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec // indirect

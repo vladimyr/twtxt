@@ -1065,13 +1065,12 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		user := &User{
-			Username:  username,
-			Email:     email,
-			Password:  hash,
-			URL:       URLForUser(s.config.BaseURL, username),
-			CreatedAt: time.Now(),
-		}
+		user := NewUser()
+		user.Username = username
+		user.Email = email
+		user.Password = hash
+		user.URL = URLForUser(s.config.BaseURL, username)
+		user.CreatedAt = time.Now()
 
 		if err := s.db.SetUser(username, user); err != nil {
 			log.WithError(err).Error("error saving user object for new user")
@@ -1390,6 +1389,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
+		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
 
 		avatarFile, _, err := r.FormFile("avatar_file")
 		if err != nil && err != http.ErrMissingFile {
@@ -1436,6 +1436,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		user.Email = email
 		user.Tagline = tagline
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
+		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible
 
 		if err := s.db.SetUser(ctx.Username, user); err != nil {
 			ctx.Error = true
@@ -1530,6 +1531,51 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 		}
 
 		s.render("followers", w, ctx)
+	}
+}
+
+// FollowingHandler ...
+func (s *Server) FollowingHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				ctx.Error = true
+				ctx.Message = "Error loading profile"
+				s.render("error", w, ctx)
+				return
+			}
+
+			if !user.IsFollowingPubliclyVisible && !ctx.User.Is(user.URL) {
+				s.render("401", w, ctx)
+				return
+			}
+			ctx.Profile = user.Profile()
+		} else {
+			ctx.Error = true
+			ctx.Message = "User Not Found"
+			s.render("404", w, ctx)
+			return
+		}
+
+		if r.Header.Get("Accept") == "application/json" {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			if err := json.NewEncoder(w).Encode(ctx.Profile.Followers); err != nil {
+				log.WithError(err).Error("error encoding user for display")
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+			}
+
+			return
+		}
+
+		s.render("following", w, ctx)
 	}
 }
 

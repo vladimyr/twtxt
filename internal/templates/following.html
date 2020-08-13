@@ -2,18 +2,18 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Followers</h2>
+        <h2>Following</h1>
         <footer>
           {{ if $.User.Is .Profile.URL }}
-            List of users following you
+            List of users and feeds you are following
           {{ else }}
-            List of users following <b>{{ .Profile.Username }}</b>
+            List of users and feeds <b>{{ .Profile.Username }}</b> is following
           {{ end }}
         </footer>
       </hgroup>
-      {{ if .Profile.Followers }}
+      {{ if .Profile.Following }}
         <ol>
-          {{ range $Nick, $URL := .Profile.Followers }}
+          {{ range $Nick, $URL := .Profile.Following }}
             <li>
               {{ if $.User.Is $Nick }}
                 <a href="{{ $URL }}">me</a>
@@ -21,18 +21,22 @@
                 <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">{{ $Nick }}</a>
                 (<a href="{{ $URL }}">{{ $URL }}</a>)
               {{ end }}
+              <a href="/unfollow?nick={{ $Nick }}">
+                <i class="icss-minus"></i>
+              </a>
             </li>
           {{ end }}
         </oL>
       {{ else }}
         <small>
           {{ if $.User.Is .Profile.URL }}
-            You have not followers! Make a twt and it will appear on the
-            <a href="/discover">discover</a> for users of {{ .InstanceName }}
-            to <a href="/follow">follow</a>.
+            You are not following any users or feeds!
+            <a href="/follow">Follow</a> someone or <a href="/discover">discover</a>
+            new users or interesting <a href="/feeds">feeds</a> on {{ .InstanceName }}.
           {{ else }}
-            <b>{{ .Profile.Username }}</b>has no followers!</i>
+            <b>{{ .Profile.Username }}</b> is not following any users or feeds.</i>
           {{ end }}
+        </small>
       {{ end }}
     </div>
   </article>

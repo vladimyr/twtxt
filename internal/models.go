@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apex/log"
+	"github.com/creasty/defaults"
 	"github.com/prologic/twtxt/types"
 )
 
@@ -29,11 +31,12 @@ type Feed struct {
 	URL         string
 	CreatedAt   time.Time
 
-	Followers map[string]string
+	Followers map[string]string `default:"{}"`
 
 	remotes map[string]string
 }
 
+// User ...
 type User struct {
 	Username  string
 	Password  string
@@ -42,13 +45,14 @@ type User struct {
 	URL       string
 	CreatedAt time.Time
 
-	IsFollowersPubliclyVisible bool
+	IsFollowersPubliclyVisible bool `default:"true"`
+	IsFollowingPubliclyVisible bool `default:"true"`
 
-	Feeds  []string
-	Tokens []string
+	Feeds  []string `default:"[]"`
+	Tokens []string `default:"[]"`
 
-	Followers map[string]string
-	Following map[string]string
+	Followers map[string]string `default:"{}"`
+	Following map[string]string `default:"{}"`
 
 	remotes map[string]string
 	sources map[string]string
@@ -85,20 +89,18 @@ func CreateFeed(conf *Config, db Store, user *User, name string, force bool) err
 		followers[user.Username] = user.URL
 	}
 
-	f := &Feed{
-		Name:        name,
-		Description: "", // TODO: Make this work
-		URL:         URLForUser(conf.BaseURL, name),
-		Followers:   followers,
-		CreatedAt:   time.Now(),
-	}
+	feed := NewFeed()
+	feed.Name = name
+	feed.URL = URLForUser(conf.BaseURL, name)
+	feed.Followers = followers
+	feed.CreatedAt = time.Now()
 
-	if err := db.SetFeed(name, f); err != nil {
+	if err := db.SetFeed(name, feed); err != nil {
 		return err
 	}
 
 	if user != nil {
-		user.Follow(name, f.URL)
+		user.Follow(name, feed.URL)
 	}
 
 	return nil
@@ -121,7 +123,22 @@ func DetachFeedFromOwner(db Store, user *User, feed *Feed) (err error) {
 	return nil
 }
 
+// NewFeed ...
+func NewFeed() *Feed {
+	feed := &Feed{}
+	if err := defaults.Set(feed); err != nil {
+		log.WithError(err).Error("error creating new feed object")
+	}
+	return feed
+}
+
+// LoadFeed ...
 func LoadFeed(data []byte) (feed *Feed, err error) {
+	feed = &Feed{}
+	if err := defaults.Set(feed); err != nil {
+		return nil, err
+	}
+
 	if err = json.Unmarshal(data, &feed); err != nil {
 		return nil, err
 	}
@@ -141,7 +158,21 @@ func LoadFeed(data []byte) (feed *Feed, err error) {
 	return
 }
 
+// NewUser ...
+func NewUser() *User {
+	user := &User{}
+	if err := defaults.Set(user); err != nil {
+		log.WithError(err).Error("error creating new user object")
+	}
+	return user
+}
+
 func LoadUser(data []byte) (user *User, err error) {
+	user = &User{}
+	if err := defaults.Set(user); err != nil {
+		return nil, err
+	}
+
 	if err = json.Unmarshal(data, &user); err != nil {
 		return nil, err
 	}

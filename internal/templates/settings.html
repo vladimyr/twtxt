@@ -47,6 +47,11 @@
               <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
               Show my followers publicly
             </label>
+
+            <label for="isFollowingPubliclyVisible">
+              <input id="isFollowingPubliclyVisible" type="checkbox" name="isFollowingPubliclyVisible" aria-label="Show user/feed followings publicly" role="switch" {{ if .User.IsFollowingPubliclyVisible }}checked{{ end }}>
+              Show users and feed I follow publicly
+            </label>
           </div>
         </div>
         <button type="submit" class="primary">Update</button>

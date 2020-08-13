@@ -197,6 +197,7 @@ func (s *Server) initRoutes() {
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
+	s.router.GET("/user/:nick/following", s.FollowingHandler())
 
 	// Syndication Formats (RSS, Atom, JSON Feed)
 	s.router.HEAD("/atom.xml", s.SyndicationHandler())
