@@ -373,6 +373,7 @@ github.com/tebeka/selenium v0.9.9 h1:cNziB+etNgyH/7KlNI7RMC1ua5aH1+5wUlFQyzeMh+w
 github.com/tebeka/selenium v0.9.9/go.mod h1:5Fr8+pUvU6B1OiPfkdCKdXZyr5znvVkxuPd0NOdZCQc=
 github.com/tidwall/redcon v1.3.2/go.mod h1:bdYBm4rlcWpst2XMwKVzWDF9CoUxEbUmM7CQrKeOZas=
 github.com/tj/assert v0.0.0-20171129193455-018094318fb0/go.mod h1:mZ9/Rh9oLWpLLDRpvE+3b7gP/C2YyLFYxNmcLnPTMe0=
+github.com/tj/assert v0.0.3 h1:Df/BlaZ20mq6kuai7f5z2TvPFiwC3xaWJSDQNiIS3Rk=
 github.com/tj/assert v0.0.3/go.mod h1:Ne6X72Q+TB1AteidzQncjw9PabbMp4PBMZ1k+vd1Pvk=
 github.com/tj/go-buffer v1.1.0/go.mod h1:iyiJpfFcR2B9sXu7KvjbT9fpM4mOelRSDTbntVj52Uc=
 github.com/tj/go-elastic v0.0.0-20171221160941-36157cbbebc2/go.mod h1:WjeM0Oo1eNAjXGDx2yma7uG2XoyRZTq1uv3M/o7imD0=
