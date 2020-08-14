@@ -1135,22 +1135,21 @@ func (s *Server) LookupHandler() httprouter.Handle {
 
 		user := ctx.User
 
-		var nicks []string
+		var following []string
 		if len(prefix) > 0 {
 			for nick := range user.Following {
 				if strings.HasPrefix(strings.ToLower(nick), prefix) {
-					nicks = append(nicks, nick)
+					following = append(following, nick)
 				}
 			}
 		} else {
-			nicks = append(nicks, StringKeys(user.Following)...)
+			following = append(following, StringKeys(user.Following)...)
 		}
 
 		var matches []string
 
-		matches = append(matches, users...)
 		matches = append(matches, feeds...)
-		matches = append(matches, nicks...)
+		matches = append(matches, following...)
 
 		matches = UniqStrings(matches)
 
