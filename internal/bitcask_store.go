@@ -85,7 +85,7 @@ func (bs *BitcaskStore) SearchFeeds(prefix string) []string {
 	var keys []string
 
 	bs.db.Scan([]byte("/feeds/"), func(key []byte) error {
-		if strings.HasPrefix(string(key), prefix) {
+		if strings.HasPrefix(strings.ToLower(string(key)), strings.ToLower(prefix)) {
 			keys = append(keys, strings.TrimPrefix(string(key), "/feeds/"))
 		}
 		return nil
@@ -149,7 +149,7 @@ func (bs *BitcaskStore) SearchUsers(prefix string) []string {
 	var keys []string
 
 	bs.db.Scan([]byte("/users/"), func(key []byte) error {
-		if strings.HasPrefix(string(key), prefix) {
+		if strings.HasPrefix(strings.ToLower(string(key)), strings.ToLower(prefix)) {
 			keys = append(keys, strings.TrimPrefix(string(key), "/users/"))
 		}
 		return nil
