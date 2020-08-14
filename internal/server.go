@@ -7,10 +7,12 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/NYTimes/gziphandler"
 	humanize "github.com/dustin/go-humanize"
+	"github.com/prologic/observe"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
@@ -19,6 +21,14 @@ import (
 	"github.com/prologic/twtxt/internal/passwords"
 	"github.com/prologic/twtxt/internal/session"
 )
+
+var (
+	metrics *observe.Metrics
+)
+
+func init() {
+	metrics = observe.NewMetrics("twtd")
+}
 
 // Server ...
 type Server struct {
@@ -127,6 +137,32 @@ func (s *Server) ListenAndServe() error {
 // AddCronJob ...
 func (s *Server) AddCronJob(spec string, job cron.Job) error {
 	return s.cron.AddJob(spec, job)
+}
+
+func (s *Server) setupMetrics() error {
+	ctime := time.Now()
+
+	// server uptime counter
+	metrics.NewCounterFunc(
+		"server", "uptime",
+		"Number of nanoseconds the server has been running",
+		func() float64 {
+			return float64(time.Since(ctime).Nanoseconds())
+		},
+	)
+
+	// feed cache size
+	metrics.NewCounterFunc(
+		"server", "feed_cache_size",
+		"Number of items in the global feed cache",
+		func() float64 {
+			return float64(len(s.cache.GetAll()))
+		},
+	)
+
+	s.AddRoute("GET", "/metrics", metrics.Handler())
+
+	return nil
 }
 
 func (s *Server) setupCronJobs() error {
@@ -335,11 +371,17 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	}
 
 	if err := server.setupCronJobs(); err != nil {
-		log.WithError(err).Error("error settupt up background jobs")
+		log.WithError(err).Error("error setting up background jobs")
 		return nil, err
 	}
 	server.cron.Start()
 	log.Infof("started background jobs")
+
+	if err := server.setupMetrics(); err != nil {
+		log.WithError(err).Error("error setting up metrics")
+		return nil, err
+	}
+	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURL)
 
 	// Log interesting configuration options
 	log.Infof("Instance Name: %s", server.config.Name)
