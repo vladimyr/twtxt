@@ -1128,7 +1128,7 @@ func (s *Server) LookupHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		prefix := r.URL.Query().Get("prefix")
+		prefix := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("prefix")))
 
 		users := s.db.SearchUsers(prefix)
 		feeds := s.db.SearchFeeds(prefix)
@@ -1136,10 +1136,14 @@ func (s *Server) LookupHandler() httprouter.Handle {
 		user := ctx.User
 
 		var nicks []string
-		for nick := range user.Following {
-			if strings.HasPrefix(nick, prefix) {
-				nicks = append(nicks, nick)
+		if len(prefix) > 0 {
+			for nick := range user.Following {
+				if strings.HasPrefix(strings.ToLower(nick), prefix) {
+					nicks = append(nicks, nick)
+				}
 			}
+		} else {
+			nicks = append(nicks, StringKeys(user.Following)...)
 		}
 
 		var matches []string

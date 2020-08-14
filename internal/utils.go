@@ -80,7 +80,7 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
-func StringKeyes(kv map[string]string) []string {
+func StringKeys(kv map[string]string) []string {
 	var res []string
 	for k := range kv {
 		res = append(res, k)
