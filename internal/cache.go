@@ -91,7 +91,12 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 
 	stime := time.Now()
 	defer func() {
-		metrics.Gauge("server", "feed_cache_last_processing_time_seconds").Set(float64(time.Now().Sub(stime)))
+		metrics.Gauge(
+			"server",
+			"feed_cache_last_processing_time_seconds",
+		).Set(
+			float64(time.Now().Sub(stime) / 1e9),
+		)
 	}()
 
 	// buffered to let goroutines write without blocking before the main thread
