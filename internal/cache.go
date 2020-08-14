@@ -89,6 +89,11 @@ const maxfetchers = 50
 func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	var mu sync.RWMutex
 
+	stime := time.Now()
+	defer func() {
+		metrics.Gauge("server", "feed_cache_last_processing_time_seconds").Set(float64(time.Now().Sub(stime)))
+	}()
+
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
 	twtsch := make(chan types.Twts, len(sources))

@@ -160,6 +160,12 @@ func (s *Server) setupMetrics() error {
 		},
 	)
 
+	// feed cache processing time
+	metrics.NewGauge(
+		"server", "feed_cache_last_processing_time_seconds",
+		"Number of seconds for a feed cache cycle",
+	)
+
 	s.AddRoute("GET", "/metrics", metrics.Handler())
 
 	return nil
