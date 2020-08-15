@@ -41,6 +41,7 @@ require (
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/prometheus/client_golang v0.9.3
 	github.com/robfig/cron v1.2.0
+	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5

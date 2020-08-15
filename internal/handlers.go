@@ -22,6 +22,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
+	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
@@ -728,9 +729,17 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		twt := twts[0]
-		who := fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL)
+		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
 		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
+
+		ks := []string{}
+		if ks, err = keywords.Extract(what); err != nil {
+			log.WithError(err).Warn("error extracting keywords")
+		}
+
+		ks = append(ks, twt.Mentions()...)
+		ks = append(ks, twt.Tags()...)
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
@@ -744,10 +753,9 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		ctx.Title = fmt.Sprintf("%s @ %s > %s ", who, when, what)
 		ctx.Meta = Meta{
-			Title:       what,
 			Author:      who,
 			Description: what,
-			Keywords:    "", // TODO: What should this be?
+			Keywords:    strings.Join(ks, ", "),
 		}
 
 		ctx.Twts = twts

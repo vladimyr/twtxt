@@ -13,15 +13,13 @@
       <link rel="alternate" type="{{ .Type }}" title="{{ .Title }}" href="{{ .URL }}" />
     {{ end }}
     
-    {{ template "stylesheets" . }}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    {{ template "css" . }}
     <title>{{ .Title }}</title>
-    <meta name="title" content="{{ .Meta.Title }}">
-    <meta name="author" content="{{ .Meta.Author }}">
-    <meta name="keywords" content="{{ .Meta.Keywords }}">
-    <meta name="description" content="{{ .Meta.Description }}">
+    {{ with .Meta.Title }}<meta name="title" content="{{ . }}">{{ end }}
+    {{ with .Meta.Author }}<meta name="author" content="{{ . }}">{{ end }}
+    {{ with .Meta.Keywords }}<meta name="keywords" content="{{ . }}">{{ end }}
+    {{ with .Meta.Description }}<meta name="description" content="{{ . }}">{{ end }}
   </head>
 <body>
   <nav id="mainNav" class="container-fluid">
@@ -133,10 +131,6 @@
   <script type="application/javascript" src="/js/{{ .Commit }}/twix.min.js"></script>
   <script type="application/javascript" src="/js/{{ .Commit }}/theme-switcher.js"></script>
   <script type="application/javascript" src="/js/{{ .Commit }}/twtxt.js"></script>
-  {{ template "scripts" . }}
 </body>
 </html>
 {{end}}
-{{ define "css" }}{{ end }}
-{{ define "scripts" }}{{ end }}
-{{ define "stylesheets" }}{{ end }}
