@@ -32,6 +32,7 @@ import (
 )
 
 const (
+	MaxTitleLength   = 60  // SEO Optimization
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
 )
@@ -48,6 +49,7 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := NewContext(s.config, s.db, r)
+	ctx.Title = "Page Not Found"
 	w.WriteHeader(http.StatusNotFound)
 	s.render("404", w, ctx)
 }
@@ -56,6 +58,7 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) PageHandler(name string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
+		ctx.Title = name
 		s.render(name, w, ctx)
 	}
 }
@@ -144,6 +147,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Title = profile.Username
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
@@ -187,6 +191,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 		switch r.Method {
 		case http.MethodGet:
 			ctx.Profile = feed.Profile()
+			ctx.Title = fmt.Sprintf("Manage feed %s", feed.Name)
 			s.render("manageFeed", w, ctx)
 			return
 		case http.MethodPost:
@@ -613,7 +618,9 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		if !ctx.Authenticated {
 			twts, err = GetAllTwts(s.config)
+			ctx.Title = "Local timeline"
 		} else {
+			ctx.Title = "Your timeline"
 			user := ctx.User
 			if user != nil {
 				for _, url := range user.Following {
@@ -721,6 +728,32 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
+		twt := twts[0]
+		who := twt.Twter.Nick
+		when := twt.Created.Format(time.RFC822)
+		what := twt.Text
+
+		title := fmt.Sprintf(" %s @ %s > ", who, when)
+		cutoff := MaxTitleLength - len(title)
+		if cutoff < 0 {
+			cutoff = 0
+		}
+		if cutoff > len(what) {
+			cutoff = len(what)
+		}
+		title += what[:cutoff]
+		if cutoff < len(what) {
+			title += "..."
+		}
+		ctx.Title = title
+
+		ctx.Meta = Meta{
+			Title:       what[:cutoff],
+			Author:      fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL),
+			Description: what,
+			Keywords:    "", // TODO: What should this be?
+		}
+
 		ctx.Twts = twts
 		s.render("timeline", w, ctx)
 		return
@@ -769,6 +802,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
+		ctx.Title = "Local timeline"
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
@@ -806,9 +840,9 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Title = "Your mentions"
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
-
 		s.render("timeline", w, ctx)
 	}
 }
@@ -932,6 +966,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Title = "Local and external feeds"
 		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
@@ -1131,6 +1166,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 		url := NormalizeURL(r.FormValue("url"))
 
 		if r.Method == "GET" && nick == "" && url == "" {
+			ctx.Title = "Follow a new feed"
 			s.render("follow", w, ctx)
 			return
 		}
@@ -1245,6 +1281,7 @@ func (s *Server) ImportHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
+			ctx.Title = "Import feeds from a list"
 			s.render("import", w, ctx)
 			return
 		}
@@ -1378,6 +1415,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
+			ctx.Title = "Account and profile settings"
 			s.render("settings", w, ctx)
 			return
 		}
@@ -1530,6 +1568,7 @@ func (s *Server) FollowersHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Title = fmt.Sprintf("Followers for %s", nick)
 		s.render("followers", w, ctx)
 	}
 }
@@ -1575,6 +1614,7 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Title = fmt.Sprintf("Users following %s", nick)
 		s.render("following", w, ctx)
 	}
 }
@@ -1627,6 +1667,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			URL:      url,
 		}
 
+		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, url)
 		s.render("externalProfile", w, ctx)
 	}
 }

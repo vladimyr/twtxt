@@ -21,6 +21,13 @@ type Alternative struct {
 
 type Alternatives []Alternative
 
+type Meta struct {
+	Title       string
+	Author      string
+	Keywords    string
+	Description string
+}
+
 type Context struct {
 	BaseURL                 string
 	InstanceName            string
@@ -43,6 +50,8 @@ type Context struct {
 	Theme   string
 	Commit  string
 
+	Title       string
+	Meta        Meta
 	Twter       types.Twter
 	Twts        types.Twts
 	Feeds       []*Feed
@@ -65,6 +74,14 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,
+
+		Title: "",
+		Meta: Meta{
+			Title:       DefaultMetaTitle,
+			Author:      DefaultMetaAuthor,
+			Keywords:    DefaultMetaKeywords,
+			Description: DefaultMetaDescription,
+		},
 
 		Alternatives: Alternatives{
 			Alternative{

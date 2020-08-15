@@ -22,6 +22,12 @@ const (
 	// DefaultName is the default instance name
 	DefaultName = "twtxt.net"
 
+	// DefaultMetaxxx are the default set of <meta> tags used on non-specific views
+	DefaultMetaTitle       = ""
+	DefaultMetaAuthor      = "twtxt.net / twt.social"
+	DefaultMetaKeywords    = "twtxt, twt, blog, micro-blogging, social, media, decentralised, pod"
+	DefaultMetaDescription = "📕 twtxt is a Self-Hosted, Twitter™-like Decentralised microBlogging platform. No ads, no tracking, your content, your data!"
+
 	// DefaultTheme is the default theme to use ('light' or 'dark')
 	DefaultTheme = "dark"
 
