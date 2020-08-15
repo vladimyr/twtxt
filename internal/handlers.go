@@ -732,6 +732,15 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
 
+		if r.Method == http.MethodHead {
+			defer r.Body.Close()
+			w.Header().Set(
+				"Last-Modified",
+				twt.Created.Format(http.TimeFormat),
+			)
+			return
+		}
+
 		ctx.Title = fmt.Sprintf("%s @ %s > %s ", who, when, what)
 		ctx.Meta = Meta{
 			Title:       what,
