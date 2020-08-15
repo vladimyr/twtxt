@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	MaxTitleLength   = 60  // SEO Optimization
+	MaxTitleLength   = 288 // SEO Optimization
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
 )
@@ -750,7 +750,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		ctx.Meta = Meta{
 			Title:       what[:cutoff],
 			Author:      fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL),
-			Description: what,
+			Description: fmt.Sprintf("@<%s %s> %s", twt.Twter.Nick, twt.Twter.URL, what),
 			Keywords:    "", // TODO: What should this be?
 		}
 
