@@ -32,7 +32,6 @@ import (
 )
 
 const (
-	MaxTitleLength   = 288 // SEO Optimization
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
 )
@@ -729,28 +728,15 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		twt := twts[0]
-		who := twt.Twter.Nick
-		when := twt.Created.Format(time.RFC822)
+		who := fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL)
+		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
 
-		title := fmt.Sprintf(" %s @ %s > ", who, when)
-		cutoff := MaxTitleLength - len(title)
-		if cutoff < 0 {
-			cutoff = 0
-		}
-		if cutoff > len(what) {
-			cutoff = len(what)
-		}
-		title += what[:cutoff]
-		if cutoff < len(what) {
-			title += "..."
-		}
-		ctx.Title = title
-
+		ctx.Title = fmt.Sprintf("%s @ %s > %s ", who, when, what)
 		ctx.Meta = Meta{
-			Title:       what[:cutoff],
-			Author:      fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL),
-			Description: fmt.Sprintf("@<%s %s> %s", twt.Twter.Nick, twt.Twter.URL, what),
+			Title:       what,
+			Author:      who,
+			Description: what,
 			Keywords:    "", // TODO: What should this be?
 		}
 
