@@ -161,10 +161,6 @@ also have that configured and running in your cluster appropriately.
 docker stack deploy -c twtxt.yml
 ```
 
-## Stargazers over time
-
-[![Stargazers over time](https://starcharts.herokuapp.com/prologic/twtxt.svg)](https://starcharts.herokuapp.com/prologic/twtxt)
-
 ## Sponsor
 
 Support the ongoing development of twtxt!
