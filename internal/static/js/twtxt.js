@@ -170,14 +170,14 @@ u.prototype.replaceSelection = function() {
 }
 
 function createMentionedUserNode(username) {
-  return `
-              <div class="user-list__user">
-                <div class="avatar" style="background-image: url('/user/${username}/avatar.png')"></div>
-                <div class="info">
-                  <div class="nickname">${username}</div>
-                </div>
-              </div>
-  `
+  return u("<div>").addClass("user-list__user").
+    append(
+      u("<div>").addClass("avatar").attr("style", "background-image: url('/user/" + username + "/avatar.png')")
+    ).append(
+      u("<div>").addClass("info").append(
+        u("<div>").addClass("nickname").text(username)
+      )
+    );
 }
 
 function formatText(selector, fmt) {
@@ -231,7 +231,7 @@ var fetchUsersTimeout = null
 
 function getUsers(searchStr) {
     clearTimeout(fetchUsersTimeout)
-    fetchUsersTimeout = setTimeout(() => {
+    fetchUsersTimeout = setTimeout(function() {
       let requestUrl = '/lookup';
 
         if (searchStr) {
@@ -242,13 +242,13 @@ function getUsers(searchStr) {
           type: "GET",
           url: requestUrl,
           success: function (data) {
-            var nodes = data.map(function (user) {
-              return createMentionedUserNode(user);
-            }).join('')
-            u('#mentioned-list-content').first().innerHTML = nodes;
+            u("#mentioned-list-content").empty();
+            data.map(function (name) {
+              u('#mentioned-list-content').append(createMentionedUserNode(name));
+            });
           }
         });
-    }, deBounce)
+    }, deBounce);
 }
 
 function getLastMentionIndex(value) {
