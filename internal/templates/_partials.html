@@ -91,7 +91,7 @@
                 {{ end }}
               </h3>
             {{ end }}
-            <footer><a href="/twt/{{ .Hash }}"><time datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}"> {{ .Created | date "2006-01-02 15:04:05 -07:00" }}</time></a>&nbsp;<small><i>{{ .Created | time }}</i></small></footer>
+            <footer><a href="/twt/{{ .Hash }}"><time datetime="{{ .Created | date "2006-01-02T15:04:05Z07:00" }}"> {{ .Created | date "2006-01-02 15:04:05 -07:00" }}</time></a>&nbsp;({{ .Created | time }})</footer>
           </hgroup>
           <p>{{ .Text | formatTwt }}</p>
         </article>
