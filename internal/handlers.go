@@ -734,6 +734,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
+			w.Header().Set("Content-Type", "text/html")
 			w.Header().Set(
 				"Last-Modified",
 				twt.Created.Format(http.TimeFormat),
