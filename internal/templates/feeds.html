@@ -106,23 +106,25 @@
         </footer>
       </hgroup>
       {{ range $Source, $Feeds := .FeedSources }}
-        <hgroup>
-          <h3>{{ $Source | prettyURL }}</h3>
-          <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
-        </hgroup>
-        <ul>
-          {{ range $Feeds }}
-            <li>
-              <a href="/external?nick={{ .Name  }}&url={{ .URL }}">{{ .Name }}</a>
-              &nbsp;
-              {{ if $.User.Follows .URL }}
-                [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
-              {{ else }}
-                [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
-              {{ end }}
-            </li>
-          {{ end }}
-        </ul>
+        <details>
+          <summary>{{ $Source | prettyURL }}</summary>
+          <hgroup>
+            <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
+          </hgroup>
+          <ul>
+            {{ range $Feeds }}
+              <li>
+                <a href="/external?nick={{ .Name  }}&url={{ .URL }}">{{ .Name }}</a>
+                &nbsp;
+                {{ if $.User.Follows .URL }}
+                  [<a href="/unfollow?nick={{ .Name  }}">Unfollow</a>]
+                {{ else }}
+                  [<a href="/follow?nick={{ .Name  }}&url={{ .URL }}">Follow</a>]
+                {{ end }}
+              </li>
+            {{ end }}
+          </ul>
+        </details>
       {{ end}}
     </div>
   </article>
