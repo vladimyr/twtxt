@@ -1722,7 +1722,10 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		expiryTime := secs + expiresAfterSeconds
 
 		// Create magic link
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"username": username, "expiresAt": expiryTime})
+		token := jwt.NewWithClaims(
+			jwt.SigningMethodHS256,
+			jwt.MapClaims{"username": username, "expiresAt": expiryTime},
+		)
 		tokenString, err := token.SignedString([]byte(s.config.MagicLinkSecret))
 		if err != nil {
 			ctx.Error = true
@@ -1731,14 +1734,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 			return
 		}
 
-		magicLink := fmt.Sprintf("%s/newPassword?token=%v", s.config.BaseURL, tokenString)
-
-		// Send email
-		to := []string{user.Email}
-		subject := "Reset Password - txttxt.net"
-		body := magicLink
-
-		if err := s.config.SendEmail(to, subject, body); err != nil {
+		if err := SendPasswordResetEmail(s.config, user, tokenString); err != nil {
 			log.WithError(err).Errorf("unable to send reset password email to %s", user.Email)
 			ctx.Error = true
 			ctx.Message = err.Error()
@@ -2041,26 +2037,15 @@ func (s *Server) SupportHandler() httprouter.Handle {
 			return
 		}
 
-		// Send email
-		to := []string{s.config.AdminEmail, email}
-		subject = fmt.Sprintf(
-			"[%s Support Request]: %s",
-			s.config.Name, subject,
-		)
-		body := fmt.Sprintf(
-			"Support request from: %s <%s>\n\n%s",
-			name, email, message,
-		)
-
-		if err := s.config.SendEmail(to, subject, body); err != nil {
-			log.WithError(err).Errorf("unable to send support email to %s", to[0])
+		if err := SendSupportRequestEmail(s.config, name, email, subject, message); err != nil {
+			log.WithError(err).Errorf("unable to send support email for %s", email)
 			ctx.Error = true
 			ctx.Message = "Error sending support message! Please try again."
 			s.render("error", w, ctx)
 			return
 		}
 
-		log.Infof("support message email sent to %s", to[0])
+		log.Infof("support message email sent for %s", email)
 
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf(

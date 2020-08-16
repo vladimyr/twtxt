@@ -20,8 +20,6 @@ import (
 	"strconv"
 	"strings"
 
-	"gopkg.in/gomail.v2"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
@@ -76,7 +74,6 @@ var (
 	ErrUsernameTooLong    = errors.New("error: username is too long")
 	ErrInvalidUserAgent   = errors.New("error: invalid twtxt user agent")
 	ErrReservedUsername   = errors.New("error: username is reserved")
-	ErrSendingEmail       = errors.New("error: unable to send email")
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
@@ -596,22 +593,4 @@ func FormatRequest(r *http.Request) string {
 		r.Proto,
 		r.UserAgent(),
 	)
-}
-
-func (c *Config) SendEmail(recipients []string, subject string, body string) error {
-	m := gomail.NewMessage()
-	m.SetHeader("From", c.SMTPFrom)
-	m.SetHeader("To", recipients...)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", body)
-
-	d := gomail.NewDialer(c.SMTPHost, c.SMTPPort, c.SMTPUser, c.SMTPPass)
-
-	err := d.DialAndSend(m)
-	if err != nil {
-		log.WithError(err).Error("SendEmail() failed")
-		return ErrSendingEmail
-	}
-
-	return nil
 }
