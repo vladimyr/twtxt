@@ -12,5 +12,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Build
-        run: make image
+      - name: Build & Publish
+        if: (github.event_name == 'schedule' || github.event_name == 'push') && github.repository == 'prologic/twtxt'
+        env:
+          DOCKER_USERNAME: prologic
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: |
+          echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          make image
