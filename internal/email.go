@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"text/template"
 
 	log "github.com/sirupsen/logrus"
@@ -34,8 +35,8 @@ Kind regards
 
 {{ .Name }} <{{ .Email }} from {{ .Pod }} has sent the following support request:
 
-Subject: {{ .Subject }}
-
+> Subject: {{ .Subject }}
+> 
 {{ .Message }}
 
 Kind regards
@@ -60,6 +61,22 @@ type SupportRequestEmailContext struct {
 	Email   string
 	Subject string
 	Message string
+}
+
+// indents a block of text with an indent string
+func Indent(text, indent string) string {
+	if text[len(text)-1:] == "\n" {
+		result := ""
+		for _, j := range strings.Split(text[:len(text)-1], "\n") {
+			result += indent + j + "\n"
+		}
+		return result
+	}
+	result := ""
+	for _, j := range strings.Split(strings.TrimRight(text, "\n"), "\n") {
+		result += indent + j + "\n"
+	}
+	return result[:len(result)-1]
 }
 
 func SendEmail(conf *Config, recipients []string, replyTo, subject string, body string) error {
@@ -111,7 +128,7 @@ func SendPasswordResetEmail(conf *Config, user *User, tokenString string) error 
 
 func SendSupportRequestEmail(conf *Config, name, email, subject, message string) error {
 	recipients := []string{conf.AdminEmail, email}
-	subject = fmt.Sprintf(
+	emailSubject := fmt.Sprintf(
 		"[%s Support Request]: %s",
 		conf.Name, subject,
 	)
@@ -122,7 +139,7 @@ func SendSupportRequestEmail(conf *Config, name, email, subject, message string)
 		Name:    name,
 		Email:   email,
 		Subject: subject,
-		Message: message,
+		Message: Indent(message, "> "),
 	}
 
 	buf := &bytes.Buffer{}
@@ -131,7 +148,7 @@ func SendSupportRequestEmail(conf *Config, name, email, subject, message string)
 		return err
 	}
 
-	if err := SendEmail(conf, recipients, email, subject, buf.String()); err != nil {
+	if err := SendEmail(conf, recipients, email, emailSubject, buf.String()); err != nil {
 		log.WithError(err).Errorf("error sending support request to %s", recipients[0])
 		return err
 	}
