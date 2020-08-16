@@ -43,6 +43,12 @@
             </label>
           </div>
           <div>
+            <label for="displayDatesInTimezone">
+              Display dates in timezone:
+              <input id="displayDatesInTimezone" type="text" name="displayDatesInTimezone" aria-label="Timezone" value="{{ .User.DisplayDatesInTimezone }}">
+            </label>
+          </div>
+          <div>
             <label for="isFollowersPubliclyVisible">
               <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
               Show my followers publicly

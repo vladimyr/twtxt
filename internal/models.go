@@ -45,8 +45,9 @@ type User struct {
 	URL       string
 	CreatedAt time.Time
 
-	IsFollowersPubliclyVisible bool `default:"true"`
-	IsFollowingPubliclyVisible bool `default:"true"`
+	DisplayDatesInTimezone     string `default:"UTC"`
+	IsFollowersPubliclyVisible bool   `default:"true"`
+	IsFollowingPubliclyVisible bool   `default:"true"`
 
 	Feeds  []string `default:"[]"`
 	Tokens []string `default:"[]"`
