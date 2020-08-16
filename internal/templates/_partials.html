@@ -100,7 +100,7 @@
               &nbsp;({{ .Created | ago }})
             </footer>
           </hgroup>
-          <p>{{ .Text | formatTwt }}</p>
+          {{ .Text | formatTwt }}
         </article>
       {{ end }}
       {{ template "pager" . }}
