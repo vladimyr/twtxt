@@ -131,7 +131,7 @@ func SendSupportRequestEmail(conf *Config, name, email, subject, message string)
 		return err
 	}
 
-	if err := SendEmail(conf, recipients, conf.SMTPFrom, subject, buf.String()); err != nil {
+	if err := SendEmail(conf, recipients, email, subject, buf.String()); err != nil {
 		log.WithError(err).Errorf("error sending support request to %s", recipients[0])
 		return err
 	}
