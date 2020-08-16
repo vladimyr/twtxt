@@ -1995,33 +1995,38 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 	}
 }
 
-func (s *Server) supportHandler() httprouter.Handle {
+// SupportHandler ...
+func (s *Server) SupportHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
+			ctx.Title = "Contact support"
+			s.render("support", w, ctx)
 			return
 		}
 
-		// Uncomment following lines when saving data
-		/*name := r.FormValue("name")
-		email := r.FormValue("email")
-		subject := r.FormValue("subject")
-		message := r.FormValue("message")*/
+		name := strings.TrimSpace(r.FormValue("name"))
+		email := strings.TrimSpace(r.FormValue("email"))
+		subject := strings.TrimSpace(r.FormValue("subject"))
+		message := strings.TrimSpace(r.FormValue("message"))
 
-		captchaInput := r.FormValue("captchaInput")
+		captchaInput := strings.TrimSpace(r.FormValue("captchaInput"))
 
 		// Get session
 		sess := r.Context().Value(session.SessionKey)
 		if sess == nil {
+			log.Warn("no session found")
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("no session found.")
+			ctx.Message = fmt.Sprintf("no session found, do you have cookies disabled?")
 			s.render("error", w, ctx)
 			return
 		}
+
 		// Get captcha text from session
 		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
 		if isCaptchaTextAvailable == false {
+			log.Warn("no captcha provided")
 			ctx.Error = true
 			ctx.Message = "no captcha text found"
 			s.render("error", w, ctx)
@@ -2029,31 +2034,50 @@ func (s *Server) supportHandler() httprouter.Handle {
 		}
 
 		if captchaInput != captchaText {
+			log.Warn("incorrect captcha")
 			ctx.Error = true
 			ctx.Message = "Unable to match captcha text. Please try again."
 			s.render("error", w, ctx)
 			return
 		}
 
-		// Save form data here
+		// Send email
+		to := []string{s.config.AdminEmail, email}
+		subject = fmt.Sprintf(
+			"[%s Support Request]: %s",
+			s.config.Name, subject,
+		)
+		body := fmt.Sprintf(
+			"Support request from: %s <%s>\n\n%s",
+			name, email, message,
+		)
+
+		if err := s.config.SendEmail(to, subject, body); err != nil {
+			log.WithError(err).Errorf("unable to send support email to %s", to[0])
+			ctx.Error = true
+			ctx.Message = "Error sending support message! Please try again."
+			s.render("error", w, ctx)
+			return
+		}
+
+		log.Infof("support message email sent to %s", to[0])
 
 		ctx.Error = false
-		ctx.Message = "Thank you for getting in touch! One of our colleagues will get back to you soon!"
+		ctx.Message = fmt.Sprintf(
+			"Thank you for your message! Pod operator %s will get back to you soon!",
+			s.config.AdminName,
+		)
 		s.render("error", w, ctx)
 	}
 }
 
-// GetCaptchaHandler ...
-func (s *Server) getCaptchaHandler() httprouter.Handle {
+// CaptchaHandler ...
+func (s *Server) CaptchaHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-
-		if r.Method == "POST" {
-			return
-		}
-
 		img, err := captcha.NewMathExpr(150, 50)
 		if err != nil {
-			log.WithError(err).Errorf("unable to get captcha image")
+			log.WithError(err).Errorf("unable to get generate captcha image")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
 
@@ -2061,11 +2085,16 @@ func (s *Server) getCaptchaHandler() httprouter.Handle {
 		sess := r.Context().Value(session.SessionKey)
 		if sess == nil {
 			log.Warn("no session found")
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		sess.(*session.Session).Set("captchaText", img.Text)
 
 		w.Header().Set("Content-Type", "image/png")
-		img.WriteImage(w)
+		if err := img.WriteImage(w); err != nil {
+			log.WithError(err).Errorf("error sending captcha image repsonse")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 }

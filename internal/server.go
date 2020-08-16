@@ -207,10 +207,10 @@ func (s *Server) initRoutes() {
 	s.router.GET("/about", s.PageHandler("about"))
 	s.router.GET("/help", s.PageHandler("help"))
 	s.router.GET("/privacy", s.PageHandler("privacy"))
-	s.router.GET("/support", s.PageHandler("support"))
-	s.router.POST("/support", s.supportHandler())
 
-	s.router.GET("/captcha", s.getCaptchaHandler())
+	s.router.GET("/support", s.SupportHandler())
+	s.router.POST("/support", s.SupportHandler())
+	s.router.GET("/_captcha", s.CaptchaHandler())
 
 	s.router.GET("/", s.TimelineHandler())
 	s.router.HEAD("/", s.TimelineHandler())
