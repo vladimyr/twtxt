@@ -1130,7 +1130,6 @@ func (s *Server) LookupHandler() httprouter.Handle {
 
 		prefix := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("prefix")))
 
-		users := s.db.SearchUsers(prefix)
 		feeds := s.db.SearchFeeds(prefix)
 
 		user := ctx.User
