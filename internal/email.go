@@ -126,7 +126,7 @@ func SendSupportRequestEmail(conf *Config, name, email, subject, message string)
 	}
 
 	buf := &bytes.Buffer{}
-	if err := passwordResetEmailTemplate.Execute(buf, ctx); err != nil {
+	if err := supportRequestEmailTemplate.Execute(buf, ctx); err != nil {
 		log.WithError(err).Error("error rendering email template")
 		return err
 	}
