@@ -68,7 +68,7 @@ func SendEmail(conf *Config, recipients []string, replyTo, subject string, body 
 	m.SetHeader("To", recipients...)
 	m.SetHeader("Reply-To", replyTo)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", body)
+	m.SetBody("text/plain", body)
 
 	d := gomail.NewDialer(conf.SMTPHost, conf.SMTPPort, conf.SMTPUser, conf.SMTPPass)
 
