@@ -37,7 +37,7 @@ install: build
 	@go install ./cmd/twtd/...
 
 image:
-	@docker build -f Dockerfile -t prologic/twtxt .
+	@docker build --build-arg VERSION="$(VERSION)" --build-arg COMMIT="$(COMMIT)" -t prologic/twtxt .
 	@docker push prologic/twtxt
 
 release:
