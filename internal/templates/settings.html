@@ -15,7 +15,7 @@
         </div>
         <div class="grid">
           <div>
-            <label for="tagline">
+            <label for="avatar">
               Change avatar
               <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
             </label>
@@ -34,31 +34,38 @@
               <input id="password" type="password" name="password" placeholder="Updated password" aria-label="Password" autocomplete="current-password">
             </label>
           </div>
-        </div>
-        <div class="grid">
           <div>
             <label for="email">
               Change email:
               <input id="email" type="email" name="email" placeholder="Updated email address" aria-label="Email" value="{{ .User.Email }}">
             </label>
           </div>
+        </div>
+        <div class="grid">
           <div>
             <label for="displayDatesInTimezone">
               Display dates in timezone:
-              <input id="displayDatesInTimezone" type="text" name="displayDatesInTimezone" aria-label="Timezone" value="{{ .User.DisplayDatesInTimezone }}">
+              <select id="displayDatesInTimezone"  name="displayDatesInTimezone">
+                {{ range .Timezones }}
+                  <option value="{{ .TzName }}" {{ if eq $.User.DisplayDatesInTimezone .TzName }}selected{{ end }}>{{ .NameWithOffset }}</option>
+                {{ end }}
+              </select>
             </label>
           </div>
           <div>
-            <label for="isFollowersPubliclyVisible">
-              <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
-              Show my followers publicly
-            </label>
-
-            <label for="isFollowingPubliclyVisible">
-              <input id="isFollowingPubliclyVisible" type="checkbox" name="isFollowingPubliclyVisible" aria-label="Show user/feed followings publicly" role="switch" {{ if .User.IsFollowingPubliclyVisible }}checked{{ end }}>
-              Show users and feed I follow publicly
-            </label>
+            <fieldset>
+              <legend>Privacy settings:</legend>
+              <label for="isFollowersPubliclyVisible">
+                <input id="isFollowersPubliclyVisible" type="checkbox" name="isFollowersPubliclyVisible" aria-label="Show followers publicly" role="switch" {{ if .User.IsFollowersPubliclyVisible }}checked{{ end }}>
+                Show my followers publicly
+              </label>
+              <label for="isFollowingPubliclyVisible">
+                <input id="isFollowingPubliclyVisible" type="checkbox" name="isFollowingPubliclyVisible" aria-label="Show user/feed followings publicly" role="switch" {{ if .User.IsFollowingPubliclyVisible }}checked{{ end }}>
+                Show my followings publicly
+              </label>
+            </fieldset>
           </div>
+          <div></div>
         </div>
         <button type="submit" class="primary">Update</button>
       </form>

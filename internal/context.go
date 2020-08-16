@@ -11,6 +11,7 @@ import (
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/types"
+	"github.com/theplant-retired/timezones"
 )
 
 type Alternative struct {
@@ -37,6 +38,8 @@ type Context struct {
 	MaxTwtLength            int
 	RegisterDisabled        bool
 	RegisterDisabledMessage string
+
+	Timezones []*timezones.Zoneinfo
 
 	Username      string
 	User          *User
@@ -74,6 +77,8 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,
+
+		Timezones: timezones.AllZones,
 
 		Title: "",
 		Meta: Meta{
