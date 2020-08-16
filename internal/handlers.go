@@ -1746,7 +1746,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 
 		// Show success msg
 		ctx.Error = false
-		ctx.Message = fmt.Sprintf("Magic Link successfully sent via email to %v", user.Email)
+		ctx.Message = "Password request request sent! Please check your email and follow the instructions"
 		s.render("error", w, ctx)
 	}
 }
