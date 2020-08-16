@@ -81,7 +81,7 @@ func init() {
 
 	// Pod Settings
 	flag.BoolVarP(
-		&openRegistrations, "open-registration", "R", internal.DefaultOpenRegistrations,
+		&openRegistrations, "open-registrations", "R", internal.DefaultOpenRegistrations,
 		"whether or not to have open user registgration",
 	)
 	flag.BoolVarP(
