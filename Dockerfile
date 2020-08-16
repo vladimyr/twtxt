@@ -49,7 +49,7 @@ RUN make server VERSION=$VERSION COMMIT=$COMMIT
 # Runtime
 FROM alpine:latest
 
-RUN apk --no-cache -U add ca-certificates
+RUN apk --no-cache -U add ca-certificates tzdata
 
 WORKDIR /
 VOLUME /data
