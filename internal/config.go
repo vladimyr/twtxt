@@ -13,22 +13,24 @@ import (
 
 // Config contains the server configuration parameters
 type Config struct {
-	Data            string        `json:"data"`
-	Name            string        `json:"name"`
-	Store           string        `json:"store"`
-	Theme           string        `json:"theme"`
-	BaseURL         string        `json:"base_url"`
-	AdminUser       string        `json:"admin_user"`
-	FeedSources     []string      `json:"feed_sources"`
-	Register        bool          `json:"register"`
-	RegisterMessage string        `json:"register_message"`
-	CookieSecret    string        `json:"cookie_secret"`
-	TwtPrompts      []string      `json:"twt_prompts"`
-	TwtsPerPage     int           `json:"twts_per_page"`
-	MaxUploadSize   int64         `json:"max_upload_size"`
-	MaxTwtLength    int           `json:"max_twt_length"`
-	OpenProfiles    bool          `json:"open_profiles"`
-	SessionExpiry   time.Duration `json:"session_expiry"`
+	Data              string        `json:"data"`
+	Name              string        `json:"name"`
+	Store             string        `json:"store"`
+	Theme             string        `json:"theme"`
+	BaseURL           string        `json:"base_url"`
+	AdminUser         string        `json:"admin_user"`
+	AdminName         string        `json:"admin_user"`
+	AdminEmail        string        `json:"admin_user"`
+	FeedSources       []string      `json:"feed_sources"`
+	RegisterMessage   string        `json:"register_message"`
+	CookieSecret      string        `json:"cookie_secret"`
+	TwtPrompts        []string      `json:"twt_prompts"`
+	TwtsPerPage       int           `json:"twts_per_page"`
+	MaxUploadSize     int64         `json:"max_upload_size"`
+	MaxTwtLength      int           `json:"max_twt_length"`
+	OpenProfiles      bool          `json:"open_profiles"`
+	OpenRegistrations bool          `json:"open_registrations"`
+	SessionExpiry     time.Duration `json:"session_expiry"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
 

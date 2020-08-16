@@ -70,7 +70,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		TwtsPerPage:      conf.TwtsPerPage,
 		TwtPrompt:        conf.RandomTwtPrompt(),
 		MaxTwtLength:     conf.MaxTwtLength,
-		RegisterDisabled: !conf.Register,
+		RegisterDisabled: !conf.OpenRegistrations,
 
 		Commit: twtxt.Commit,
 		Theme:  conf.Theme,

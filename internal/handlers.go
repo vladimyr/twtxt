@@ -1049,13 +1049,13 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			if s.config.Register {
+			if s.config.OpenRegistrations {
 				s.render("register", w, ctx)
 			} else {
 				message := s.config.RegisterMessage
 
 				if message == "" {
-					message = "Registrations are disabled on this instance. Please contact the operator."
+					message = "Open Registrations are disabled on this pod. Please contact the pod operator."
 				}
 
 				ctx.Error = true

@@ -16,8 +16,10 @@ const (
 	// DefaultBaseURL is the default Base URL for the app used to construct feed URLs
 	DefaultBaseURL = "http://0.0.0.0:8000"
 
-	// DefaultAdminUser is the default admin user who has special features
-	DefaultAdminUser = "admin"
+	// DefaultAdminXXX is the default admin user / pod operator
+	DefaultAdminUser  = "admin"
+	DefaultAdminName  = "Administrator"
+	DefaultAdminEmail = "support@twt.social"
 
 	// DefaultName is the default instance name
 	DefaultName = "twtxt.net"
@@ -31,8 +33,8 @@ const (
 	// DefaultTheme is the default theme to use ('light' or 'dark')
 	DefaultTheme = "dark"
 
-	// DefaultRegister is the default user registration flag
-	DefaultRegister = false
+	// DefaultOpenRegistrations is the default for open user registrations
+	DefaultOpenRegistrations = false
 
 	// DefaultRegisterMessage is the default message displayed when  registrations are disabled
 	DefaultRegisterMessage = ""
@@ -103,25 +105,25 @@ var (
 
 func NewConfig() *Config {
 	return &Config{
-		Name:            DefaultName,
-		Store:           DefaultStore,
-		Theme:           DefaultTheme,
-		BaseURL:         DefaultBaseURL,
-		AdminUser:       DefaultAdminUser,
-		FeedSources:     DefaultFeedSources,
-		Register:        DefaultRegister,
-		RegisterMessage: DefaultRegisterMessage,
-		CookieSecret:    DefaultCookieSecret,
-		TwtPrompts:      DefaultTwtPrompts,
-		TwtsPerPage:     DefaultTwtsPerPage,
-		MaxTwtLength:    DefaultMaxTwtLength,
-		OpenProfiles:    DefaultOpenProfiles,
-		SessionExpiry:   DefaultSessionExpiry,
-		MagicLinkSecret: DefaultMagicLinkSecret,
-		SMTPHost:        DefaultSMTPHost,
-		SMTPPort:        DefaultSMTPPort,
-		SMTPUser:        DefaultSMTPUser,
-		SMTPPass:        DefaultSMTPPass,
+		Name:              DefaultName,
+		Store:             DefaultStore,
+		Theme:             DefaultTheme,
+		BaseURL:           DefaultBaseURL,
+		AdminUser:         DefaultAdminUser,
+		FeedSources:       DefaultFeedSources,
+		RegisterMessage:   DefaultRegisterMessage,
+		CookieSecret:      DefaultCookieSecret,
+		TwtPrompts:        DefaultTwtPrompts,
+		TwtsPerPage:       DefaultTwtsPerPage,
+		MaxTwtLength:      DefaultMaxTwtLength,
+		OpenProfiles:      DefaultOpenProfiles,
+		OpenRegistrations: DefaultOpenRegistrations,
+		SessionExpiry:     DefaultSessionExpiry,
+		MagicLinkSecret:   DefaultMagicLinkSecret,
+		SMTPHost:          DefaultSMTPHost,
+		SMTPPort:          DefaultSMTPPort,
+		SMTPUser:          DefaultSMTPUser,
+		SMTPPass:          DefaultSMTPPass,
 	}
 }
 
@@ -165,6 +167,22 @@ func WithAdminUser(adminUser string) Option {
 	}
 }
 
+// WithAdminName sets the Admin name used to identify the pod operator
+func WithAdminName(adminName string) Option {
+	return func(cfg *Config) error {
+		cfg.AdminName = adminName
+		return nil
+	}
+}
+
+// WithAdminEmail sets the Admin email used to contact the pod operator
+func WithAdminEmail(adminEmail string) Option {
+	return func(cfg *Config) error {
+		cfg.AdminEmail = adminEmail
+		return nil
+	}
+}
+
 // WithFeedSources sets the feed sources  to use for external feeds
 func WithFeedSources(feedSources []string) Option {
 	return func(cfg *Config) error {
@@ -189,10 +207,10 @@ func WithTheme(theme string) Option {
 	}
 }
 
-// WithRegister sets the user registration flag
-func WithRegister(register bool) Option {
+// WithOpenRegistrations sets the open registrations flag
+func WithOpenRegistrations(openRegistrations bool) Option {
 	return func(cfg *Config) error {
-		cfg.Register = register
+		cfg.OpenRegistrations = openRegistrations
 		return nil
 	}
 }

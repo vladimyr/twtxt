@@ -397,10 +397,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("Instance Name: %s", server.config.Name)
 	log.Infof("Base URL: %s", server.config.BaseURL)
 	log.Infof("Admin User: %s", server.config.AdminUser)
-	log.Infof("User Registrationg: %t", server.config.Register)
+	log.Infof("Admin Name: %s", server.config.AdminName)
+	log.Infof("Admin Email: %s", server.config.AdminEmail)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)
+	log.Infof("Open Registrations: %t", server.config.OpenRegistrations)
 	log.Infof("SMTP Host: %s", server.config.SMTPHost)
 	log.Infof("SMTP Port: %d", server.config.SMTPPort)
 	log.Infof("SMTP User: %s", server.config.SMTPUser)
@@ -410,8 +412,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("API Session Time: %s", (server.config.APISessionTime))
 
 	// Warn about user registration being disabled.
-	if !server.config.Register {
-		log.Warn("User registrations are disabled as per configuration (no -r/--register)")
+	if !server.config.OpenRegistrations {
+		log.Warn("Open Registrations are disabled as per configuration (no -R/--open-registrations)")
 	}
 
 	server.initRoutes()

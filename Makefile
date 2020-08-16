@@ -11,7 +11,7 @@ deps:
 
 dev: build
 	@./twt -v
-	@./twtd -D -O -r
+	@./twtd -D -O -R
 
 cli:
 	@go build -tags "netgo static_build" -installsuffix netgo \

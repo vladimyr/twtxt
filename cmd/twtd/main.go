@@ -19,70 +19,134 @@ var (
 	debug   bool
 	version bool
 
-	data          string
-	store         string
-	name          string
-	theme         string
-	register      bool
-	baseURL       string
-	adminUser     string
-	feedSources   []string
-	cookieSecret  string
+	// Basic options
+	name    string
+	data    string
+	store   string
+	theme   string
+	baseURL string
+
+	// Pod Oeprator
+	adminUser  string
+	adminName  string
+	adminEmail string
+
+	// Pod Settings
+	openProfiles      bool
+	openRegistrations bool
+
+	// Pod Limits
 	twtsPerPage   int
 	maxTwtLength  int
-	openProfiles  bool
 	maxUploadSize int64
-	sessionExpiry time.Duration
-
-	magiclinkSecret string
-	smtpHost        string
-	smtpPort        int
-	smtpUser        string
-	smtpPass        string
-	smtpFrom        string
-
 	maxFetchLimit int64
 
-	apiSessionTime time.Duration
-	apiSigningKey  string
+	// Pod Secrets
+	apiSigningKey   string
+	cookieSecret    string
+	magiclinkSecret string
 
+	// Email Setitngs
+	smtpHost string
+	smtpPort int
+	smtpUser string
+	smtpPass string
+	smtpFrom string
+
+	// Timeouts
+	sessionExpiry  time.Duration
+	apiSessionTime time.Duration
+
+	// Whitelists, Sources
+	feedSources        []string
 	whitelistedDomains []string
 )
 
 func init() {
-	flag.BoolVarP(&version, "version", "v", false, "display version information")
 	flag.BoolVarP(&debug, "debug", "D", false, "enable debug logging")
 	flag.StringVarP(&bind, "bind", "b", "0.0.0.0:8000", "[int]:<port> to bind to")
+	flag.BoolVarP(&version, "version", "v", false, "display version information")
 
+	// Basic options
+	flag.StringVarP(&name, "name", "n", internal.DefaultName, "set the pod's name")
 	flag.StringVarP(&data, "data", "d", internal.DefaultData, "data directory")
 	flag.StringVarP(&store, "store", "s", internal.DefaultStore, "store to use")
-	flag.StringVarP(&name, "name", "n", internal.DefaultName, "set the instance's name")
 	flag.StringVarP(&theme, "theme", "t", internal.DefaultTheme, "set the default theme")
-	flag.BoolVarP(&register, "register", "r", internal.DefaultRegister, "enable user registration")
 	flag.StringVarP(&baseURL, "base-url", "u", internal.DefaultBaseURL, "base url to use")
+
+	// Pod Oeprator
+	flag.StringVarP(&adminName, "admin-name", "N", internal.DefaultAdminName, "default admin user name")
+	flag.StringVarP(&adminEmail, "admin-email", "E", internal.DefaultAdminEmail, "default admin user email")
 	flag.StringVarP(&adminUser, "admin-user", "A", internal.DefaultAdminUser, "default admin user to use")
-	flag.StringSliceVarP(&feedSources, "feed-sources", "F", internal.DefaultFeedSources, "external feed sources")
-	flag.StringVarP(&cookieSecret, "cookie-secret", "S", internal.DefaultCookieSecret, "cookie secret to use")
-	flag.IntVarP(&maxTwtLength, "max-twt-length", "L", internal.DefaultMaxTwtLength, "maximum length of posts")
-	flag.BoolVarP(&openProfiles, "open-profiles", "O", internal.DefaultOpenProfiles, "whether or not to have open user profiles")
-	flag.Int64VarP(&maxUploadSize, "max-upload-size", "U", internal.DefaultMaxUploadSize, "maximum upload size of media")
-	flag.IntVarP(&twtsPerPage, "twts-per-page", "T", internal.DefaultTwtsPerPage, "twts per page to display")
-	flag.DurationVarP(&sessionExpiry, "session-expiry", "E", internal.DefaultSessionExpiry, "session expiry to use")
 
-	flag.StringVar(&magiclinkSecret, "magiclink-secret", internal.DefaultMagicLinkSecret, "magiclink secret to use for password reset tokens")
+	// Pod Settings
+	flag.BoolVarP(
+		&openRegistrations, "open-registration", "R", internal.DefaultOpenRegistrations,
+		"whether or not to have open user registgration",
+	)
+	flag.BoolVarP(
+		&openProfiles, "open-profiles", "O", internal.DefaultOpenProfiles,
+		"whether or not to have open user profiles",
+	)
 
+	// Pod Limits
+	flag.IntVarP(
+		&twtsPerPage, "twts-per-page", "T", internal.DefaultTwtsPerPage,
+		"maximum twts per page to display",
+	)
+	flag.IntVarP(
+		&maxTwtLength, "max-twt-length", "L", internal.DefaultMaxTwtLength,
+		"maximum length of posts",
+	)
+	flag.Int64VarP(
+		&maxUploadSize, "max-upload-size", "U", internal.DefaultMaxUploadSize,
+		"maximum upload size of media",
+	)
+	flag.Int64VarP(
+		&maxFetchLimit, "max-fetch-limit", "F", internal.DefaultMaxFetchLimit,
+		"maximum feed fetch limit in bytes",
+	)
+
+	// Pod Secrets
+	flag.StringVar(
+		&apiSigningKey, "api-signing-key", internal.DefaultAPISigningKey,
+		"secret to use for signing api tokens",
+	)
+	flag.StringVar(
+		&cookieSecret, "cookie-secret", internal.DefaultCookieSecret,
+		"cookie secret to use secure sessions",
+	)
+	flag.StringVar(
+		&magiclinkSecret, "magiclink-secret", internal.DefaultMagicLinkSecret,
+		"magiclink secret to use for password reset tokens",
+	)
+
+	// Email Setitngs
 	flag.StringVar(&smtpHost, "smtp-host", internal.DefaultSMTPHost, "SMTP Host to use for email sending")
 	flag.IntVar(&smtpPort, "smtp-port", internal.DefaultSMTPPort, "SMTP Port to use for email sending")
 	flag.StringVar(&smtpUser, "smtp-user", internal.DefaultSMTPUser, "SMTP User to use for email sending")
 	flag.StringVar(&smtpPass, "smtp-pass", internal.DefaultSMTPPass, "SMTP Pass to use for email sending")
-	flag.StringVar(&smtpFrom, "smtp-from", internal.DefaultSMTPFrom, "SMTP From address to use for email sending")
+	flag.StringVar(&smtpFrom, "smtp-from", internal.DefaultSMTPFrom, "SMTP From to use for email sending")
 
-	flag.Int64Var(&maxFetchLimit, "max-fetch-limit", internal.DefaultMaxFetchLimit, "Maximum feed fetch limit in bytes")
+	// Timeouts
+	flag.DurationVar(
+		&sessionExpiry, "session-expiry", internal.DefaultSessionExpiry,
+		"timeout for sessions to expire",
+	)
+	flag.DurationVar(
+		&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime,
+		"timeout for api tokens to expire",
+	)
 
-	flag.DurationVar(&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime, "Maximum TTL for API tokens")
-	flag.StringVar(&apiSigningKey, "api-signing-key", internal.DefaultAPISigningKey, "API JWT signing key for tokens")
-
-	flag.StringSliceVar(&whitelistedDomains, "whitelist-domain", internal.DefaultWhitelistedDomains, "List of domains to whitelist and permit for external image")
+	// Whitelists, Sources
+	flag.StringSliceVar(
+		&feedSources, "feed-sources", internal.DefaultFeedSources,
+		"external feed sources for discovery of other feeds",
+	)
+	flag.StringSliceVar(
+		&whitelistedDomains, "whitelist-domain", internal.DefaultWhitelistedDomains,
+		"whitelist of external domains to permit for display of inline images",
+	)
 }
 
 func flagNameFromEnvironmentName(s string) string {
@@ -122,33 +186,46 @@ func main() {
 	}
 
 	svr, err := internal.NewServer(bind,
-		internal.WithData(data),
+		// Basic options
 		internal.WithName(name),
-		internal.WithTheme(theme),
+		internal.WithData(data),
 		internal.WithStore(store),
+		internal.WithTheme(theme),
 		internal.WithBaseURL(baseURL),
-		internal.WithRegister(register),
+
+		// Pod Oeprator
 		internal.WithAdminUser(adminUser),
-		internal.WithFeedSources(feedSources),
-		internal.WithCookieSecret(cookieSecret),
-		internal.WithTwtsPerPage(twtsPerPage),
-		internal.WithSessionExpiry(sessionExpiry),
-		internal.WithMaxTwtLength(maxTwtLength),
+		internal.WithAdminName(adminName),
+		internal.WithAdminEmail(adminEmail),
+
+		// Pod Settings
 		internal.WithOpenProfiles(openProfiles),
+		internal.WithOpenRegistrations(openRegistrations),
+
+		// Pod Limits
+		internal.WithTwtsPerPage(twtsPerPage),
+		internal.WithMaxTwtLength(maxTwtLength),
 		internal.WithMaxUploadSize(maxUploadSize),
+		internal.WithMaxFetchLimit(maxFetchLimit),
+
+		// Pod Secrets
+		internal.WithAPISigningKey(apiSigningKey),
+		internal.WithCookieSecret(cookieSecret),
 		internal.WithMagicLinkSecret(magiclinkSecret),
 
+		// Email Setitngs
 		internal.WithSMTPHost(smtpHost),
 		internal.WithSMTPPort(smtpPort),
 		internal.WithSMTPUser(smtpUser),
 		internal.WithSMTPPass(smtpPass),
 		internal.WithSMTPFrom(smtpFrom),
 
-		internal.WithMaxFetchLimit(maxFetchLimit),
-
+		// Timeouts
+		internal.WithSessionExpiry(sessionExpiry),
 		internal.WithAPISessionTime(apiSessionTime),
-		internal.WithAPISigningKey(apiSigningKey),
 
+		// Whitelists, Sources
+		internal.WithFeedSources(feedSources),
 		internal.WithWhitelistedDomains(whitelistedDomains),
 	)
 	if err != nil {
