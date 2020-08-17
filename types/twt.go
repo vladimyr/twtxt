@@ -9,6 +9,10 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
+const (
+	HashLength = 11
+)
+
 // Twter ...
 type Twter struct {
 	Nick string
@@ -71,7 +75,8 @@ func (twt Twt) Hash() string {
 
 	// Base32 is URL-safe, unlike Base64, and shorter than hex.
 	encoding := base32.StdEncoding.WithPadding(base32.NoPadding)
-	twt.hash = strings.ToLower(encoding.EncodeToString(sum[:]))
+	hash := strings.ToLower(encoding.EncodeToString(sum[:]))
+	twt.hash = hash[len(hash)-HashLength:]
 
 	return twt.hash
 }
