@@ -97,7 +97,7 @@
                   {{ dateInZone "Mon, Jan 2 3:04PM 2006" .Created $.User.DisplayDatesInTimezone }}
                 </time>
               </a>
-              &nbsp;({{ .Created | ago }})
+              &nbsp;({{ .Created | time }})
             </footer>
           </hgroup>
           {{ .Text | formatTwt }}
