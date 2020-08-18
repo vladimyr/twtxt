@@ -1975,6 +1975,8 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 
 // SyndicationHandler ...
 func (s *Server) SyndicationHandler() httprouter.Handle {
+	formatTwt := FormatTwtFactory(s.config)
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
 			twts    types.Twts
@@ -2047,11 +2049,12 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 
 		for _, twt := range twts {
 			items = append(items, &feeds.Item{
-				Id:      twt.Hash(),
-				Title:   twt.Text,
-				Link:    &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
-				Author:  &feeds.Author{Name: twt.Twter.Nick},
-				Created: twt.Created,
+				Id:          twt.Hash(),
+				Title:       string(formatTwt(twt.Text)),
+				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
+				Author:      &feeds.Author{Name: twt.Twter.Nick},
+				Description: string(formatTwt(twt.Text)),
+				Created:     twt.Created,
 			},
 			)
 		}
