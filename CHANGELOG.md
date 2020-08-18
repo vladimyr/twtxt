@@ -1,6 +1,6 @@
 
-<a name="0.0.13"></a>
-## [0.0.13](https://github.com/prologic/twtxt/compare/0.0.12...0.0.13) (2020-08-19)
+<a name="0.1.0"></a>
+## [0.1.0](https://github.com/prologic/twtxt/compare/0.0.12...0.1.0) (2020-08-19)
 
 ### Bug Fixes
 
@@ -71,6 +71,7 @@
 
 ### Updates
 
+* Update CHANGELOG for 0.0.13
 * Update README.md
 * Update README gif ([#121](https://github.com/prologic/twtxt/issues/121))
 * Update /feeds view and simplify the actions and remove own feeds from local feeds as they  apprea in my feeds already
