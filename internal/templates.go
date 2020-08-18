@@ -36,6 +36,7 @@ func NewTemplates(conf *Config) (*Templates, error) {
 	funcMap["time"] = humanize.Time
 	funcMap["prettyURL"] = PrettyURL
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
+	funcMap["isLocal"] = IsLocalFactory(conf)
 
 	box, err := rice.FindBox("templates")
 	if err != nil {
@@ -55,7 +56,7 @@ func NewTemplates(conf *Config) (*Templates, error) {
 			}
 
 			name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
-			t := template.New(name)
+			t := template.New(name).Option("missingkey=error")
 			t.Funcs(funcMap)
 			template.Must(t.Parse(box.MustString(info.Name())))
 			template.Must(t.Parse(box.MustString(partialsTemplate)))

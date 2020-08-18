@@ -3,6 +3,7 @@ package internal
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/StudioSol/async"
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
@@ -36,6 +38,8 @@ import (
 const (
 	MediaResolution  = 640 // 640x480
 	AvatarResolution = 60  // 60x60
+	AsyncTaskLimit   = 5
+	MaxAsyncTime     = 5 * time.Second
 )
 
 var (
@@ -110,6 +114,10 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Profile = profile
 
+		ctx.Links = append(ctx.Links, Link{
+			Href: fmt.Sprintf("%s/webmention", UserURL(profile.URL)),
+			Rel:  "webmention",
+		})
 		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
 			Alternative{
 				Type:  "text/plain",
@@ -446,18 +454,16 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			return
 		}
 
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
+		w.Header().Set("Last-Modified", stat.ModTime().UTC().Format(http.TimeFormat))
+
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
-			w.Header().Set("Content-Type", "text/plain")
-			w.Header().Set(
-				"Content-Length",
-				fmt.Sprintf("%d", stat.Size()),
-			)
-			w.Header().Set(
-				"Last-Modified",
-				stat.ModTime().UTC().Format(http.TimeFormat),
-			)
-		} else if r.Method == http.MethodGet {
+			return
+		}
+
+		if r.Method == http.MethodGet {
 			followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
 			if err != nil {
 				log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
@@ -467,7 +473,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					log.WithError(err).Warnf("error loading user object for %s", nick)
 				} else {
 					if !user.FollowedBy(followerClient.URL) {
-						if err := AppendSpecial(
+						if _, err := AppendSpecial(
 							s.config, s.db,
 							twtxtBot,
 							fmt.Sprintf(
@@ -489,7 +495,20 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					}
 				}
 			}
-			http.ServeFile(w, r, path)
+			f, err := os.Open(path)
+			if err != nil {
+				log.WithError(err).Error("error opening feed")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			defer f.Close()
+			w.Write([]byte(fmt.Sprintf("# nick = %s\n", nick)))
+			w.Write([]byte(fmt.Sprintf("# url = %s\n", URLForUser(s.config.BaseURL, nick))))
+			if _, err := io.Copy(w, f); err != nil {
+				log.WithError(err).Error("error sending feed response")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
 		} else {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
@@ -560,19 +579,21 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
+		var twt types.Twt
+
 		switch postas {
 		case "", user.Username:
 			if hash != "" && lastTwt.Hash() == hash {
-				err = AppendTwt(s.config, s.db, user, text, lastTwt.Created)
+				twt, err = AppendTwt(s.config, s.db, user, text, lastTwt.Created)
 			} else {
-				err = AppendTwt(s.config, s.db, user, text)
+				twt, err = AppendTwt(s.config, s.db, user, text)
 			}
 		default:
 			if user.OwnsFeed(postas) {
 				if hash != "" && lastTwt.Hash() == hash {
-					err = AppendSpecial(s.config, s.db, postas, text, lastTwt.Created)
+					twt, err = AppendSpecial(s.config, s.db, postas, text, lastTwt.Created)
 				} else {
-					err = AppendSpecial(s.config, s.db, postas, text)
+					twt, err = AppendSpecial(s.config, s.db, postas, text)
 				}
 			} else {
 				err = ErrFeedImposter
@@ -580,10 +601,33 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		if err != nil {
+			log.WithError(err).Error("error posting twt")
 			ctx.Error = true
 			ctx.Message = "Error posting twt"
 			s.render("error", w, ctx)
 			return
+		}
+
+		// WebMentions ...
+		var tasks []async.Task
+		for _, twter := range twt.Mentions() {
+			if !strings.HasPrefix(twter.URL, s.config.BaseURL) {
+				task := func(ctx context.Context) error {
+					err := WebMention(twter.URL, fmt.Sprintf("%s/twt/%s", s.config.BaseURL, twt.Hash()))
+					if err != nil {
+						log.WithError(err).Errorf("error sending webmention to %s", twter.URL)
+						return err
+					}
+					return nil
+				}
+				tasks = append(tasks, async.Task(task))
+			}
+		}
+		runner := async.NewRunner(tasks...).WithLimit(AsyncTaskLimit)
+		asyncContext, cancel := context.WithTimeout(context.Background(), MaxAsyncTime)
+		defer cancel()
+		if err := runner.Run(asyncContext); err != nil {
+			log.WithError(err).Warn("error sending webmentions")
 		}
 
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
@@ -593,29 +637,24 @@ func (s *Server) PostHandler() httprouter.Handle {
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		cacheLastModified, err := CacheLastModified(s.config.Data)
+		if err != nil {
+			log.WithError(err).Error("CacheLastModified() error")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Last-Modified", cacheLastModified.UTC().Format(http.TimeFormat))
+
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
-
-			cacheLastModified, err := CacheLastModified(s.config.Data)
-			if err != nil {
-				log.WithError(err).Error("CacheLastModified() error")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			w.Header().Set("Content-Type", "text/html")
-			w.Header().Set(
-				"Last-Modified",
-				cacheLastModified.UTC().Format(http.TimeFormat),
-			)
 			return
 		}
 
 		ctx := NewContext(s.config, s.db, r)
 
-		var (
-			twts types.Twts
-			err  error
-		)
+		var twts types.Twts
 
 		if !ctx.Authenticated {
 			twts, err = GetAllTwts(s.config)
@@ -670,6 +709,14 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		ctx.Pager = pager
 
 		s.render("timeline", w, ctx)
+	}
+}
+
+// WebMentionHandler ...
+func (s *Server) WebMentionHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		r.Body = http.MaxBytesReader(w, r.Body, 1024)
+		webmentions.WebMentionEndpoint(w, r)
 	}
 }
 
@@ -739,16 +786,25 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			log.WithError(err).Warn("error extracting keywords")
 		}
 
-		ks = append(ks, twt.Mentions()...)
+		for _, twter := range twt.Mentions() {
+			ks = append(ks, twter.Nick)
+		}
 		ks = append(ks, twt.Tags()...)
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Header().Set("Last-Modified", twt.Created.Format(http.TimeFormat))
+		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+			w.Header().Set(
+				"Link",
+				fmt.Sprintf(
+					`<%s/user/%s/webmention>; rel="webmention"`,
+					s.config.BaseURL, twt.Twter.Nick,
+				),
+			)
+		}
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.Header().Set(
-				"Last-Modified",
-				twt.Created.Format(http.TimeFormat),
-			)
 			return
 		}
 
@@ -758,9 +814,27 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			Description: what,
 			Keywords:    strings.Join(ks, ", "),
 		}
+		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+			ctx.Links = append(ctx.Links, Link{
+				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
+				Rel:  "webmention",
+			})
+			ctx.Alternatives = append(ctx.Alternatives, Alternatives{
+				Alternative{
+					Type:  "text/plain",
+					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter.Nick),
+					URL:   twt.Twter.URL,
+				},
+				Alternative{
+					Type:  "application/atom+xml",
+					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter.Nick),
+					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter.URL)),
+				},
+			}...)
+		}
 
 		ctx.Twts = twts
-		s.render("timeline", w, ctx)
+		s.render("permalink", w, ctx)
 		return
 	}
 }
@@ -824,8 +898,10 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
-				if HasString(UniqStrings(twt.Mentions()), ctx.User.Username) {
-					twts = append(twts, twt)
+				for _, twter := range twt.Mentions() {
+					if ctx.User.Is(twter.URL) {
+						twts = append(twts, twt)
+					}
 				}
 			}
 		}
@@ -931,7 +1007,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 			return
 		}
 
-		if err := AppendSpecial(
+		if _, err := AppendSpecial(
 			s.config, s.db,
 			twtxtBot,
 			fmt.Sprintf(
@@ -1228,7 +1304,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					return
 				}
 
-				if err := AppendSpecial(
+				if _, err := AppendSpecial(
 					s.config, s.db,
 					twtxtBot,
 					fmt.Sprintf(
@@ -1260,7 +1336,7 @@ func (s *Server) FollowHandler() httprouter.Handle {
 					return
 				}
 
-				if err := AppendSpecial(
+				if _, err := AppendSpecial(
 					s.config, s.db,
 					twtxtBot,
 					fmt.Sprintf(
@@ -1394,7 +1470,7 @@ func (s *Server) UnfollowHandler() httprouter.Handle {
 						log.WithError(err).Warnf("error updating user object for followee %s", followee.Username)
 					}
 				}
-				if err := AppendSpecial(
+				if _, err := AppendSpecial(
 					s.config, s.db,
 					twtxtBot,
 					fmt.Sprintf(
