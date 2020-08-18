@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"image/png"
 	"io"
 	"io/ioutil"
@@ -18,10 +19,14 @@ import (
 	"strings"
 	"time"
 
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/StudioSol/async"
 	"github.com/aofei/cameron"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
 	"github.com/securisec/go-keywords"
@@ -61,10 +66,38 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 // PageHandler ...
 func (s *Server) PageHandler(name string) httprouter.Handle {
+	box := rice.MustFindBox("pages")
+	mdTpl := box.MustString(fmt.Sprintf("%s.md", name))
+
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+	p := parser.NewWithExtensions(extensions)
+
+	htmlFlags := html.CommonFlags
+	opts := html.RendererOptions{
+		Flags:     htmlFlags,
+		Generator: "",
+	}
+	renderer := html.NewRenderer(opts)
+
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
-		ctx.Title = name
-		s.render(name, w, ctx)
+
+		md, err := RenderString(mdTpl, ctx)
+		if err != nil {
+			log.WithError(err).Errorf("error rendering help page %s", name)
+			ctx.Error = true
+			ctx.Message = "Error loading help page! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		html := markdown.ToHTML([]byte(md), p, renderer)
+
+		ctx.Title = fmt.Sprintf("%s :: %s", ctx.InstanceName, strings.Title(name))
+		ctx.Page = name
+		ctx.Content = template.HTML(html)
+
+		s.render("page", w, ctx)
 	}
 }
 
@@ -1763,6 +1796,8 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
+			ctx.Title = "Reset your password"
+			s.render("resetPassword", w, ctx)
 			return
 		}
 

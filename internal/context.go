@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strings"
 
@@ -57,6 +58,9 @@ type Context struct {
 	Message string
 	Theme   string
 	Commit  string
+
+	Page    string
+	Content template.HTML
 
 	Title        string
 	Meta         Meta

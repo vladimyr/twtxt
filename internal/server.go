@@ -358,7 +358,7 @@ func (s *Server) initRoutes() {
 	s.router.POST("/register", s.RegisterHandler())
 
 	// Reset Password
-	s.router.GET("/resetPassword", s.PageHandler("resetPassword"))
+	s.router.GET("/resetPassword", s.ResetPasswordHandler())
 	s.router.POST("/resetPassword", s.ResetPasswordHandler())
 	s.router.GET("/newPassword", s.ResetPasswordMagicLinkHandler())
 	s.router.POST("/newPassword", s.NewPasswordHandler())

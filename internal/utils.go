@@ -77,6 +77,18 @@ var (
 	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
 )
 
+// RenderString ...
+func RenderString(tpl string, ctx *Context) (string, error) {
+	t := template.Must(template.New("tpl").Parse(tpl))
+	buf := bytes.NewBuffer([]byte{})
+	err := t.Execute(buf, ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
 func IsLocalFactory(conf *Config) func(url string) bool {
 	return func(url string) bool {
 		if NormalizeURL(url) == "" {
