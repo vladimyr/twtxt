@@ -121,7 +121,7 @@
       <ul>
         <li>
           {{ if .Pager.HasPrev }}
-            <a href="/?page={{ .Pager.PrevPage }}">Prev</a>
+            <a href="?page={{ .Pager.PrevPage }}">Prev</a>
           {{ else }}
             <a href="#" data-tooltip="No previous page">Prev</a>
           {{ end}}
@@ -133,7 +133,7 @@
       <ul>
         <li>
           {{ if .Pager.HasNext }}
-            <a href="/?page={{ .Pager.NextPage }}">Next</a>
+            <a href="?page={{ .Pager.NextPage }}">Next</a>
           {{ else }}
             <a href="#" data-tooltip="No next page">Next</a>
           {{ end}}
