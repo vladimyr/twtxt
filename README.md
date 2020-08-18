@@ -19,11 +19,11 @@
 
 ![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
 
-Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
-of a web application. It supports multiple users and
-also hosts user feeds directly.
+> Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
+> of a web application. It supports multiple users and
+> also hosts user feeds directly.
 
-There is also a publicly (_free_) service online available at:
+There is also a publicly (_free_) available Pod available at:
 
 - https://twtxt.net/
 
@@ -34,6 +34,14 @@ There is also a publicly (_free_) service online available at:
 > for help with running your own Twtxt!
 
 ![Demo_1](https://user-images.githubusercontent.com/15314237/90351548-cac74b80-dffd-11ea-8288-b347af548465.gif)
+
+## Hosted Pods
+
+This project offers fully-managed, 1-click instances of this platform we call [Twt.social](https://twt.social) pods.
+
+Please visit [Twt.social](https://twt.social) to get your pod today!
+
+> __NOTE:__ As of 15th Aug 2020 ([comment](https://github.com/prologic/twtxt/issues/87#issuecomment-674101304) [announcement](https://twtxt.net/twt/zauzpsrkzra) [blog](https://www.prologic.blog/2020/08/15/ann-twtsocial-is.html)), this is completely _FREE_ and we invite anyone to contact us for an invite code to be one of the first few pod owners!
 
 ## Installation
 
