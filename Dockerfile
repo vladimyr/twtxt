@@ -23,6 +23,9 @@ COPY ./internal/static/css/* ./internal/static/css/
 COPY ./internal/static/img/* ./internal/static/img/
 COPY ./internal/static/js/* ./internal/static/js/
 
+# Copy pages
+COPY ./internal/pages/* ./internal/pages/
+
 # Copy templates
 COPY ./internal/templates/* ./internal/templates/
 
