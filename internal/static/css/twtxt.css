@@ -1,3 +1,7 @@
+body, html {
+    overflow-x: hidden;
+}
+
 article p img {
     display: block;
 }
