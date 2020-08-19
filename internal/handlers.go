@@ -69,16 +69,6 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 	box := rice.MustFindBox("pages")
 	mdTpl := box.MustString(fmt.Sprintf("%s.md", name))
 
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs
-	p := parser.NewWithExtensions(extensions)
-
-	htmlFlags := html.CommonFlags
-	opts := html.RendererOptions{
-		Flags:     htmlFlags,
-		Generator: "",
-	}
-	renderer := html.NewRenderer(opts)
-
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -90,6 +80,16 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
+
+		extensions := parser.CommonExtensions | parser.AutoHeadingIDs
+		p := parser.NewWithExtensions(extensions)
+
+		htmlFlags := html.CommonFlags
+		opts := html.RendererOptions{
+			Flags:     htmlFlags,
+			Generator: "",
+		}
+		renderer := html.NewRenderer(opts)
 
 		html := markdown.ToHTML([]byte(md), p, renderer)
 
