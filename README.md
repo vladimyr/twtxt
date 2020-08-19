@@ -126,33 +126,37 @@ Then visit: http://localhost:8000/
 You can configure other options by specifying them on the command-line:
 
 ```console
-$ ./twtd -h
+$ ./twtd --help
 Usage of ./twtd:
+  -E, --admin-email string          default admin user email (default "support@twt.social")
+  -N, --admin-name string           default admin user name (default "Administrator")
   -A, --admin-user string           default admin user to use (default "admin")
-      --api-session-time duration   Maximum TTL for API tokens (default 240h0m0s)
-      --api-signing-key string      API JWT signing key for tokens (default "PLEASE_CHANGE_ME!!!")
+      --api-session-time duration   timeout for api tokens to expire (default 240h0m0s)
+      --api-signing-key string      secret to use for signing api tokens (default "PLEASE_CHANGE_ME!!!")
   -u, --base-url string             base url to use (default "http://0.0.0.0:8000")
   -b, --bind string                 [int]:<port> to bind to (default "0.0.0.0:8000")
-  -S, --cookie-secret string        cookie secret to use (default "PLEASE_CHANGE_ME!!!")
+      --cookie-secret string        cookie secret to use secure sessions (default "PLEASE_CHANGE_ME!!!")
   -d, --data string                 data directory (default "./data")
   -D, --debug                       enable debug logging
-  -F, --feed-sources strings        external feed sources (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
+      --feed-sources strings        external feed sources for discovery of other feeds (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
       --magiclink-secret string     magiclink secret to use for password reset tokens (default "PLEASE_CHANGE_ME!!!")
-      --max-fetch-limit int         Maximum feed fetch limit in bytes (default 2097152)
-  -L, --max-twt-length int        maximum length of posts (default 288)
+  -F, --max-fetch-limit int         maximum feed fetch limit in bytes (default 2097152)
+  -L, --max-twt-length int          maximum length of posts (default 288)
   -U, --max-upload-size int         maximum upload size of media (default 16777216)
-  -n, --name string                 set the instance's name (default "twtxt.net")
-  -r, --register                    enable user registration
-  -E, --session-expiry duration     session expiry to use (default 240h0m0s)
-      --smtp-from string            SMTP From address to use for email sending (default "PLEASE_CHANGE_ME!!!")
+  -n, --name string                 set the pod's name (default "twtxt.net")
+  -O, --open-profiles               whether or not to have open user profiles
+  -R, --open-registrations          whether or not to have open user registgration
+      --session-expiry duration     timeout for sessions to expire (default 240h0m0s)
+      --smtp-from string            SMTP From to use for email sending (default "PLEASE_CHANGE_ME!!!")
       --smtp-host string            SMTP Host to use for email sending (default "smtp.gmail.com")
       --smtp-pass string            SMTP Pass to use for email sending (default "PLEASE_CHANGE_ME!!!")
       --smtp-port int               SMTP Port to use for email sending (default 587)
       --smtp-user string            SMTP User to use for email sending (default "PLEASE_CHANGE_ME!!!")
   -s, --store string                store to use (default "bitcask://twtxt.db")
   -t, --theme string                set the default theme (default "dark")
-  -T, --twts-per-page int         twts per page to display (default 50)
+  -T, --twts-per-page int           maximum twts per page to display (default 50)
   -v, --version                     display version information
+      --whitelist-domain strings    whitelist of external domains to permit for display of inline images (default [imgur\.com,giphy\.com,reactiongifs\.com,githubusercontent\.com])
 pflag: help requested
 ```
 
