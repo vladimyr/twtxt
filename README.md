@@ -216,7 +216,8 @@ You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to
 
 ## Related Projects
 
-- [rss2twtxt](https://github.com/prologic/rss2twtxt)
+- [rss2twtxt](https://github.com/prologic/rss2twtxt) -- RSS/Atom to [Twtxt](https://twtxt.readthedocs.org) aggregator.
+- [Twt.social](https://twt.social) -- Hosted platform for Twt.social pods like [twtxt.net](https://twtxt.net).
 
 ## License
 
