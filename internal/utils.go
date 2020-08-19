@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"image"
 
 	// Blank import so we can handle image/jpeg
 	_ "image/jpeg"
@@ -21,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/disintegration/imageorient"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
@@ -263,9 +263,9 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 		return "", err
 	}
 
-	img, _, err := image.Decode(tf)
+	img, _, err := imageorient.Decode(tf)
 	if err != nil {
-		log.WithError(err).Error("error decoding image")
+		log.WithError(err).Error("imageorient.Decode failed")
 		return "", err
 	}
 
