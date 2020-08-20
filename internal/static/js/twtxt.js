@@ -474,6 +474,7 @@ u("#mentioned-list").on("click", function (e) {
 u("#uploadMedia").on("change", function (e) {
   u("#uploadMediaButton").removeClass("icss-camera");
   u("#uploadMediaButton").addClass("icss-spinner icss-pulse");
+  u("#uploadForm").data("tooltip", "Uploading...");
 
   u("#uploadMedia").html('<i class="icss-spinner icss-pulse"></i>');
   Twix.ajax({
@@ -493,6 +494,7 @@ u("#uploadMedia").on("change", function (e) {
 
       u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
       u("#uploadMediaButton").addClass("icss-camera");
+      u("#uploadForm").data("tooltip", "Upload");
     },
     error: function (statusCode, statusText) {
       u("#uploadMediaButton").removeClass("icss-spinner icss-pulse");
