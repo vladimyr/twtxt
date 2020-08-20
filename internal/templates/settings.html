@@ -7,18 +7,23 @@
       </hgroup>
       <form action="/settings" enctype="multipart/form-data" method="POST">
         <div class="grid">
-          <hgroup>
-            <h2>
-              <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar.png" />
-              <a href="/user/{{ .User.Username }}" data-tooltip="View profile">{{ .User.Username }}</a>
-            </h2>
-        </div>
-        <div class="grid">
           <div>
+            <hgroup>
+              <h2>
+                <img id="avatar" class="avatar" src="/user/{{ .User.Username }}/avatar.png" />
+                <a href="/user/{{ .User.Username }}" data-tooltip="View profile">{{ .User.Username }}</a>
+              </h2>
+              <footer>
+                <p><i>{{ .User.Tagline }}</i></p>
+              </footer>
+            </hgroup>
             <label for="avatar">
               Change avatar
               <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
             </label>
+          </div>
+          <div>
+            {{ template "profileLinks" (dict "Profile" .User.Profile) }}
           </div>
         </div>
         <div class="grid">
