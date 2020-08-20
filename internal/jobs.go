@@ -3,7 +3,6 @@ package internal
 import (
 	"fmt"
 
-	"github.com/prologic/twtxt/types"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 )
@@ -92,19 +91,11 @@ func (job *StatsJob) Run() {
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
-	var localTwts types.Twts
-
-	cachedTwts := job.cache.GetAll()
-	isLocal := IsLocalFactory(job.conf)
-	for _, twt := range cachedTwts {
-		if isLocal(twt.Twter.URL) {
-			localTwts = append(localTwts, twt)
-		}
-	}
+	localTwts := job.cache.GetByPrefix(job.conf.BaseURL)
 
 	text := fmt.Sprintf(
-		"🧮  USERS:%d FEEDS:%d CACHED:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
-		len(users), len(feeds), len(cachedTwts), len(localTwts), len(followers), len(following),
+		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
+		len(users), len(feeds), len(localTwts), len(followers), len(following),
 	)
 
 	if _, err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {

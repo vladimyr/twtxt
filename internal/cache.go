@@ -206,6 +206,16 @@ func (cache Cache) GetAll() types.Twts {
 	return alltwts
 }
 
+func (cache Cache) GetByPrefix(prefix string) types.Twts {
+	var twts types.Twts
+	for url, cached := range cache {
+		if strings.HasPrefix(url, prefix) {
+			twts = append(twts, cached.Twts...)
+		}
+	}
+	return twts
+}
+
 func (cache Cache) GetByURL(url string) types.Twts {
 	if cached, ok := cache[url]; ok {
 		return cached.Twts

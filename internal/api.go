@@ -376,7 +376,6 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 
 // DiscoverEndpoint ...
 func (a *API) DiscoverEndpoint() httprouter.Handle {
-	isLocal := IsLocalFactory(a.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		req, err := types.NewTimelineRequest(r.Body)
 		if err != nil {
@@ -385,14 +384,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		var twts types.Twts
-
-		cachedTwts := a.cache.GetAll()
-		for _, twt := range cachedTwts {
-			if isLocal(twt.Twter.URL) {
-				twts = append(twts, twt)
-			}
-		}
+		twts := a.cache.GetByPrefix(a.config.BaseURL)
 
 		sort.Sort(sort.Reverse(twts))
 

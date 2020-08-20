@@ -669,7 +669,6 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
-	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		cacheLastModified, err := CacheLastModified(s.config.Data)
 		if err != nil {
@@ -691,12 +690,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var twts types.Twts
 
 		if !ctx.Authenticated {
-			cachedTwts := s.cache.GetAll()
-			for _, twt := range cachedTwts {
-				if isLocal(twt.Twter.URL) {
-					twts = append(twts, twt)
-				}
-			}
+			twts = s.cache.GetByPrefix(s.config.BaseURL)
 			ctx.Title = "Local timeline"
 		} else {
 			ctx.Title = "Your timeline"
@@ -761,7 +755,6 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 
 // PermalinkHandler ...
 func (s *Server) PermalinkHandler() httprouter.Handle {
-	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -776,15 +769,9 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		var localTwts types.Twts
-		cachedTwts := s.cache.GetAll()
-		for _, twt := range cachedTwts {
-			if isLocal(twt.Twter.URL) {
-				localTwts = append(localTwts, twt)
-			}
-		}
+		// TODO: Improve this by making this an O(1) lookup on the Twt.Hash()
 
-		for _, twt := range cachedTwts {
+		for _, twt := range s.cache.GetAll() {
 			if twt.Hash() == hash {
 				twts = append(twts, twt)
 			}
@@ -792,7 +779,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		// If the twt is not in the cache look for it across all local users
 		if len(twts) == 0 {
-			for _, twt := range localTwts {
+			for _, twt := range s.cache.GetByPrefix(s.config.BaseURL) {
 				if twt.Hash() == hash {
 					twts = append(twts, twt)
 				}
@@ -871,17 +858,10 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 // DiscoverHandler ...
 func (s *Server) DiscoverHandler() httprouter.Handle {
-	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var localTwts types.Twts
-		cachedTwts := s.cache.GetAll()
-		for _, twt := range cachedTwts {
-			if isLocal(twt.Twter.URL) {
-				localTwts = append(localTwts, twt)
-			}
-		}
+		localTwts := s.cache.GetByPrefix(s.config.BaseURL)
 
 		sort.Sort(sort.Reverse(localTwts))
 
@@ -2010,7 +1990,6 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 // SyndicationHandler ...
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	formatTwt := FormatTwtFactory(s.config)
-	isLocal := IsLocalFactory(s.config)
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
@@ -2044,12 +2023,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				return
 			}
 		} else {
-			cachedTwts := s.cache.GetAll()
-			for _, twt := range cachedTwts {
-				if isLocal(twt.Twter.URL) {
-					twts = append(twts, twt)
-				}
-			}
+			twts = s.cache.GetByPrefix(s.config.BaseURL)
 
 			profile = Profile{
 				Type:     "Local",
