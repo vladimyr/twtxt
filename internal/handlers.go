@@ -669,6 +669,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 // TimelineHandler ...
 func (s *Server) TimelineHandler() httprouter.Handle {
+	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		cacheLastModified, err := CacheLastModified(s.config.Data)
 		if err != nil {
@@ -690,7 +691,12 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var twts types.Twts
 
 		if !ctx.Authenticated {
-			twts, err = GetAllTwts(s.config)
+			cachedTwts := s.cache.GetAll()
+			for _, twt := range cachedTwts {
+				if isLocal(twt.Twter.URL) {
+					twts = append(twts, twt)
+				}
+			}
 			ctx.Title = "Local timeline"
 		} else {
 			ctx.Title = "Your timeline"
@@ -755,6 +761,7 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 
 // PermalinkHandler ...
 func (s *Server) PermalinkHandler() httprouter.Handle {
+	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -769,22 +776,12 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		localTwts, err := GetAllTwts(s.config)
-		if err != nil {
-			log.WithError(err).Error("error loading twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading permalink"
-			s.render("error", w, ctx)
-			return
-		}
-
+		var localTwts types.Twts
 		cachedTwts := s.cache.GetAll()
-		if err != nil {
-			log.WithError(err).Error("error loading twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading permalink"
-			s.render("error", w, ctx)
-			return
+		for _, twt := range cachedTwts {
+			if isLocal(twt.Twter.URL) {
+				localTwts = append(localTwts, twt)
+			}
 		}
 
 		for _, twt := range cachedTwts {
@@ -874,27 +871,27 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 // DiscoverHandler ...
 func (s *Server) DiscoverHandler() httprouter.Handle {
+	isLocal := IsLocalFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		twts, err := GetAllTwts(s.config)
-		if err != nil {
-			log.WithError(err).Error("error loading local twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the timeline"
-			s.render("error", w, ctx)
-			return
+		var localTwts types.Twts
+		cachedTwts := s.cache.GetAll()
+		for _, twt := range cachedTwts {
+			if isLocal(twt.Twter.URL) {
+				localTwts = append(localTwts, twt)
+			}
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(sort.Reverse(localTwts))
 
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("page"), 1)
-		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
+		pager := paginator.New(adapter.NewSliceAdapter(localTwts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"
@@ -2013,6 +2010,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 // SyndicationHandler ...
 func (s *Server) SyndicationHandler() httprouter.Handle {
 	formatTwt := FormatTwtFactory(s.config)
+	isLocal := IsLocalFactory(s.config)
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
@@ -2046,7 +2044,13 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				return
 			}
 		} else {
-			twts, err = GetAllTwts(s.config)
+			cachedTwts := s.cache.GetAll()
+			for _, twt := range cachedTwts {
+				if isLocal(twt.Twter.URL) {
+					twts = append(twts, twt)
+				}
+			}
+
 			profile = Profile{
 				Type:     "Local",
 				Username: s.config.Name,

@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 
+	"github.com/prologic/twtxt/types"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 )
@@ -91,15 +92,19 @@ func (job *StatsJob) Run() {
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
-	twts, err := GetAllTwts(job.conf)
-	if err != nil {
-		log.WithError(err).Warnf("error calculating number of twts")
-		return
+	var localTwts types.Twts
+
+	cachedTwts := job.cache.GetAll()
+	isLocal := IsLocalFactory(job.conf)
+	for _, twt := range cachedTwts {
+		if isLocal(twt.Twter.URL) {
+			localTwts = append(localTwts, twt)
+		}
 	}
 
 	text := fmt.Sprintf(
-		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
-		len(users), len(feeds), len(twts), len(followers), len(following),
+		"🧮  USERS:%d FEEDS:%d CACHED:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
+		len(users), len(feeds), len(cachedTwts), len(localTwts), len(followers), len(following),
 	)
 
 	if _, err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
@@ -118,17 +123,40 @@ func NewUpdateFeedsJob(conf *Config, cache Cache, db Store) cron.Job {
 }
 
 func (job *UpdateFeedsJob) Run() {
+	feeds, err := job.db.GetAllFeeds()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all feeds from database")
+		return
+	}
+
 	users, err := job.db.GetAllUsers()
 	if err != nil {
 		log.WithError(err).Warn("unable to get all users from database")
 		return
 	}
 
-	log.Infof("updating feeds for %d users", len(users))
+	log.Infof("updating feeds for %d users and  %d feeds", len(users), len(feeds))
 
 	sources := make(map[string]string)
 
+	// Ensure all specialUsername feeds are in the cache
+	for _, username := range specialUsernames {
+		sources[username] = URLForUser(job.conf.BaseURL, username)
+	}
+
+	// Ensure all twtxtBots feeds are in the cache
+	for _, bot := range twtxtBots {
+		sources[bot] = URLForUser(job.conf.BaseURL, bot)
+	}
+
+	for _, feed := range feeds {
+		// Ensure we fetch the feed's own posts in the cache
+		sources[feed.Name] = feed.URL
+	}
+
 	for _, user := range users {
+		// Ensure we fetch the user's own posts in the cache
+		sources[user.Username] = user.URL
 		for u, n := range user.sources {
 			sources[n] = u
 		}

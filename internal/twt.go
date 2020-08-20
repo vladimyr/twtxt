@@ -6,7 +6,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -195,45 +194,6 @@ func GetUserTwts(conf *Config, username string) (types.Twts, error) {
 	}
 	twts = append(twts, t...)
 	f.Close()
-
-	return twts, nil
-}
-
-func GetAllTwts(conf *Config) (types.Twts, error) {
-	p := filepath.Join(conf.Data, feedsDir)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating feeds directory")
-		return nil, err
-	}
-
-	files, err := ioutil.ReadDir(p)
-	if err != nil {
-		log.WithError(err).Error("error listing feeds")
-		return nil, err
-	}
-
-	var twts types.Twts
-
-	for _, info := range files {
-		twter := types.Twter{
-			Nick: info.Name(),
-			URL:  URLForUser(conf.BaseURL, info.Name()),
-		}
-		fn := filepath.Join(p, info.Name())
-		f, err := os.Open(fn)
-		if err != nil {
-			log.WithError(err).Warnf("error opening feed: %s", fn)
-			continue
-		}
-		s := bufio.NewScanner(f)
-		t, err := ParseFile(s, twter)
-		if err != nil {
-			log.WithError(err).Errorf("error processing feed %s", fn)
-			continue
-		}
-		twts = append(twts, t...)
-		f.Close()
-	}
 
 	return twts, nil
 }
