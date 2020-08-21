@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Build & Publish
-        if: (github.event_name == 'schedule' || github.event_name == 'push') && github.repository == 'prologic/twtxt'
+        if: (github.event_name == 'schedule' || github.event_name == 'push') && github.repository == 'jointwt/twtxt'
         env:
           DOCKER_USERNAME: prologic
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
