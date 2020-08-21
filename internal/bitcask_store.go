@@ -53,6 +53,17 @@ func (bs *BitcaskStore) Close() error {
 	return nil
 }
 
+// Merge ...
+func (bs *BitcaskStore) Merge() error {
+	log.Info("merging store ...")
+	if err := bs.db.Merge(); err != nil {
+		log.WithError(err).Error("error merging store")
+		return err
+	}
+
+	return nil
+}
+
 func (bs *BitcaskStore) HasFeed(name string) bool {
 	return bs.db.Has([]byte(fmt.Sprintf("/feeds/%s", name)))
 }

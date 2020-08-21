@@ -15,6 +15,7 @@ var (
 )
 
 type Store interface {
+	Merge() error
 	Close() error
 	Sync() error
 

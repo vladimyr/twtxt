@@ -407,6 +407,11 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
+	if err := db.Merge(); err != nil {
+		log.WithError(err).Error("error merging store")
+		return nil, err
+	}
+
 	templates, err := NewTemplates(config)
 	if err != nil {
 		log.WithError(err).Error("error loading templates")
