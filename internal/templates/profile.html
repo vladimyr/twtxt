@@ -41,7 +41,7 @@
         {{ end}}
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
-          {{ template "profileLinks" (dict "Profile" .Profile) }}
+          {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false) }}
         </footer>
       </hgroup>
     </div>
