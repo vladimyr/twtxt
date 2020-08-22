@@ -193,8 +193,6 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					return
 				}
 
-				atomic.AddInt64(&count, int64(len(twts)))
-
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[url] = Cached{Twts: twts, Lastmodified: lastmodified}
@@ -204,6 +202,11 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				twts = cache[url].Twts
 				mu.RUnlock()
 			}
+
+			// Update global feed cache count
+			mu.RLock()
+			atomic.AddInt64(&count, int64(len(cache[url].Twts)))
+			mu.RUnlock()
 
 			twtsch <- twts
 		}(nick, url)
