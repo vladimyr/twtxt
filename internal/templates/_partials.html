@@ -111,7 +111,7 @@
       {{ range $idx, $twt := $.Twts }}
         {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" $twt) }}
       {{ else }}
-        <small><i>There are no twts yet... Comd back again later!</i></small>
+        <small><i>There are no twts yet... come back later!</i></small>
       {{ end }}
       {{ template "pager" . }}
     </div>
