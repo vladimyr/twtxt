@@ -159,6 +159,12 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				url = actualurl
 			}
 
+			if url == "" {
+				log.WithField("nick", nick).WithField("url", url).Warn("empty url")
+				twtsch <- nil
+				return
+			}
+
 			var twts types.Twts
 
 			switch resp.StatusCode {
@@ -172,13 +178,14 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					twter.URL = url
 				}
 				twts, err := ParseFile(scanner, twter)
-				if len(twts) == 0 {
-					log.WithField("nick", nick).WithField("url", url).Warn("possibly bad feed")
+				if err != nil {
+					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
 					twtsch <- nil
 					return
 				}
-				if err != nil {
-					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
+
+				if len(twts) == 0 {
+					log.WithField("nick", nick).WithField("url", url).Warn("no twts parsed, possibly bad feed")
 					twtsch <- nil
 					return
 				}
