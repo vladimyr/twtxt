@@ -96,6 +96,7 @@
       ],
       "thresholds": "",
       "title": "Uptime",
+      "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -185,6 +186,7 @@
       ],
       "thresholds": "",
       "title": "Cache Size",
+      "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -274,6 +276,7 @@
       ],
       "thresholds": "150,240",
       "title": "Processing Time",
+      "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -364,6 +367,7 @@
       ],
       "thresholds": "0,50,80",
       "title": "CPU",
+      "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -454,6 +458,7 @@
       ],
       "thresholds": "0,536870912,858993459.2",
       "title": "Memory",
+      "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -542,6 +547,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -659,6 +665,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -801,6 +808,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -926,6 +934,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -1041,6 +1050,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -1163,6 +1173,7 @@
         "sort": 0,
         "value_type": "cumulative"
       },
+      "transparent": true,
       "type": "graph",
       "xaxis": {
         "buckets": null,
@@ -1237,5 +1248,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 17
+  "version": 18
 }
