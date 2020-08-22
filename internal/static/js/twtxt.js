@@ -149,12 +149,12 @@ function editTwt(e) {
   var text = document.getElementById("text");
 
   el.empty();
-  el.text(u(e.target).data("text"));
+  text.value = u(e.target).data("text");
   el.scroll();
 
   text.focus();
 
-  var size = el.text().length;
+  var size = text.value.length;
 
   text.setSelectionRange(size, size);
 
