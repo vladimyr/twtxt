@@ -144,7 +144,7 @@ func (s *Server) AddCronJob(spec string, job cron.Job) error {
 	return s.cron.AddJob(spec, job)
 }
 
-func (s *Server) setupMetrics() error {
+func (s *Server) setupMetrics() {
 	ctime := time.Now()
 
 	// server uptime counter
@@ -172,8 +172,6 @@ func (s *Server) setupMetrics() error {
 	)
 
 	s.AddRoute("GET", "/metrics", metrics.Handler())
-
-	return nil
 }
 
 func (s *Server) processWebMention(source, target *url.URL, sourceData *microformats.Data) error {
@@ -251,11 +249,9 @@ func (s *Server) processWebMention(source, target *url.URL, sourceData *microfor
 	return nil
 }
 
-func (s *Server) setupWebMentions() error {
+func (s *Server) setupWebMentions() {
 	webmentions = webmention.New()
 	webmentions.Mention = s.processWebMention
-
-	return nil
 }
 
 func (s *Server) setupCronJobs() error {
@@ -484,16 +480,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	server.cron.Start()
 	log.Infof("started background jobs")
 
-	if err := server.setupWebMentions(); err != nil {
-		log.WithError(err).Error("error setting up webmentions processor")
-		return nil, err
-	}
+	server.setupWebMentions()
 	log.Infof("started webmentions processor")
 
-	if err := server.setupMetrics(); err != nil {
-		log.WithError(err).Error("error setting up metrics")
-		return nil, err
-	}
+	server.setupMetrics()
 	log.Infof("serving metrics endpoint at %s/metrics", server.config.BaseURL)
 
 	// Log interesting configuration options

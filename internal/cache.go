@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"expvar"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,14 +20,16 @@ import (
 	"github.com/prologic/twtxt/types"
 )
 
+// Cached ...
 type Cached struct {
 	Twts         types.Twts
 	Lastmodified string
 }
 
-// key: url
+// Cache key: url
 type Cache map[string]Cached
 
+// Store ...
 func (cache Cache) Store(path string) error {
 	b := new(bytes.Buffer)
 	enc := gob.NewEncoder(b)
@@ -51,6 +54,7 @@ func (cache Cache) Store(path string) error {
 	return nil
 }
 
+// CacheLastModified ...
 func CacheLastModified(path string) (time.Time, error) {
 	stat, err := os.Stat(filepath.Join(path, "cache"))
 	if err != nil {
@@ -62,6 +66,7 @@ func CacheLastModified(path string) (time.Time, error) {
 	return stat.ModTime(), nil
 }
 
+// LoadCache ...
 func LoadCache(path string) (Cache, error) {
 	cache := make(Cache)
 
@@ -86,6 +91,7 @@ func LoadCache(path string) (Cache, error) {
 
 const maxfetchers = 50
 
+// FetchTwts ...
 func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	var mu sync.RWMutex
 
@@ -108,6 +114,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	var fetchers = make(chan struct{}, maxfetchers)
 
 	for nick, url := range sources {
+		stats.Add("fetchers", 1)
 		wg.Add(1)
 		fetchers <- struct{}{}
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
@@ -115,6 +122,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 			defer func() {
 				<-fetchers
 				wg.Done()
+				stats.Add("fetchers", -1)
 			}()
 
 			req, err := http.NewRequest("GET", url, nil)
@@ -174,6 +182,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					twtsch <- nil
 					return
 				}
+
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[url] = Cached{Twts: twts, Lastmodified: lastmodified}
@@ -196,8 +205,17 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 
 	for range twtsch {
 	}
+
+	expvar.Get("sources").(*expvar.Int).Set(int64(len(cache)))
+
+	var count int64
+	for _, cached := range cache {
+		count += int64(len(cached.Twts))
+	}
+	expvar.Get("cached").(*expvar.Int).Set(count)
 }
 
+// GetAll ...
 func (cache Cache) GetAll() types.Twts {
 	var alltwts types.Twts
 	for _, cached := range cache {
@@ -206,6 +224,7 @@ func (cache Cache) GetAll() types.Twts {
 	return alltwts
 }
 
+// GetByPrefix ...
 func (cache Cache) GetByPrefix(prefix string) types.Twts {
 	var twts types.Twts
 	for url, cached := range cache {
@@ -216,6 +235,7 @@ func (cache Cache) GetByPrefix(prefix string) types.Twts {
 	return twts
 }
 
+// GetByURL ...
 func (cache Cache) GetByURL(url string) types.Twts {
 	if cached, ok := cache[url]; ok {
 		return cached.Twts

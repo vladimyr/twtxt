@@ -70,7 +70,7 @@ func (m *Manager) Create(w http.ResponseWriter) (*Session, error) {
 }
 
 // Validate ....
-func (m *Manager) Validate(value string) (SessionID, error) {
+func (m *Manager) Validate(value string) (ID, error) {
 	sessionID, err := ValidateSessionID(value, m.options.secret)
 	return sessionID, err
 }

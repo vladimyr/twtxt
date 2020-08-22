@@ -1,22 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"net"
+	"os"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/tebeka/selenium"
 )
 
 func main() {
 	port, err := pickUnusedPort()
+	if err != nil {
+		log.WithError(err).Error("error picking port")
+		os.Exit(1)
+	}
 
 	var opts []selenium.ServiceOption
-	service, err := selenium.NewChromeDriverService("chromedriver",
-		port, opts...)
-
+	service, err := selenium.NewChromeDriverService("chromedriver", port, opts...)
 	if err != nil {
-		fmt.Printf("Error starting the ChromeDriver server: %v", err)
+		log.WithError(err).Error("Error starting the ChromeDriver server")
+		os.Exit(1)
 	}
 
 	caps := selenium.Capabilities{
@@ -25,7 +29,8 @@ func main() {
 
 	wd, err := selenium.NewRemote(caps, "http://127.0.0.1:"+strconv.Itoa(port)+"/wd/hub")
 	if err != nil {
-		panic(err)
+		log.WithError(err).Error("error creating webdriver remote")
+		os.Exit(1)
 	}
 
 	wd.Refresh()

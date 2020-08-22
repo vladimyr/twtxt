@@ -55,10 +55,14 @@ require (
 	github.com/theplant-retired/timezones v0.0.0-20150304063004-f9bd3c0ef9db
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3
+	github.com/wblakecaldwell/profiler v0.0.0-20150908040756-6111ef1313a1
+	gitlab.com/opennota/check v0.0.0-20181224073239-ccaba434e62a // indirect
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/sys v0.0.0-20200817155316-9781c653f443 // indirect
 	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/tools v0.0.0-20200821200730-1e23e48ab93b // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v2 v2.3.0

@@ -798,7 +798,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
 
-		ks := []string{}
+		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
 			log.WithError(err).Warn("error extracting keywords")
 		}

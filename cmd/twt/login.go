@@ -28,7 +28,7 @@ var loginCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		login(cli, args)
+		login(cli)
 	},
 }
 
@@ -36,7 +36,7 @@ func init() {
 	RootCmd.AddCommand(loginCmd)
 }
 
-func login(cli *client.Client, args []string) {
+func login(cli *client.Client) {
 	username, err := prompt.Basic("Username:", true)
 	if err != nil {
 		log.WithError(err).Error("error reading username")

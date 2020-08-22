@@ -1,7 +1,9 @@
 package main
 
 import (
+	"expvar"
 	"fmt"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -9,6 +11,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+	profiler "github.com/wblakecaldwell/profiler"
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal"
@@ -155,7 +158,7 @@ func flagNameFromEnvironmentName(s string) string {
 	return s
 }
 
-func ParseArgs() error {
+func parseArgs() error {
 	for _, v := range os.Environ() {
 		vals := strings.SplitN(v, "=", 2)
 		flagName := flagNameFromEnvironmentName(vals[0])
@@ -171,8 +174,20 @@ func ParseArgs() error {
 	return nil
 }
 
+func extraServiceInfoFactory(svr *internal.Server) profiler.ExtraServiceInfoRetriever {
+	return func() map[string]interface{} {
+		extraInfo := make(map[string]interface{})
+
+		expvar.Get("stats").(*expvar.Map).Do(func(kv expvar.KeyValue) {
+			extraInfo[kv.Key] = kv.Value.String()
+		})
+
+		return extraInfo
+	}
+}
+
 func main() {
-	ParseArgs()
+	parseArgs()
 
 	if version {
 		fmt.Printf("twtxt v%s", twtxt.FullVersion())
@@ -230,6 +245,24 @@ func main() {
 	)
 	if err != nil {
 		log.WithError(err).Fatal("error creating server")
+	}
+
+	if debug {
+		log.Info("starting memory profiler (debug mode) ...")
+
+		go func() {
+			// add the profiler handler endpoints
+			profiler.AddMemoryProfilingHandlers()
+
+			// add realtime extra key/value diagnostic info (optional)
+			profiler.RegisterExtraServiceInfoRetriever(extraServiceInfoFactory(svr))
+
+			// start the profiler on service start (optional)
+			profiler.StartProfiling()
+
+			// listen on port 6060 (pick a port)
+			http.ListenAndServe(":6060", nil)
+		}()
 	}
 
 	log.Infof("%s v%s listening on http://%s", path.Base(os.Args[0]), twtxt.FullVersion(), bind)

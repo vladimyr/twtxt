@@ -86,23 +86,23 @@ func (c *Client) newRequest(method, path string, body interface{}) (*http.Reques
 	return req, nil
 }
 
-func (c *Client) do(req *http.Request, v interface{}) (*http.Response, error) {
+func (c *Client) do(req *http.Request, v interface{}) error {
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 
 	switch res.StatusCode {
 	case 401:
-		return nil, ErrUnauthorized
+		return ErrUnauthorized
 	case 500:
-		return nil, ErrServerError
+		return ErrServerError
 	}
 
 	err = json.NewDecoder(res.Body).Decode(v)
 
-	return res, err
+	return err
 }
 
 // Login ...
@@ -111,7 +111,7 @@ func (c *Client) Login(username, password string) (res types.AuthResponse, err e
 	if err != nil {
 		return types.AuthResponse{}, err
 	}
-	_, err = c.do(req, &res)
+	err = c.do(req, &res)
 	return
 }
 
@@ -121,6 +121,6 @@ func (c *Client) Post(text string) (res types.AuthResponse, err error) {
 	if err != nil {
 		return types.AuthResponse{}, err
 	}
-	_, err = c.do(req, &res)
+	err = c.do(req, &res)
 	return
 }
