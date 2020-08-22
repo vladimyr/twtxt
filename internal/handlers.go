@@ -759,7 +759,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 		var twts types.Twts
 
 		if !ctx.Authenticated {
-			twts = s.cache.GetByPrefix(s.config.BaseURL)
+			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 			ctx.Title = "Local timeline"
 		} else {
 			ctx.Title = "Your timeline"
@@ -848,7 +848,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		// If the twt is not in the cache look for it across all local users
 		if len(twts) == 0 {
-			for _, twt := range s.cache.GetByPrefix(s.config.BaseURL) {
+			for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
 				if twt.Hash() == hash {
 					twts = append(twts, twt)
 				}
@@ -930,7 +930,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		localTwts := s.cache.GetByPrefix(s.config.BaseURL)
+		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
 		sort.Sort(sort.Reverse(localTwts))
 
@@ -2092,7 +2092,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 				return
 			}
 		} else {
-			twts = s.cache.GetByPrefix(s.config.BaseURL)
+			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 
 			profile = Profile{
 				Type:     "Local",

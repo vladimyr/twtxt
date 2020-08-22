@@ -232,10 +232,10 @@ func (cache Cache) GetAll() types.Twts {
 }
 
 // GetByPrefix ...
-func (cache Cache) GetByPrefix(prefix string) types.Twts {
+func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)
 	cached, ok := cache[key]
-	if ok {
+	if ok && !refresh {
 		return cached.Twts
 	}
 
@@ -246,6 +246,7 @@ func (cache Cache) GetByPrefix(prefix string) types.Twts {
 			twts = append(twts, cached.Twts...)
 		}
 	}
+
 	// FIXME: This is probably not thread safe :/
 	cache[key] = Cached{Twts: twts, Lastmodified: time.Now().Format(time.RFC3339)}
 

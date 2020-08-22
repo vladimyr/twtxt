@@ -384,7 +384,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 			return
 		}
 
-		twts := a.cache.GetByPrefix(a.config.BaseURL)
+		twts := a.cache.GetByPrefix(a.config.BaseURL, false)
 
 		sort.Sort(sort.Reverse(twts))
 

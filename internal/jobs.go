@@ -101,7 +101,7 @@ func (job *StatsJob) Run() {
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
-	localTwts := job.cache.GetByPrefix(job.conf.BaseURL)
+	localTwts := job.cache.GetByPrefix(job.conf.BaseURL, false)
 
 	text := fmt.Sprintf(
 		"🧮  USERS:%d FEEDS:%d POSTS:%d FOLLOWERS:%d FOLLOWING:%d",
@@ -167,7 +167,7 @@ func (job *UpdateFeedsJob) Run() {
 	job.cache.FetchTwts(job.conf, sources)
 
 	log.Infof("warming cache with local twts for %s", job.conf.BaseURL)
-	job.cache.GetByPrefix(job.conf.BaseURL)
+	job.cache.GetByPrefix(job.conf.BaseURL, true)
 
 	log.Info("updated feed cache")
 }
