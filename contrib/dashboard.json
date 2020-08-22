@@ -696,7 +696,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "description": "Memory usage of process (resident, virtual)",
+      "description": "Memory usage as sen by Go runtime",
       "editable": true,
       "error": false,
       "fieldConfig": {
@@ -746,30 +746,55 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "process_resident_memory_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_heap_sys_bytes{job=\"twtxt\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "rss",
+          "legendFormat": "heap",
           "metric": "process_resident_memory_bytes",
           "refId": "A",
           "step": 4
         },
         {
-          "expr": "process_virtual_memory_bytes{job=\"twtxt\"}",
+          "expr": "go_memstats_mcache_sys_bytes{job=\"twtxt\"}",
           "format": "time_series",
+          "interval": "",
           "intervalFactor": 2,
-          "legendFormat": "vm",
+          "legendFormat": "mcache",
           "metric": "process_virtual_memory_bytes",
           "refId": "B",
           "step": 4
+        },
+        {
+          "expr": "go_memstats_mspan_sys_bytes{job=\"twtxt\"}",
+          "interval": "",
+          "legendFormat": "mspan",
+          "refId": "C"
+        },
+        {
+          "expr": "go_memstats_other_sys_bytes{job=\"twtxt\"}",
+          "interval": "",
+          "legendFormat": "other",
+          "refId": "D"
+        },
+        {
+          "expr": "go_memstats_stack_sys_bytes{job=\"twtxt\"}",
+          "interval": "",
+          "legendFormat": "stack",
+          "refId": "E"
+        },
+        {
+          "expr": "go_memstats_sys_bytes{job=\"twtxt\"}",
+          "interval": "",
+          "legendFormat": "sys",
+          "refId": "F"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Memory Usage",
+      "title": "Go Memory",
       "tooltip": {
         "msResolution": false,
         "shared": false,
@@ -1212,5 +1237,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 16
+  "version": 17
 }
