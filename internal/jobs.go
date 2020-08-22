@@ -17,7 +17,10 @@ func NewJobSpec(schedule string, factory JobFactory) JobSpec {
 	return JobSpec{schedule, factory}
 }
 
-var Jobs map[string]JobSpec
+var (
+	Jobs        map[string]JobSpec
+	StartupJobs map[string]JobSpec
+)
 
 func init() {
 	Jobs = map[string]JobSpec{
@@ -26,7 +29,14 @@ func init() {
 		"SyncCache":         NewJobSpec("@every 10m", NewSyncCacheJob),
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
+		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
 		"Stats":             NewJobSpec("@daily", NewStatsJob),
+	}
+
+	StartupJobs = map[string]JobSpec{
+		"UpdateFeedSources": Jobs["UpdateFeedSources"],
+		"FixUserAccounts":   Jobs["FixUserAccounts"],
+		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 	}
 }
 
@@ -248,6 +258,35 @@ func (job *FixUserAccountsJob) Run() {
 	for _, feed := range twtxtBots {
 		if err := CreateFeed(job.conf, job.db, nil, feed, true); err != nil {
 			log.WithError(err).Warnf("error creating new feed %s", feed)
+		}
+	}
+}
+
+type DeleteOldSessionsJob struct {
+	conf  *Config
+	cache Cache
+	db    Store
+}
+
+func NewDeleteOldSessionsJob(conf *Config, cache Cache, db Store) cron.Job {
+	return &DeleteOldSessionsJob{conf: conf, cache: cache, db: db}
+}
+
+func (job *DeleteOldSessionsJob) Run() {
+	log.Infof("deleting old sessions")
+
+	sessions, err := job.db.GetAllSessions()
+	if err != nil {
+		log.WithError(err).Error("error loading seessions")
+		return
+	}
+
+	for _, session := range sessions {
+		if session.Expired() {
+			log.Infof("deleting expired session %s", session.ID)
+			if err := job.db.DelSession(session.ID); err != nil {
+				log.WithError(err).Error("error deleting session object")
+			}
 		}
 	}
 }

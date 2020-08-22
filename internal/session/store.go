@@ -27,4 +27,6 @@ type Store interface {
 	DelSession(sid string) error
 
 	SyncSession(sess *Session) error
+
+	GetAllSessions() ([]*Session, error)
 }

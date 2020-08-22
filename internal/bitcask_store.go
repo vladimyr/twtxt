@@ -228,3 +228,26 @@ func (bs *BitcaskStore) DelSession(sid string) error {
 func (bs *BitcaskStore) SyncSession(sess *session.Session) error {
 	return bs.SetSession(sess.ID, sess)
 }
+
+func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
+	var sessions []*session.Session
+
+	err := bs.db.Scan([]byte(sessionsKeyPrefix), func(key []byte) error {
+		data, err := bs.db.Get(key)
+		if err != nil {
+			return err
+		}
+
+		session, err := session.LoadSession(data)
+		if err != nil {
+			return err
+		}
+		sessions = append(sessions, session)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return sessions, nil
+}

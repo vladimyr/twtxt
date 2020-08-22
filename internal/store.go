@@ -39,6 +39,7 @@ type Store interface {
 	HasSession(sid string) bool
 	DelSession(sid string) error
 	SyncSession(sess *session.Session) error
+	GetAllSessions() ([]*session.Session, error)
 }
 
 func NewStore(store string) (Store, error) {

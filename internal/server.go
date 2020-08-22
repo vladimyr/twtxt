@@ -277,10 +277,18 @@ func (s *Server) setupCronJobs() error {
 		log.Infof("Started background job %s (%s)", name, jobSpec.Schedule)
 	}
 
-	log.Info("running FixUserAccountsJob now...")
-	NewFixUserAccountsJob(s.config, s.cache, s.db).Run()
-
 	return nil
+}
+
+func (s *Server) runStartupJobs() {
+	time.Sleep(time.Second * 5)
+	log.Info("running startup jobs")
+
+	for name, jobSpec := range StartupJobs {
+		job := jobSpec.Factory(s.config, s.cache, s.db)
+		log.Infof("running %s now...", name)
+		job.Run()
+	}
 }
 
 func (s *Server) initRoutes() {
@@ -527,6 +535,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	server.initRoutes()
 	api.initRoutes()
+
+	server.runStartupJobs()
 
 	return server, nil
 }

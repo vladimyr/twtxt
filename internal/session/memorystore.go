@@ -27,7 +27,7 @@ func NewMemoryStore(sessionDuration time.Duration) *MemoryStore {
 func (s *MemoryStore) GetSession(sid string) (*Session, error) {
 	val, found := s.entries.Get(sid)
 	if !found {
-		return nil, ErrSessionNotFound
+
 	}
 	sess := val.(*Session)
 	return sess, nil
@@ -54,4 +54,14 @@ func (s *MemoryStore) DelSession(sid string) error {
 // SyncSession ...
 func (s *MemoryStore) SyncSession(sess *Session) error {
 	return nil
+}
+
+// GetAllSessions ...
+func (s *MemoryStore) GetAllSessions() ([]*Session, error) {
+	var sessions []*Session
+	for _, item := range s.entries.Items() {
+		sess := item.Object.(*Session)
+		sessions = append(sessions, sess)
+	}
+	return sessions, nil
 }

@@ -30,6 +30,10 @@ func LoadSession(data []byte) (sess *Session, err error) {
 	return
 }
 
+func (sess *Session) Expired() bool {
+	return sess.ExpiresAt.Before(time.Now())
+}
+
 func (sess *Session) Set(key, val string) error {
 	sess.Data[key] = val
 	return sess.store.SyncSession(sess)
