@@ -848,7 +848,6 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		// TODO: Improve this by making this an O(1) lookup on the Twt.Hash()
-
 		for _, twt := range s.cache.GetAll() {
 			if twt.Hash() == hash {
 				twts = append(twts, twt)
@@ -1033,6 +1032,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		getTweetsByTag := func() types.Twts {
 			var result types.Twts
+			// TODO: Improve this by making this an O(1) lookup on the tag
 			for _, twt := range s.cache.GetAll() {
 				if HasString(UniqStrings(twt.Tags()), tag) {
 					result = append(result, twt)

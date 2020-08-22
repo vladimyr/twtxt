@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"expvar"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -162,7 +163,7 @@ func (s *Server) setupMetrics() {
 		"server", "feed_cache_size",
 		"Number of items in the global feed cache",
 		func() float64 {
-			return float64(len(s.cache.GetAll()))
+			return float64(expvar.Get("cached").(*expvar.Int).Value())
 		},
 	)
 

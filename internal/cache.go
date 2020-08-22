@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -94,6 +95,8 @@ const maxfetchers = 50
 // FetchTwts ...
 func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	var mu sync.RWMutex
+
+	var count int64
 
 	stime := time.Now()
 	defer func() {
@@ -190,6 +193,8 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					return
 				}
 
+				atomic.AddInt64(&count, int64(len(twts)))
+
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[url] = Cached{Twts: twts, Lastmodified: lastmodified}
@@ -214,11 +219,6 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 	}
 
 	expvar.Get("sources").(*expvar.Int).Set(int64(len(cache)))
-
-	var count int64
-	for _, cached := range cache {
-		count += int64(len(cached.Twts))
-	}
 	expvar.Get("cached").(*expvar.Int).Set(count)
 }
 
