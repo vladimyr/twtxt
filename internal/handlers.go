@@ -471,6 +471,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 func (s *Server) AvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
@@ -494,6 +495,11 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 				}
 			}
 
+			w.Header().Set("Etag", etag)
+			if r.Method == http.MethodHead {
+				return
+			}
+
 			f, err := os.Open(fn)
 			if err != nil {
 				log.WithError(err).Error("error opening avatar file")
@@ -502,7 +508,6 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			}
 			defer f.Close()
 
-			w.Header().Set("Etag", etag)
 			if _, err := io.Copy(w, f); err != nil {
 				log.WithError(err).Error("error writing avatar response")
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -521,11 +526,15 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			}
 		}
 
+		w.Header().Set("Etag", etag)
+		if r.Method == http.MethodHead {
+			return
+		}
+
 		buf := bytes.Buffer{}
 		img := cameron.Identicon([]byte(nick), 60, 12)
 		png.Encode(&buf, img)
 
-		w.Header().Set("Etag", etag)
 		w.Write(buf.Bytes())
 	}
 }
