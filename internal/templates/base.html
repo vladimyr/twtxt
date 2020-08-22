@@ -1,6 +1,6 @@
 {{define "base"}}
 <!DOCTYPE html>
-<html lang="en" data-theme="{{ .Theme }}">
+<html lang="en" {{ with .Theme }}data-theme="{{ . }}"{{ end }}>
   <head>
     <link href="/css/{{ .Commit }}/pico.css" rel="stylesheet" />
     <link href="/css/{{ .Commit }}/icss.css" rel="stylesheet" />

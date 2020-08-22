@@ -178,6 +178,22 @@ function deleteTwt(e) {
   }
 }
 
+u("#theme input").on("change", function (e) {
+  var value = u(e.target).first().value;
+
+  switch (value) {
+    case "auto":
+      u("html").data("theme", "");
+      break;
+    case "light":
+    case "dark":
+      u("html").data("theme", value);
+      break;
+    default:
+      console.log("invalid theme: " + value);
+  }
+});
+
 u(".reply").on("click", replyTo);
 u(".edit").on("click", editTwt);
 u(".delete").on("click", deleteTwt);

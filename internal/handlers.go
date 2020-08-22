@@ -1588,6 +1588,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		email := strings.TrimSpace(r.FormValue("email"))
 		tagline := strings.TrimSpace(r.FormValue("tagline"))
 		password := r.FormValue("password")
+
+		theme := r.FormValue("theme")
 		displayDatesInTimezone := r.FormValue("displayDatesInTimezone")
 		isFollowersPubliclyVisible := r.FormValue("isFollowersPubliclyVisible") == "on"
 		isFollowingPubliclyVisible := r.FormValue("isFollowingPubliclyVisible") == "on"
@@ -1636,6 +1638,8 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		user.Email = email
 		user.Tagline = tagline
+
+		user.Theme = theme
 		user.DisplayDatesInTimezone = displayDatesInTimezone
 		user.IsFollowersPubliclyVisible = isFollowersPubliclyVisible
 		user.IsFollowingPubliclyVisible = isFollowingPubliclyVisible

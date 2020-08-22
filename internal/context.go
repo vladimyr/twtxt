@@ -109,18 +109,6 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 		},
 	}
 
-	// Set the theme based on user-defined perfernece via Cookies
-	// XXX: This is what cookies were meant for :D (not tracking!)
-	if cookie, err := req.Cookie("theme"); err == nil {
-		name := strings.ToLower(cookie.Value)
-		switch name {
-		case "light", "dark":
-			ctx.Theme = name
-		default:
-			log.WithField("name", name).Warn("invalid theme found in user cookie")
-		}
-	}
-
 	if sess := req.Context().Value(session.SessionKey); sess != nil {
 		if username, ok := sess.(*session.Session).Get("username"); ok {
 			ctx.Authenticated = true
@@ -150,6 +138,17 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	} else {
 		ctx.User = &User{}
 		ctx.Twter = types.Twter{}
+	}
+
+	// Set the theme based on user preferences
+	theme := strings.ToLower(ctx.User.Theme)
+	switch theme {
+	case "auto":
+		ctx.Theme = ""
+	case "light", "dark":
+		ctx.Theme = theme
+	default:
+		log.WithField("name", theme).Warn("invalid theme found")
 	}
 
 	return ctx
