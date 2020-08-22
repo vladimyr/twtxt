@@ -143,7 +143,7 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	// Set the theme based on user preferences
 	theme := strings.ToLower(ctx.User.Theme)
 	switch theme {
-	case "auto":
+	case "", "auto":
 		ctx.Theme = ""
 	case "light", "dark":
 		ctx.Theme = theme
