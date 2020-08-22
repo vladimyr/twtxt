@@ -94,7 +94,7 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 
 		html := markdown.ToHTML([]byte(md), p, renderer)
 
-		ctx.Title = fmt.Sprintf("%s :: %s", ctx.InstanceName, strings.Title(name))
+		ctx.Title = strings.Title(name)
 		ctx.Page = name
 		ctx.Content = template.HTML(html)
 
@@ -258,7 +258,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = profile.Username
+		ctx.Title = fmt.Sprintf("%s's Profile", profile.Username)
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
@@ -771,7 +771,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 			ctx.Title = "Local timeline"
 		} else {
-			ctx.Title = "Your timeline"
+			ctx.Title = "Timeline"
 			user := ctx.User
 			if user != nil {
 				for _, url := range user.Following {
@@ -1008,7 +1008,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Your mentions"
+		ctx.Title = "Mentions"
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 		s.render("timeline", w, ctx)
@@ -1855,7 +1855,7 @@ func (s *Server) ResetPasswordHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Reset your password"
+			ctx.Title = "Reset password"
 			s.render("resetPassword", w, ctx)
 			return
 		}
