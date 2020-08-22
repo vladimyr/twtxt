@@ -33,6 +33,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"
 	"github.com/vcraescu/go-paginator/adapter"
+	"gopkg.in/yaml.v2"
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/session"
@@ -98,6 +99,74 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 		ctx.Content = template.HTML(html)
 
 		s.render("page", w, ctx)
+	}
+}
+
+// UserConfigHandler ...
+func (s *Server) UserConfigHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		nick := NormalizeUsername(p.ByName("nick"))
+		if nick == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		nick = NormalizeUsername(nick)
+
+		var (
+			url       string
+			following map[string]string
+		)
+
+		if s.db.HasUser(nick) {
+			user, err := s.db.GetUser(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading user object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			url = user.URL
+			if ctx.Authenticated || user.IsFollowingPubliclyVisible {
+				following = user.Following
+			}
+		} else if s.db.HasFeed(nick) {
+			feed, err := s.db.GetFeed(nick)
+			if err != nil {
+				log.WithError(err).Errorf("error loading feed object for %s", nick)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			url = feed.URL
+		} else {
+			http.Error(w, "User or Feed not found", http.StatusNotFound)
+			return
+		}
+
+		config := struct {
+			Nick      string            `json:"nick"`
+			URL       string            `json:"url"`
+			Following map[string]string `json:"following"`
+		}{
+			Nick:      nick,
+			URL:       url,
+			Following: following,
+		}
+
+		data, err := yaml.Marshal(config)
+		if err != nil {
+			log.WithError(err).Errorf("error exporting user/feed config")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/yaml")
+		if r.Method == http.MethodHead {
+			return
+		}
+
+		w.Write(data)
 	}
 }
 
