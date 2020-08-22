@@ -149,10 +149,10 @@
 {{ define "profileLinks" }}
   <ul>
     {{ if $.ShowConfig }}
-      <li><a href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
+      <li><a target="_blank" href="/user/{{ $.Profile.Username }}/config.yaml">Config&nbsp;<i class="icss-gear"></i></a></li>
     {{ end  }}
-    <li><a href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
-    <li><a href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
+    <li><a target="_blank" href="{{ $.Profile.URL }}">Twtxt&nbsp;<i class="icss-link"></i></a></li>
+    <li><a target="_blank" href="{{ $.Profile.URL | trimSuffix "/twtxt.txt" }}/atom.xml">Atom&nbsp;<i class="icss-rss"></i></a></li>
     <li><a href="/user/{{ $.Profile.Username }}/followers">Followers: {{ $.Profile.Followers | len }}</a></li>
     {{ if eq $.Profile.Type "User" }}
       <li><a href="/user/{{ $.Profile.Username }}/following">Following: {{ $.Profile.Following | len }}</a></li>
