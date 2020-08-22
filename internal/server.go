@@ -21,6 +21,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
 
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/auth"
 	"github.com/prologic/twtxt/internal/passwords"
 	"github.com/prologic/twtxt/internal/session"
@@ -170,6 +171,19 @@ func (s *Server) setupMetrics() {
 		"server", "feed_cache_last_processing_time_seconds",
 		"Number of seconds for a feed cache cycle",
 	)
+
+	// server info
+	metrics.NewGaugeVec(
+		"server", "info",
+		"Server information",
+		[]string{"full_version", "version", "commit"},
+	)
+	metrics.GaugeVec("server", "info").
+		With(map[string]string{
+			"full_version": twtxt.FullVersion(),
+			"version":      twtxt.Version,
+			"commit":       twtxt.Commit,
+		}).Set(1)
 
 	s.AddRoute("GET", "/metrics", metrics.Handler())
 }
