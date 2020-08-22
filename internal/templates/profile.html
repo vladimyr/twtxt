@@ -41,9 +41,11 @@
         {{ end}}
         <footer>
           <p><i>{{ .Profile.Tagline }}</i></p>
-          {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false) }}
         </footer>
       </hgroup>
+    </div>
+    <div>
+      {{ template "profileLinks" (dict "Profile" .Profile "ShowConfig" false) }}
     </div>
   </div>
   <div class="container">
@@ -52,5 +54,6 @@
       <footer>Recent twts from {{ .Profile.Username }}</footer>
     </hgroup>
   </div>
+  {{ template "post" . }}
   {{ template "feed" . }}
 {{end}}
