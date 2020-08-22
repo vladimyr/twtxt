@@ -272,7 +272,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	newImg := img
 
 	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH) > 0 {
+		if opts.Resize && (opts.ResizeW+opts.ResizeH) > 0 && (opts.ResizeW+opts.ResizeH > img.Bounds().Size().X) {
 			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
 		}
 	}
