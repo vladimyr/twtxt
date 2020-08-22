@@ -226,12 +226,22 @@ func (cache Cache) GetAll() types.Twts {
 
 // GetByPrefix ...
 func (cache Cache) GetByPrefix(prefix string) types.Twts {
+	key := fmt.Sprintf("prefix:%s", prefix)
+	cached, ok := cache[key]
+	if ok {
+		return cached.Twts
+	}
+
 	var twts types.Twts
+
 	for url, cached := range cache {
 		if strings.HasPrefix(url, prefix) {
 			twts = append(twts, cached.Twts...)
 		}
 	}
+	// FIXME: This is probably not thread safe :/
+	cache[key] = Cached{Twts: twts, Lastmodified: time.Now().Format(time.RFC3339)}
+
 	return twts
 }
 
