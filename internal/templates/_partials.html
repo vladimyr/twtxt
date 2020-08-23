@@ -77,10 +77,7 @@
             [<a class="delete" href="#" data-hash="{{ $.Twt.Hash }}">Delete</a>]
           {{ end }}
           {{ if (not ($.User.Is $.Twt.Twter.URL)) }}
-            {{ with $.Profile.Type }}
-            {{ else }}
-              [<a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}">Reply</a>]
-            {{ end }}
+            [<a class="reply" href="#" data-reply="{{ $.User.Reply $.Twt }}">Reply</a>]
             {{ if $.User.Follows $.Twt.Twter.URL }}
               [<a href="/unfollow?nick={{ $.Twt.Twter.Nick }}">Unfollow</a>]
             {{ else }}
