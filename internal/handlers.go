@@ -1032,10 +1032,12 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		getTweetsByTag := func() types.Twts {
 			var result types.Twts
+			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
 			for _, twt := range s.cache.GetAll() {
-				if HasString(UniqStrings(twt.Tags()), tag) {
+				if HasString(UniqStrings(twt.Tags()), tag) && !seen[twt.Hash()] {
 					result = append(result, twt)
+					seen[twt.Hash()] = true
 				}
 			}
 			return result
