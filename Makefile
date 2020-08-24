@@ -7,7 +7,8 @@ COMMIT=$(shell git rev-parse --short HEAD || echo "$COMMIT")
 all: dev
 
 deps:
-	@go get github.com/GeertJohan/go.rice/rice
+	@go get -u github.com/GeertJohan/go.rice/rice
+	@go get -u github.com/tdewolff/minify/cmd/minify
 
 dev: build
 	@./twt -v
@@ -31,6 +32,8 @@ build: cli server
 
 generate:
 	@rice -i ./internal embed-go
+	@minify -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
+	@minify -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
 
 install: build
 	@go install ./cmd/twt/...
