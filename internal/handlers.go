@@ -1840,6 +1840,11 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
+		ctx.Twter = types.Twter{
+			Nick:   nick,
+			URL:    url,
+			Avatar: GetExternalAvatar(s.config, url),
+		}
 		ctx.Profile = Profile{
 			Username: nick,
 			TwtURL:   url,
