@@ -15,8 +15,8 @@ COPY go.mod .
 COPY go.sum .
 
 # Install deps
-RUN go get github.com/GeertJohan/go.rice/rice \
-	go get github.com/tdewolff/minify/cmd/minify
+RUN go get github.com/GeertJohan/go.rice/rice
+RUN	go get github.com/tdewolff/minify/cmd/minify
 RUN go mod download
 
 # Copy static assets
