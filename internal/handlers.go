@@ -317,7 +317,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 			}
 
 			if avatarFile != nil {
-				uploadOptions := &UploadOptions{
+				opts := &ImageOptions{
 					Resize:  true,
 					ResizeW: AvatarResolution,
 					ResizeH: AvatarResolution,
@@ -325,7 +325,7 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
 					avatarsDir, feedName,
-					uploadOptions,
+					opts,
 				)
 				if err != nil {
 					ctx.Error = true
@@ -1629,7 +1629,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		}
 
 		if avatarFile != nil {
-			uploadOptions := &UploadOptions{
+			opts := &ImageOptions{
 				Resize:  true,
 				ResizeW: AvatarResolution,
 				ResizeH: AvatarResolution,
@@ -1637,7 +1637,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,
 				avatarsDir, ctx.Username,
-				uploadOptions,
+				opts,
 			)
 			if err != nil {
 				ctx.Error = true
@@ -1851,6 +1851,63 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 	}
 }
 
+// ExternalAvatarHandler ...
+func (s *Server) ExternalAvatarHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
+
+		slug := p.ByName("slug")
+		if slug == "" {
+			log.Warn("no url provided for external avatar")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		fn := filepath.Join(s.config.Data, externalDir, slug)
+		if !FileExists(fn) {
+			log.Warnf("no external avatar found for %s", slug)
+			http.Error(w, "External avatar not found", http.StatusNotFound)
+			return
+		}
+
+		fileInfo, err := os.Stat(fn)
+		if err != nil {
+			log.WithError(err).Error("os.Stat() error")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		etag := fmt.Sprintf("W/\"%s-%s\"", r.RequestURI, fileInfo.ModTime().Format(time.RFC3339))
+
+		if match := r.Header.Get("If-None-Match"); match != "" {
+			if strings.Contains(match, etag) {
+				w.WriteHeader(http.StatusNotModified)
+				return
+			}
+		}
+
+		w.Header().Set("Etag", etag)
+		if r.Method == http.MethodHead {
+			return
+		}
+
+		f, err := os.Open(fn)
+		if err != nil {
+			log.WithError(err).Error("error opening avatar file")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+		defer f.Close()
+
+		if _, err := io.Copy(w, f); err != nil {
+			log.WithError(err).Error("error writing avatar response")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // ResetPasswordHandler ...
 func (s *Server) ResetPasswordHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -2049,11 +2106,11 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		var mediaURI string
 
 		if mediaFile != nil {
-			uploadOptions := &UploadOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
+			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
 			mediaURI, err = StoreUploadedImage(
 				s.config, mediaFile,
 				mediaDir, "",
-				uploadOptions,
+				opts,
 			)
 		}
 

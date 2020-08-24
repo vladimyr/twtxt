@@ -174,8 +174,10 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 				twter := types.Twter{Nick: nick}
 				if strings.HasPrefix(url, conf.BaseURL) {
 					twter.URL = URLForUser(conf.BaseURL, nick)
+					twter.Avatar = URLForAvatar(conf.BaseURL, nick)
 				} else {
 					twter.URL = url
+					twter.Avatar = GetExternalAvatar(conf, url)
 				}
 				twts, err := ParseFile(scanner, twter)
 				if err != nil {

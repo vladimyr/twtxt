@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-
-	// Blank import so we can handle image/jpeg
-	_ "image/jpeg"
+	"image"
 	"image/png"
 	"io"
 	"io/ioutil"
@@ -18,6 +16,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	// Blank import so we can handle image/jpeg
+	_ "image/gif"
+	_ "image/jpeg"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/disintegration/imageorient"
@@ -30,11 +32,13 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nfnt/resize"
 	log "github.com/sirupsen/logrus"
+	"github.com/writeas/slug"
 )
 
 const (
-	avatarsDir = "avatars"
-	mediaDir   = "media"
+	avatarsDir  = "avatars"
+	externalDir = "external"
+	mediaDir    = "media"
 
 	newsSpecialUser    = "news"
 	helpSpecialUser    = "help"
@@ -68,14 +72,91 @@ var (
 	validUsername  = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]+$`)
 	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
 
-	ErrInvalidFeedName    = errors.New("error: invalid feed name")
-	ErrFeedNameTooLong    = errors.New("error: feed name is too long")
-	ErrInvalidUsername    = errors.New("error: invalid username")
-	ErrUsernameTooLong    = errors.New("error: username is too long")
-	ErrInvalidUserAgent   = errors.New("error: invalid twtxt user agent")
-	ErrReservedUsername   = errors.New("error: username is reserved")
-	ErrInvalidImageUPload = errors.New("error: invalid or corrupted image uploaded")
+	ErrInvalidFeedName  = errors.New("error: invalid feed name")
+	ErrFeedNameTooLong  = errors.New("error: feed name is too long")
+	ErrInvalidUsername  = errors.New("error: invalid username")
+	ErrUsernameTooLong  = errors.New("error: username is too long")
+	ErrInvalidUserAgent = errors.New("error: invalid twtxt user agent")
+	ErrReservedUsername = errors.New("error: username is reserved")
+	ErrInvalidImage     = errors.New("error: invalid image")
 )
+
+func GetExternalAvatar(conf *Config, uri string) string {
+	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.png", slug.Make(uri)))
+	if FileExists(fn) {
+		return fmt.Sprintf(
+			"%s/external/%s",
+			strings.TrimSuffix(conf.BaseURL, "/"),
+			filepath.Base(fn),
+		)
+	}
+
+	if !strings.HasSuffix(uri, "/") {
+		uri += "/"
+	}
+
+	base, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Errorf("error parsing uri: %s", uri)
+		return ""
+	}
+
+	name := slug.Make(base.String())
+
+	// Look for <url>/../avatar.png
+	source, _ := base.Parse("../avatar.png")
+	if ResourceExists(source.String()) {
+		opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
+		avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+		if err != nil {
+			log.WithError(err).
+				WithField("base", base.String()).
+				WithField("source", source.String()).
+				Error("error downloading external avatar")
+			return ""
+		}
+		return avatar
+	}
+
+	// Look for <url>/avatar.png
+	source, _ = base.Parse("./avatar.png")
+	if ResourceExists(source.String()) {
+		opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
+		avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+		if err != nil {
+			log.WithError(err).
+				WithField("base", base.String()).
+				WithField("source", source.String()).
+				Error("error downloading external avatar")
+			return ""
+		}
+		return avatar
+	}
+
+	log.Warnf("unable to find a suitable avatar for %s", uri)
+
+	return ""
+}
+
+func ResourceExists(url string) bool {
+	res, err := http.Head(url)
+	if err != nil {
+		log.WithError(err).Errorf("error requesting HEAD from %s", url)
+		return false
+	}
+	defer res.Body.Close()
+
+	return res.StatusCode/100 == 2
+}
+
+func FileExists(name string) bool {
+	if _, err := os.Stat(name); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
 
 // RenderString ...
 func RenderString(tpl string, ctx *Context) (string, error) {
@@ -203,13 +284,101 @@ func IsImage(fn string) bool {
 	return false
 }
 
-type UploadOptions struct {
+type ImageOptions struct {
 	Resize  bool
 	ResizeW int
 	ResizeH int
 }
 
-func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *UploadOptions) (string, error) {
+func DownloadImage(conf *Config, url string, resource, name string, opts *ImageOptions) (string, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		log.WithError(err).Errorf("error downloading image from %s", url)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	tf, err := ioutil.TempFile("", "rss2twtxt-*")
+	if err != nil {
+		log.WithError(err).Error("error creating temporary file")
+		return "", err
+	}
+	defer tf.Close()
+
+	if _, err := io.Copy(tf, res.Body); err != nil {
+		log.WithError(err).Error("error writng temporary file")
+		return "", err
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	if !IsImage(tf.Name()) {
+		return "", ErrInvalidImage
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	if _, err := tf.Seek(0, io.SeekStart); err != nil {
+		log.WithError(err).Error("error seeking temporary file")
+		return "", err
+	}
+
+	img, _, err := image.Decode(tf)
+	if err != nil {
+		log.WithError(err).Error("jpeg.Decode failed")
+		return "", err
+	}
+
+	newImg := img
+
+	if opts != nil {
+		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
+			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
+		}
+	}
+
+	p := filepath.Join(conf.Data, resource)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating avatars directory")
+		return "", err
+	}
+
+	var fn string
+
+	if name == "" {
+		uuid := shortuuid.New()
+		fn = filepath.Join(p, fmt.Sprintf("%s.png", uuid))
+	} else {
+		fn = fmt.Sprintf("%s.png", filepath.Join(p, name))
+	}
+
+	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		log.WithError(err).Error("error opening output file")
+		return "", err
+	}
+	defer of.Close()
+
+	// Encode uses a Writer, use a Buffer if you need the raw []byte
+	if err := png.Encode(of, newImg); err != nil {
+		log.WithError(err).Error("error reencoding image")
+		return "", err
+	}
+
+	return fmt.Sprintf(
+		"%s/%s/%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		resource, filepath.Base(fn),
+	), nil
+}
+
+func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *ImageOptions) (string, error) {
 	tf, err := ioutil.TempFile("", "twtxt-upload-*")
 	if err != nil {
 		log.WithError(err).Error("error creating temporary file")
@@ -228,7 +397,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	}
 
 	if !IsImage(tf.Name()) {
-		return "", ErrInvalidImageUPload
+		return "", ErrInvalidImage
 	}
 
 	if _, err := tf.Seek(0, io.SeekStart); err != nil {
@@ -411,6 +580,14 @@ func URLForTwt(baseURL, hash string) string {
 func URLForUser(baseURL, username string) string {
 	return fmt.Sprintf(
 		"%s/user/%s/twtxt.txt",
+		strings.TrimSuffix(baseURL, "/"),
+		username,
+	)
+}
+
+func URLForAvatar(baseURL, username string) string {
+	return fmt.Sprintf(
+		"%s/user/%s/avatar.png",
 		strings.TrimSuffix(baseURL, "/"),
 		username,
 	)

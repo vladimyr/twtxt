@@ -15,8 +15,10 @@ const (
 
 // Twter ...
 type Twter struct {
-	Nick string
-	URL  string
+	Nick    string
+	URL     string
+	Avatar  string
+	Tagline string
 }
 
 // Twt ...
@@ -35,7 +37,7 @@ func (twt Twt) Mentions() []Twter {
 	re := regexp.MustCompile(`@<(.*?) (.*?)>`)
 	matches := re.FindAllStringSubmatch(twt.Text, -1)
 	for _, match := range matches {
-		mentions = append(mentions, Twter{match[1], match[2]})
+		mentions = append(mentions, Twter{Nick: match[1], URL: match[2]})
 	}
 
 	return mentions

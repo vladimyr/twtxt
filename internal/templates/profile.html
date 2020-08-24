@@ -11,12 +11,15 @@
           {{ else }}
             {{ if isLocal .Profile.URL }}
               <a href="{{ .Profile.URL | trimSuffix "/twtxt.txt" }}" class="u-url p-name">
-                <img class="avatar u-photo" src="/user/{{ .Profile.Username }}/avatar.png" />
             {{ else }}
               <a href="/external/?url={{ .Profile.URL }}&nick= {{  .Profile.Username  }}" class="u-url p-name">
-                <i class="icss-rss" style="font-size:1.5em"></i>
             {{ end }}
-              <span class="p-name">{{ .Profile.Username }}</span>
+            {{ if $.Twt.Twter.Avatar }}
+              <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
+            {{ else }}
+              <i class="icss-rss" style="font-size:1.5em"></i>
+            {{ end  }}
+            <span class="p-name">{{ .Profile.Username }}</span>
             </a>
           {{ end }}
         </h2>

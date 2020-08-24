@@ -44,7 +44,7 @@ require (
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/prologic/webmention v0.0.0-20200818004448-ca766414c4b1
-	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
+	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed
 	github.com/sirupsen/logrus v1.6.0
@@ -57,6 +57,7 @@ require (
 	github.com/unrolled/logger v0.0.0-20190327162521-be1a2406c7c9
 	github.com/vcraescu/go-paginator v0.0.0-20200304054438-86d84f27c0b3
 	github.com/wblakecaldwell/profiler v0.0.0-20150908040756-6111ef1313a1
+	github.com/writeas/slug v1.2.0
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	golang.org/x/exp v0.0.0-20200513190911-00229845015e // indirect
 	golang.org/x/sys v0.0.0-20200817155316-9781c653f443 // indirect
