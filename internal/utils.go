@@ -718,7 +718,7 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 			u.Scheme = "https"
 		}
 		src := u.String()
-		html = fmt.Sprintf(`<img alt="%s" src="%s">`, alt, src)
+		html = fmt.Sprintf(`<img alt="%s" src="%s" loading=lazy>`, alt, src)
 	} else {
 		src := u.String()
 		html = fmt.Sprintf(
@@ -802,7 +802,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")
-		p.AllowAttrs("alt").OnElements("a", "img")
+		p.AllowAttrs("alt", "loading").OnElements("a", "img")
 		html := p.SanitizeBytes(maybeUnsafeHTML)
 
 		return template.HTML(html)
