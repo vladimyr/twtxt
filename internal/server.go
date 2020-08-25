@@ -378,7 +378,7 @@ func (s *Server) initRoutes() {
 
 	// External Feeds
 	s.router.GET("/external", s.ExternalHandler())
-	s.router.GET("/external/:slug", s.ExternalAvatarHandler())
+	s.router.GET("/external/:slug/avatar", s.ExternalAvatarHandler())
 
 	// Syndication Formats (RSS, Atom, JSON Feed)
 	s.router.HEAD("/atom.xml", s.SyndicationHandler())

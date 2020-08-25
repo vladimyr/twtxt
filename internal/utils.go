@@ -125,7 +125,7 @@ func GetExternalAvatar(conf *Config, uri string) string {
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug.Make(uri)))
 	if FileExists(fn) {
 		return fmt.Sprintf(
-			"%s/external/%s",
+			"%s/external/%s/avatar",
 			strings.TrimSuffix(conf.BaseURL, "/"),
 			filepath.Base(fn),
 		)
