@@ -214,6 +214,10 @@ You can find an [AUTHORS](/AUTHORS) file where we keep a list of contributors to
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/6)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/6)
 [![](https://sourcerer.io/fame/prologic/prologic/twtxt/images/7)](https://sourcerer.io/fame/prologic/prologic/twtxt/links/7)
 
+## Stargazers over time
+
+[![Stargazers over time](https://starcharts.herokuapp.com/jointwt/twtxt.svg)](https://starcharts.herokuapp.com/jointwt/twtxt)
+
 ## Related Projects
 
 - [rss2twtxt](https://github.com/prologic/rss2twtxt) -- RSS/Atom to [Twtxt](https://twtxt.readthedocs.org) aggregator.
