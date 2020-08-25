@@ -124,11 +124,7 @@ func ImageToPng(fn string) error {
 func GetExternalAvatar(conf *Config, uri string) string {
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug.Make(uri)))
 	if FileExists(fn) {
-		return fmt.Sprintf(
-			"%s/external/%s/avatar",
-			strings.TrimSuffix(conf.BaseURL, "/"),
-			filepath.Base(fn),
-		)
+		return URLForExternalAvatar(conf, uri)
 	}
 
 	if !strings.HasSuffix(uri, "/") {
@@ -635,6 +631,22 @@ func URLForAvatar(conf *Config, username string) string {
 		"%s/user/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
+	)
+}
+
+func URLForExternalProfile(conf *Config, nick, url string) string {
+	return fmt.Sprintf(
+		"%s/external?nick=%s&url=%s",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		nick, url,
+	)
+}
+
+func URLForExternalAvatar(conf *Config, url string) string {
+	return fmt.Sprintf(
+		"%s/external/%s/avatar",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		slug.Make(url),
 	)
 }
 

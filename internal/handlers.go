@@ -1918,12 +1918,12 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		ctx.Twter = types.Twter{
 			Nick:   nick,
 			URL:    url,
-			Avatar: GetExternalAvatar(s.config, url),
+			Avatar: URLForExternalAvatar(s.config, url),
 		}
 		ctx.Profile = Profile{
 			Username: nick,
 			TwtURL:   url,
-			URL:      url,
+			URL:      URLForExternalProfile(s.config, nick, url),
 		}
 
 		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, url)

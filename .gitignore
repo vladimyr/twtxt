@@ -16,6 +16,7 @@
 /data/feeds/*
 /data/media/*
 /data/avatars/*
+/data/external/*
 /data/feedsources
 
 /internal/rice-box.go
