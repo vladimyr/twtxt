@@ -122,7 +122,9 @@ func ImageToPng(fn string) error {
 }
 
 func GetExternalAvatar(conf *Config, uri string) string {
-	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", slug.Make(uri)))
+	name := slug.Make(uri)
+
+	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", name))
 	if FileExists(fn) {
 		return URLForExternalAvatar(conf, uri)
 	}
@@ -136,8 +138,6 @@ func GetExternalAvatar(conf *Config, uri string) string {
 		log.WithError(err).Errorf("error parsing uri: %s", uri)
 		return ""
 	}
-
-	name := slug.Make(base.String())
 
 	candidates := []string{
 		"../avatar.png", "./avatar.png",
