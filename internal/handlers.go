@@ -497,7 +497,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		defer f.Close()
 
 		w.Header().Set("Etag", etag)
-    w.Header().Set("Cache-Control", "public, max-age=7776000")
+		w.Header().Set("Cache-Control", "public, max-age=7776000")
 
 		if r.Method == http.MethodHead {
 			return
@@ -1934,7 +1934,6 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 // ExternalAvatarHandler ...
 func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		w.Header().Set("Content-Type", "image/webp")
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
 		slug := p.ByName("slug")
@@ -1944,7 +1943,18 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 			return
 		}
 
-		fn := filepath.Join(s.config.Data, externalDir, slug)
+		var fn string
+
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
+			w.Header().Set("Content-Type", "image/webp")
+		} else {
+			// Support older browsers like IE11 that don't support WebP :/
+			metrics.Counter("media", "old_avatar").Inc()
+			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.png", slug))
+			w.Header().Set("Content-Type", "image/png")
+		}
+
 		if !FileExists(fn) {
 			log.Warnf("no external avatar found for %s", slug)
 			http.Error(w, "External avatar not found", http.StatusNotFound)
