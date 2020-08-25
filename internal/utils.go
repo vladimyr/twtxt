@@ -412,7 +412,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Exit(fn)),
+		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
 	), nil
 }
 
