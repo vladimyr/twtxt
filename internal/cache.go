@@ -176,8 +176,9 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					twter.URL = URLForUser(conf, nick)
 					twter.Avatar = URLForAvatar(conf, nick)
 				} else {
-					twter.URL = url
-					twter.Avatar = GetExternalAvatar(conf, url)
+					avatar := GetExternalAvatar(conf, url)
+					twter.URL = URLForExternalProfile(conf, nick, url)
+					twter.Avatar = avatar
 				}
 				twts, err := ParseFile(scanner, twter)
 				if err != nil {
