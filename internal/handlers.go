@@ -1982,6 +1982,10 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 			return
 		}
 
+		if r.Method == http.MethodHead {
+			return
+		}
+
 		f, err := os.Open(fn)
 		if err != nil {
 			log.WithError(err).Error("error opening avatar file")
