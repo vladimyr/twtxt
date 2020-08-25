@@ -148,7 +148,7 @@ func GetExternalAvatar(conf *Config, uri string) string {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(source.String()) {
 			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
-			avatar, err := DownloadImage(conf, source.String(), externalDir, name, opts)
+			_, err := DownloadImage(conf, source.String(), externalDir, name, opts)
 			if err != nil {
 				log.WithError(err).
 					WithField("base", base.String()).
@@ -156,7 +156,7 @@ func GetExternalAvatar(conf *Config, uri string) string {
 					Error("error downloading external avatar")
 				return ""
 			}
-			return avatar
+			return URLForExternalAvatar(conf, uri)
 		}
 	}
 
@@ -732,7 +732,6 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
 func FormatTwtFactory(conf *Config) func(text string) template.HTML {
-	isLocal := IsLocalFactory(conf)
 	return func(text string) template.HTML {
 		renderHookProcessURLs := func(w io.Writer, node ast.Node, entering bool) (ast.WalkStatus, bool) {
 			// Ensure only whitelisted ![](url) images
@@ -751,11 +750,6 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 				return ast.SkipChildren, true
 			}
 
-			//
-			// Fix HTML URLs that refer to a local user feed. Strip the
-			// `/twtxt.txt` (feed part) and link to their user profile.
-			//
-
 			span, ok := node.(*ast.HTMLSpan)
 			if !ok {
 				return ast.GoToNext, false
@@ -766,26 +760,6 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 			if err != nil {
 				log.WithError(err).Warn("error parsing HTMLSpan")
 				return ast.GoToNext, false
-			}
-
-			a := doc.Find("a")
-			if a.Length() > 0 {
-				href, ok := a.Attr("href")
-				if !ok {
-					return ast.GoToNext, false
-				}
-
-				if isLocal(href) {
-					href = UserURL(href)
-				} else {
-					return ast.GoToNext, false
-				}
-
-				html := fmt.Sprintf(`<a href="%s">`, href)
-
-				io.WriteString(w, html)
-
-				return ast.GoToNext, true
 			}
 
 			// Ensure only whitelisted img src=(s) and fix non-secure links
@@ -823,7 +797,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		}
 		renderer := html.NewRenderer(opts)
 
-		md := []byte(FormatMentionsAndTags(text))
+		md := []byte(FormatMentionsAndTags(conf, text))
 		maybeUnsafeHTML := markdown.ToHTML(md, nil, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("target").OnElements("a")
@@ -837,12 +811,28 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 // FormatMentionsAndTags turns `@<nick URL>` into `<a href="URL">@nick</a>`
 //     and `#<tag URL>` into `<a href="URL">#tag</a>`
-func FormatMentionsAndTags(text string) string {
+func FormatMentionsAndTags(conf *Config, text string) string {
+	isLocal := IsLocalFactory(conf)
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
-		return fmt.Sprintf(`<a href="%s">%s%s</a>`, url, prefix, nick)
+		if prefix == "@" {
+			if isLocal(url) && strings.HasSuffix(url, "/twtxt.txt") {
+				return fmt.Sprintf(
+					`<a href="%s">@%s</a>`,
+					UserURL(url), nick,
+				)
+			}
+			return fmt.Sprintf(
+				`<a href="%s">@%s</a>`,
+				URLForExternalProfile(conf, nick, url), nick,
+			)
+		}
+		return fmt.Sprintf(
+			`<a href="%s">%s%s</a>`,
+			url, prefix, nick,
+		)
 	})
 }
 

@@ -1893,9 +1893,12 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 		}
 
-		twtxttURL := string(url)
+		if !s.cache.IsCached(url) {
+			sources := map[string]string{nick: url}
+			s.cache.FetchTwts(s.config, sources)
+		}
 
-		twts := s.cache.GetByURL(twtxttURL)
+		twts := s.cache.GetByURL(url)
 
 		sort.Sort(sort.Reverse(twts))
 

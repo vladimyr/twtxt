@@ -256,6 +256,13 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	return twts
 }
 
+// IsCached ...
+
+func (cache Cache) IsCached(url string) bool {
+	_, ok := cache[url]
+	return ok
+}
+
 // GetByURL ...
 func (cache Cache) GetByURL(url string) types.Twts {
 	if cached, ok := cache[url]; ok {
