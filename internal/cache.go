@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prologic/twtxt"
@@ -177,7 +178,7 @@ func (cache Cache) FetchTwts(conf *Config, sources map[string]string) {
 					twter.Avatar = URLForAvatar(conf, nick)
 				} else {
 					GetExternalAvatar(conf, url)
-					twter.URL = URLForExternalProfile(conf, nick, url)
+					twter.URL = url
 					twter.Avatar = URLForExternalAvatar(conf, url)
 				}
 				twts, err := ParseFile(scanner, twter)
