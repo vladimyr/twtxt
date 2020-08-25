@@ -186,6 +186,17 @@ func (s *Server) setupMetrics() {
 			"commit":       twtxt.Commit,
 		}).Set(1)
 
+	// old avatars
+	metrics.NewCounter(
+		"media", "old_avatar",
+		"Count of old Avtar (PNG) conversions",
+	)
+	// old media
+	metrics.NewCounter(
+		"media", "old_media",
+		"Count of old Media (PNG) served",
+	)
+
 	s.AddRoute("GET", "/metrics", metrics.Handler())
 }
 
@@ -343,6 +354,11 @@ func (s *Server) initRoutes() {
 	s.router.GET("/u/:nick", s.OldTwtxtHandler())
 	s.router.HEAD("/u/:nick", s.OldTwtxtHandler())
 
+	// Redirect old URIs (twtxt <= v0.1.0) of the form /user/<nick>/avatar.png -> /user/<nick>/avatar
+	// TODO: Remove this after v1
+	s.router.GET("/user/:nick/avatar.png", s.OldAvatarHandler())
+	s.router.HEAD("/user/:nick/avatar.png", s.OldAvatarHandler())
+
 	if s.config.OpenProfiles {
 		s.router.GET("/user/:nick", s.ProfileHandler())
 		s.router.GET("/user/:nick/config.yaml", s.UserConfigHandler())
@@ -350,7 +366,8 @@ func (s *Server) initRoutes() {
 		s.router.GET("/user/:nick", s.am.MustAuth(s.ProfileHandler()))
 		s.router.GET("/user/:nick/config.yaml", s.am.MustAuth(s.UserConfigHandler()))
 	}
-	s.router.GET("/user/:nick/avatar.png", s.AvatarHandler())
+	s.router.GET("/user/:nick/avatar", s.AvatarHandler())
+	s.router.HEAD("/user/:nick/avatar", s.AvatarHandler())
 	s.router.HEAD("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/twtxt.txt", s.TwtxtHandler())
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
@@ -390,6 +407,7 @@ func (s *Server) initRoutes() {
 
 	// Media Handling
 	s.router.GET("/media/:name", s.MediaHandler())
+	s.router.HEAD("/media/:name", s.MediaHandler())
 	s.router.POST("/upload", s.am.MustAuth(s.UploadMediaHandler()))
 
 	// User/Feed Lookups
