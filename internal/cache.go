@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rcrowley/go-metrics"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/prologic/twtxt"
