@@ -631,16 +631,8 @@ func URLForUser(conf *Config, username string) string {
 }
 
 func URLForAvatar(conf *Config, username string) string {
-	// Support the old .png avatar(s)
-	if !FileExists(filepath.Join(conf.Data, avatarsDir, fmt.Sprintf("%s.webp", username))) {
-		return fmt.Sprintf(
-			"%s/user/%s/avatar.png",
-			strings.TrimSuffix(conf.BaseURL, "/"),
-			username,
-		)
-	}
 	return fmt.Sprintf(
-		"%s/user/%s/avatar.webp",
+		"%s/user/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
 		username,
 	)
