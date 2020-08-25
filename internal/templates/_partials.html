@@ -59,7 +59,7 @@
             <span class="p-name">me</span>
           </a>
         {{ else }}
-          {{ if isLocal $.Twt.Twter.URL }}
+          {{ if isLocal $.Twt.Twter.TwtURL }}
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
           {{ else }}
