@@ -13,7 +13,6 @@ require (
 	github.com/StudioSol/async v1.0.0
 	github.com/andreadipersio/securecookie v0.0.0-20131119095127-e3c3b33544ec
 	github.com/andyleap/microformats v0.0.0-20150523144534-25ae286f528b
-	github.com/aofei/cameron v1.1.4
 	github.com/apex/log v1.8.0
 	github.com/chai2010/webp v1.1.0
 	github.com/creasty/defaults v1.5.0
@@ -40,13 +39,13 @@ require (
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/prologic/webmention v0.0.0-20200818004448-ca766414c4b1
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0
 	github.com/securisec/go-keywords v0.0.0-20200619134240-769e7273f2ed

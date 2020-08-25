@@ -33,6 +33,7 @@ import (
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nfnt/resize"
+	"github.com/nullrocks/identicon"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 )
@@ -82,6 +83,22 @@ var (
 	ErrReservedUsername = errors.New("error: username is reserved")
 	ErrInvalidImage     = errors.New("error: invalid image")
 )
+
+func GenerateAvatar(conf *Config, username string) (image.Image, error) {
+	ig, err := identicon.New(conf.Name, 5, 3)
+	if err != nil {
+		log.WithError(err).Error("error creating identicon generator")
+		return nil, err
+	}
+
+	ii, err := ig.Draw(username)
+	if err != nil {
+		log.WithError(err).Errorf("error generating avatar for %s", username)
+		return nil, err
+	}
+
+	return ii.Image(AvatarResolution), nil
+}
 
 func ReplaceExt(fn, newExt string) string {
 	oldExt := filepath.Ext(fn)

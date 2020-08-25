@@ -20,7 +20,6 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/StudioSol/async"
-	"github.com/aofei/cameron"
 	"github.com/chai2010/webp"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
@@ -586,7 +585,13 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 		}
 
 		buf := bytes.Buffer{}
-		img := cameron.Identicon([]byte(nick), 60, 12)
+
+		img, err := GenerateAvatar(s.config, nick)
+		if err != nil {
+			log.WithError(err).Errorf("error generating avatar for %s", nick)
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
 		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 			w.Header().Set("Content-Type", "image/webp")
