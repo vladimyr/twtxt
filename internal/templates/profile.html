@@ -14,8 +14,8 @@
             {{ else }}
               <a href="/external/?url={{ .Profile.URL }}&nick= {{  .Profile.Username  }}" class="u-url p-name">
             {{ end }}
-            {{ if $.Twt.Twter.Avatar }}
-              <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
+            {{ if $.Twter.Avatar }}
+              <img class="avatar u-photo" src="{{ $.Twter.Avatar }}" />
             {{ else }}
               <i class="icss-rss" style="font-size:1.5em"></i>
             {{ end  }}
