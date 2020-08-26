@@ -250,7 +250,13 @@ func (bs *BitcaskStore) DelSession(sid string) error {
 }
 
 func (bs *BitcaskStore) SyncSession(sess *session.Session) error {
-	return bs.SetSession(sess.ID, sess)
+	// Only persist sessions with a logged in user associated with an account
+	// This saves resources as we don't need to keep session keys around for
+	// sessions we may never load from the store again.
+	if sess.Has("username") {
+		return bs.SetSession(sess.ID, sess)
+	}
+	return nil
 }
 
 func (bs *BitcaskStore) LenSessions() int64 {
