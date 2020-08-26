@@ -157,8 +157,13 @@ func GetExternalAvatar(conf *Config, uri string) string {
 	}
 
 	candidates := []string{
-		"../avatar.png", "./avatar.png",
 		"../avatar.webp", "./avatar.webp",
+		"../avatar.png", "./avatar.png",
+		"../logo.png", "./logo.png",
+		"../avatar.jpg", "./avatar.jpg",
+		"../logo.jpg", "./logo.jpg",
+		"../avatar.jpeg", "./avatar.jpeg",
+		"../logo.jpeg", "./logo.jpeg",
 	}
 
 	for _, candidate := range candidates {
