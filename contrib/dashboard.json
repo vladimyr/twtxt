@@ -283,7 +283,7 @@
     {
       "cacheTimeout": null,
       "datasource": "Prometheus",
-      "description": "CPU Usage",
+      "description": "CPU Usage (%)",
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -336,7 +336,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
+          "fields": "/^cpu$/",
           "values": false
         },
         "showThresholdLabels": false,
@@ -345,11 +345,11 @@
       "pluginVersion": "7.1.3",
       "targets": [
         {
-          "expr": "sum(rate(process_cpu_seconds_total{job=\"twtxt\"}[5m]) * 100)",
+          "expr": "sum(irate(process_cpu_seconds_total{job=\"twtxt\"}[5m]) * 100)",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "",
+          "legendFormat": "cpu",
           "refId": "A"
         }
       ],
@@ -413,7 +413,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^process_resident_memory_bytes{instance=\"twtxt:8000\", job=\"twtxt\"}$/",
+          "fields": "/^rss$/",
           "values": false
         },
         "showThresholdLabels": false,
@@ -426,7 +426,7 @@
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "",
+          "legendFormat": "rss",
           "refId": "A"
         }
       ],
@@ -1412,5 +1412,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 22
+  "version": 23
 }
