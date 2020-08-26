@@ -174,13 +174,15 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
-      "tableColumn": "twtd_server_feed_cache_size{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "tableColumn": "twtd_cache_size{instance=\"twtxt:8000\", job=\"twtxt\"}",
       "targets": [
         {
-          "expr": "twtd_server_feed_cache_size",
+          "expr": "twtd_cache_size",
           "format": "time_series",
           "instant": false,
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
@@ -189,13 +191,7 @@
       "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
+      "valueMaps": [],
       "valueName": "current"
     },
     {
@@ -209,7 +205,7 @@
       ],
       "datasource": "Prometheus",
       "decimals": 2,
-      "description": "Processing time of the global feed cache",
+      "description": "Cache Performance (last feed cycle processed time in seconds)",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -264,28 +260,24 @@
         "lineColor": "rgb(31, 120, 193)",
         "show": true
       },
-      "tableColumn": "twtd_server_feed_cache_last_processing_time_seconds{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "tableColumn": "twtd_cache_last_processed_seconds{instance=\"twtxt:8000\", job=\"twtxt\"}",
       "targets": [
         {
-          "expr": "twtd_server_feed_cache_last_processing_time_seconds",
+          "expr": "twtd_cache_last_processed_seconds",
           "format": "time_series",
           "instant": false,
+          "interval": "",
           "intervalFactor": 1,
+          "legendFormat": "",
           "refId": "A"
         }
       ],
       "thresholds": "150,240",
-      "title": "Processing Time",
+      "title": "Cache Perf",
       "transparent": true,
       "type": "singlestat",
       "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
+      "valueMaps": [],
       "valueName": "avg"
     },
     {
@@ -1448,5 +1440,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 20
+  "version": 21
 }
