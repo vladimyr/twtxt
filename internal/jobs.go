@@ -24,21 +24,19 @@ var (
 
 func init() {
 	Jobs = map[string]JobSpec{
-		"SyncStore":            NewJobSpec("@every 1m", NewSyncStoreJob),
-		"UpdateFeeds":          NewJobSpec("@every 5m", NewUpdateFeedsJob),
-		"SyncCache":            NewJobSpec("@every 10m", NewSyncCacheJob),
-		"UpdateFeedSources":    NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
-		"FixUserAccounts":      NewJobSpec("@hourly", NewFixUserAccountsJob),
-		"DeleteOldSessions":    NewJobSpec("@hourly", NewDeleteOldSessionsJob),
-		"CleanupStaleSessions": NewJobSpec("@daily", NewCleanupStaleSessionsJob),
-		"Stats":                NewJobSpec("@daily", NewStatsJob),
+		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
+		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"SyncCache":         NewJobSpec("@every 10m", NewSyncCacheJob),
+		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
+		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
+		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
+		"Stats":             NewJobSpec("@daily", NewStatsJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
-		"UpdateFeedSources":    Jobs["UpdateFeedSources"],
-		"FixUserAccounts":      Jobs["FixUserAccounts"],
-		"DeleteOldSessions":    Jobs["DeleteOldSessions"],
-		"CleanupStaleSessions": Jobs["CleanupStaleSessions"],
+		"UpdateFeedSources": Jobs["UpdateFeedSources"],
+		"FixUserAccounts":   Jobs["FixUserAccounts"],
+		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 	}
 }
 
@@ -286,35 +284,6 @@ func (job *DeleteOldSessionsJob) Run() {
 	for _, session := range sessions {
 		if session.Expired() {
 			log.Infof("deleting expired session %s", session.ID)
-			if err := job.db.DelSession(session.ID); err != nil {
-				log.WithError(err).Error("error deleting session object")
-			}
-		}
-	}
-}
-
-type CleanupStaleSessionsJob struct {
-	conf  *Config
-	cache Cache
-	db    Store
-}
-
-func NewCleanupStaleSessionsJob(conf *Config, cache Cache, db Store) cron.Job {
-	return &CleanupStaleSessionsJob{conf: conf, cache: cache, db: db}
-}
-
-func (job *CleanupStaleSessionsJob) Run() {
-	log.Infof("cleaning up stale sessions")
-
-	sessions, err := job.db.GetAllSessions()
-	if err != nil {
-		log.WithError(err).Error("error loading seessions")
-		return
-	}
-
-	for _, session := range sessions {
-		if !session.Has("username") {
-			log.Infof("deleting statle session (no  user) %s", session.ID)
 			if err := job.db.DelSession(session.ID); err != nil {
 				log.WithError(err).Error("error deleting session object")
 			}
