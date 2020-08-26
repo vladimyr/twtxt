@@ -23,15 +23,16 @@ type Store interface {
 	HasFeed(name string) bool
 	GetFeed(name string) (*Feed, error)
 	SetFeed(name string, user *Feed) error
+	LenFeeds() int64
 	SearchFeeds(prefix string) []string
+	GetAllFeeds() ([]*Feed, error)
 
 	DelUser(username string) error
 	HasUser(username string) bool
 	GetUser(username string) (*User, error)
 	SetUser(username string, user *User) error
+	LenUsers() int64
 	SearchUsers(prefix string) []string
-
-	GetAllFeeds() ([]*Feed, error)
 	GetAllUsers() ([]*User, error)
 
 	GetSession(sid string) (*session.Session, error)
@@ -39,6 +40,7 @@ type Store interface {
 	HasSession(sid string) bool
 	DelSession(sid string) error
 	SyncSession(sess *session.Session) error
+	LenSessions() int64
 	GetAllSessions() ([]*session.Session, error)
 }
 

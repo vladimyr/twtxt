@@ -158,9 +158,32 @@ func (s *Server) setupMetrics() {
 		},
 	)
 
+	// database keys
+	metrics.NewGaugeFunc(
+		"db", "feeds",
+		"Number of database /feeds keys",
+		func() float64 {
+			return float64(s.db.LenFeeds())
+		},
+	)
+	metrics.NewGaugeFunc(
+		"db", "sessions",
+		"Number of database /sessions keys",
+		func() float64 {
+			return float64(s.db.LenSessions())
+		},
+	)
+	metrics.NewGaugeFunc(
+		"db", "users",
+		"Number of database /users keys",
+		func() float64 {
+			return float64(s.db.LenUsers())
+		},
+	)
+
 	// feed cache size
-	metrics.NewCounterFunc(
-		"server", "feed_cache_size",
+	metrics.NewGaugeFunc(
+		"cache", "size",
 		"Number of items in the global feed cache",
 		func() float64 {
 			return float64(expvar.Get("cached").(*expvar.Int).Value())
@@ -169,7 +192,7 @@ func (s *Server) setupMetrics() {
 
 	// feed cache processing time
 	metrics.NewGauge(
-		"server", "feed_cache_last_processing_time_seconds",
+		"cache", "last_processed_seconds",
 		"Number of seconds for a feed cache cycle",
 	)
 

@@ -11,7 +11,9 @@ import (
 )
 
 const (
+	feedsKeyPrefix    = "/feeds"
 	sessionsKeyPrefix = "/sessions"
+	usersKeyPrefix    = "/users"
 )
 
 // BitcaskStore ...
@@ -92,6 +94,17 @@ func (bs *BitcaskStore) SetFeed(name string, feed *Feed) error {
 	return nil
 }
 
+func (bs *BitcaskStore) LenFeeds() int64 {
+	var count int64
+
+	bs.db.Scan([]byte(feedsKeyPrefix), func(_ []byte) error {
+		count++
+		return nil
+	})
+
+	return count
+}
+
 func (bs *BitcaskStore) SearchFeeds(prefix string) []string {
 	var keys []string
 
@@ -154,6 +167,17 @@ func (bs *BitcaskStore) SetUser(username string, user *User) error {
 		return err
 	}
 	return nil
+}
+
+func (bs *BitcaskStore) LenUsers() int64 {
+	var count int64
+
+	bs.db.Scan([]byte(usersKeyPrefix), func(_ []byte) error {
+		count++
+		return nil
+	})
+
+	return count
 }
 
 func (bs *BitcaskStore) SearchUsers(prefix string) []string {
@@ -227,6 +251,17 @@ func (bs *BitcaskStore) DelSession(sid string) error {
 
 func (bs *BitcaskStore) SyncSession(sess *session.Session) error {
 	return bs.SetSession(sess.ID, sess)
+}
+
+func (bs *BitcaskStore) LenSessions() int64 {
+	var count int64
+
+	bs.db.Scan([]byte(sessionsKeyPrefix), func(_ []byte) error {
+		count++
+		return nil
+	})
+
+	return count
 }
 
 func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
