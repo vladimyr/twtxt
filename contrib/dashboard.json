@@ -534,7 +534,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Database Statistics (such as no. of users, feeds, sessions, etc)",
+      "description": "Database / Cache Statistics (such as no. of users, feeds, sessions, cache size, etc)",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -568,7 +568,12 @@
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "twts",
+          "yaxis": 2
+        }
+      ],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
@@ -590,13 +595,19 @@
           "interval": "",
           "legendFormat": "users",
           "refId": "C"
+        },
+        {
+          "expr": "twtd_cache_size",
+          "interval": "",
+          "legendFormat": "twts",
+          "refId": "D"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Database Statistics",
+      "title": "DB/Cache Stats",
       "tooltip": {
         "shared": false,
         "sort": 0,
@@ -1412,5 +1423,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 25
+  "version": 27
 }
