@@ -282,29 +282,43 @@
     },
     {
       "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
       "datasource": "Prometheus",
-      "decimals": null,
       "description": "CPU Usage",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "mappings": [
+            {
+              "id": 0,
+              "op": "=",
+              "text": "N/A",
+              "type": 1,
+              "value": "null"
+            }
+          ],
+          "max": 100,
+          "min": 0,
+          "nullValueMode": "connected",
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#299c46",
+                "value": null
+              },
+              {
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 50
+              },
+              {
+                "color": "#d44a3a",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
         },
         "overrides": []
-      },
-      "format": "percent",
-      "gauge": {
-        "maxValue": 100,
-        "minValue": 0,
-        "show": true,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
       },
       "gridPos": {
         "h": 6,
@@ -315,38 +329,20 @@
       "id": 15,
       "interval": null,
       "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
       "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
-      "tableColumn": "",
+      "pluginVersion": "7.1.3",
       "targets": [
         {
           "expr": "sum(rate(process_cpu_seconds_total{job=\"twtxt\"}[5m]) * 100)",
@@ -357,45 +353,49 @@
           "refId": "A"
         }
       ],
-      "thresholds": "0,50,80",
       "title": "CPU",
       "transparent": true,
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
+      "type": "gauge"
     },
     {
       "cacheTimeout": null,
-      "colorBackground": false,
-      "colorValue": false,
-      "colors": [
-        "#299c46",
-        "rgba(237, 129, 40, 0.89)",
-        "#d44a3a"
-      ],
       "datasource": "Prometheus",
-      "decimals": null,
       "description": "Memory Usage",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "mappings": [
+            {
+              "id": 0,
+              "op": "=",
+              "text": "N/A",
+              "type": 1,
+              "value": "null"
+            }
+          ],
+          "max": 1073741824,
+          "min": 0,
+          "nullValueMode": "connected",
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "#299c46",
+                "value": null
+              },
+              {
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 50
+              },
+              {
+                "color": "#d44a3a",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
         },
         "overrides": []
-      },
-      "format": "bytes",
-      "gauge": {
-        "maxValue": 1073741824,
-        "minValue": 0,
-        "show": true,
-        "thresholdLabels": false,
-        "thresholdMarkers": true
       },
       "gridPos": {
         "h": 6,
@@ -406,38 +406,20 @@
       "id": 29,
       "interval": null,
       "links": [],
-      "mappingType": 1,
-      "mappingTypes": [
-        {
-          "name": "value to text",
-          "value": 1
-        },
-        {
-          "name": "range to text",
-          "value": 2
-        }
-      ],
       "maxDataPoints": 100,
-      "nullPointMode": "connected",
-      "nullText": null,
-      "postfix": "",
-      "postfixFontSize": "50%",
-      "prefix": "",
-      "prefixFontSize": "50%",
-      "rangeMaps": [
-        {
-          "from": "null",
-          "text": "N/A",
-          "to": "null"
-        }
-      ],
-      "sparkline": {
-        "fillColor": "rgba(31, 118, 189, 0.18)",
-        "full": false,
-        "lineColor": "rgb(31, 120, 193)",
-        "show": true
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^process_resident_memory_bytes{instance=\"twtxt:8000\", job=\"twtxt\"}$/",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
-      "tableColumn": "process_resident_memory_bytes{instance=\"twtxt:8000\", job=\"twtxt\"}",
+      "pluginVersion": "7.1.3",
       "targets": [
         {
           "expr": "process_resident_memory_bytes{job=\"twtxt\"}",
@@ -448,19 +430,9 @@
           "refId": "A"
         }
       ],
-      "thresholds": "0,536870912,858993459.2",
       "title": "Memory",
       "transparent": true,
-      "type": "singlestat",
-      "valueFontSize": "80%",
-      "valueMaps": [
-        {
-          "op": "=",
-          "text": "N/A",
-          "value": "null"
-        }
-      ],
-      "valueName": "current"
+      "type": "gauge"
     },
     {
       "aliasColors": {},
@@ -1440,5 +1412,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 21
+  "version": 22
 }
