@@ -245,7 +245,8 @@ func WebMention(target, source string) error {
 		log.WithError(err).Error("error parsing source url")
 		return err
 	}
-	return webmentions.SendNotification(targetURL, sourceURL)
+	webmentions.SendNotification(targetURL, sourceURL)
+	return nil
 }
 
 func StringKeys(kv map[string]string) []string {

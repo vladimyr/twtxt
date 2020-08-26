@@ -3,7 +3,6 @@ package internal
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -19,7 +18,6 @@ import (
 	"time"
 
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/StudioSol/async"
 	"github.com/chai2010/webp"
 	securejoin "github.com/cyphar/filepath-securejoin"
 	"github.com/dgrijalva/jwt-go"
@@ -800,25 +798,12 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// WebMentions ...
-		var tasks []async.Task
 		for _, twter := range twt.Mentions() {
 			if !strings.HasPrefix(twter.URL, s.config.BaseURL) {
-				task := func(ctx context.Context) error {
-					err := WebMention(twter.URL, fmt.Sprintf("%s/twt/%s", s.config.BaseURL, twt.Hash()))
-					if err != nil {
-						log.WithError(err).Errorf("error sending webmention to %s", twter.URL)
-						return err
-					}
-					return nil
+				if err := WebMention(twter.URL, URLForTwt(s.config.BaseURL, twt.Hash())); err != nil {
+					log.WithError(err).Warnf("error sending webmention to %s", twter.URL)
 				}
-				tasks = append(tasks, async.Task(task))
 			}
-		}
-		runner := async.NewRunner(tasks...).WithLimit(AsyncTaskLimit)
-		asyncContext, cancel := context.WithTimeout(context.Background(), MaxAsyncTime)
-		defer cancel()
-		if err := runner.Run(asyncContext); err != nil {
-			log.WithError(err).Warn("error sending webmentions")
 		}
 
 		http.Redirect(w, r, RedirectURL(r, s.config, "/"), http.StatusFound)
