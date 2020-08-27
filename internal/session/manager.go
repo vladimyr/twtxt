@@ -88,6 +88,10 @@ func (m *Manager) GetOrCreate(w http.ResponseWriter, r *http.Request) (*Session,
 			log.WithError(err).Error("error creating new session")
 			return nil, err
 		}
+		if err = m.store.SetSession(sess.ID, sess); err != nil {
+			log.WithError(err).Errorf("error creating new session for %s", sess.ID)
+			return nil, err
+		}
 		return sess, nil
 	}
 
@@ -106,6 +110,10 @@ func (m *Manager) GetOrCreate(w http.ResponseWriter, r *http.Request) (*Session,
 			sess, err := m.Create(w)
 			if err != nil {
 				log.WithError(err).Error("error creating new session")
+				return nil, err
+			}
+			if err = m.store.SetSession(sess.ID, sess); err != nil {
+				log.WithError(err).Errorf("error creating new session for %s", sess.ID)
 				return nil, err
 			}
 			return sess, nil
