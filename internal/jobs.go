@@ -32,6 +32,7 @@ func init() {
 		"DeleteOldSessions":    NewJobSpec("@hourly", NewDeleteOldSessionsJob),
 		"CleanupStaleSessions": NewJobSpec("@daily", NewCleanupStaleSessionsJob),
 		"Stats":                NewJobSpec("@daily", NewStatsJob),
+		"MergeStore":           NewJobSpec("@dailsy", NewMergeStoreJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
@@ -283,7 +284,7 @@ func NewDeleteOldSessionsJob(conf *Config, cache Cache, archive Archiver, db Sto
 }
 
 func (job *DeleteOldSessionsJob) Run() {
-	log.Infof("deleting old sessions")
+	log.Info("deleting old sessions")
 
 	sessions, err := job.db.GetAllSessions()
 	if err != nil {
@@ -313,7 +314,7 @@ func NewCleanupStaleSessionsJob(conf *Config, cache Cache, archive Archiver, db 
 }
 
 func (job *CleanupStaleSessionsJob) Run() {
-	log.Infof("cleaning up stale sessions")
+	log.Info("cleaning up stale sessions")
 
 	sessions, err := job.db.GetAllSessions()
 	if err != nil {
@@ -329,4 +330,26 @@ func (job *CleanupStaleSessionsJob) Run() {
 			}
 		}
 	}
+}
+
+type MergeStoreJob struct {
+	conf    *Config
+	cache   Cache
+	archive Archiver
+	db      Store
+}
+
+func NewMergeStoreJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+	return &MergeStoreJob{conf: conf, cache: cache, archive: archive, db: db}
+}
+
+func (job *MergeStoreJob) Run() {
+	log.Info("merging store...")
+
+	// Merge store
+	if err := job.db.Merge(); err != nil {
+		log.WithError(err).Error("error merging store")
+	}
+
+	log.Info("merged store")
 }
