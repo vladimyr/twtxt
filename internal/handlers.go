@@ -1238,6 +1238,7 @@ func (s *Server) LoginHandler() httprouter.Handle {
 
 		username := NormalizeUsername(r.FormValue("username"))
 		password := r.FormValue("password")
+		rememberme := r.FormValue("rememberme") == "on"
 
 		// Error: no username or password provided
 		if username == "" || password == "" {
@@ -1277,6 +1278,11 @@ func (s *Server) LoginHandler() httprouter.Handle {
 
 		// Authorize session
 		sess.(*session.Session).Set("username", username)
+
+		// Persist session?
+		if rememberme {
+			sess.(*session.Session).Set("persist", "1")
+		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
 	}

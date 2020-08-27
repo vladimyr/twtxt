@@ -8,6 +8,12 @@
       <form action="/login" method="POST">
         <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
         <input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required>
+        <fieldset>
+          <label for="rememberme">
+            <input type="checkbox" id="rememberme" name="rememberme">
+            Remember me?
+          </label>
+        </fieldset>
         <button type="submit" class="contrast">Login</button>
         <p>
           Don't have an account?
