@@ -526,7 +526,7 @@
           "show": true
         },
         {
-          "format": "short",
+          "format": "ops",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -1434,5 +1434,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 32
+  "version": 33
 }
