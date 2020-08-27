@@ -35,6 +35,7 @@ func init() {
 	}
 
 	StartupJobs = map[string]JobSpec{
+		"UpdateFeeds":          Jobs["UpdateFeeds"],
 		"UpdateFeedSources":    Jobs["UpdateFeedSources"],
 		"FixUserAccounts":      Jobs["FixUserAccounts"],
 		"DeleteOldSessions":    Jobs["DeleteOldSessions"],

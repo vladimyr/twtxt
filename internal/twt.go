@@ -263,8 +263,8 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 		if N > len(twts) {
 			N = len(twts)
 		}
-		old = append(old, twts[:N]...)
-		twts = twts[N:]
+		twts = twts[:N]
+		old = append(old, twts[N:]...)
 	}
 
 	return twts, old, nil
