@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"expvar"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -185,13 +184,16 @@ func (s *Server) setupMetrics() {
 		},
 	)
 
+	// feed sources
+	metrics.NewGauge(
+		"feed", "sources",
+		"Number of feed sources being fetched",
+	)
+
 	// feed cache size
-	metrics.NewGaugeFunc(
+	metrics.NewGauge(
 		"cache", "size",
 		"Number of items in the global feed cache",
-		func() float64 {
-			return float64(expvar.Get("cached").(*expvar.Int).Value())
-		},
 	)
 
 	// feed cache processing time

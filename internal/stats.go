@@ -31,10 +31,6 @@ func (o *TimeVar) String() string { return fmt.Sprintf("%s", o.v.Format(time.RFC
 func NewStats(name string) *expvar.Map {
 	stats := expvar.NewMap(name)
 
-	stats.Set("sources", expvar.NewInt("sources"))
-	stats.Set("cached", expvar.NewInt("cached"))
-	stats.Set("fetchers", expvar.NewInt("fetchers"))
-
 	stats.Set("goroutines", expvar.Func(func() interface{} {
 		return runtime.NumGoroutine()
 	}))

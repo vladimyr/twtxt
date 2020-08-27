@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
-	"expvar"
 	"fmt"
 	"io"
 	"net/http"
@@ -114,7 +113,6 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 	var fetchers = make(chan struct{}, maxfetchers)
 
 	for nick, url := range sources {
-		stats.Add("fetchers", 1)
 		wg.Add(1)
 		fetchers <- struct{}{}
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
@@ -122,7 +120,6 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 			defer func() {
 				<-fetchers
 				wg.Done()
-				stats.Add("fetchers", -1)
 			}()
 
 			req, err := http.NewRequest("GET", url, nil)
@@ -230,13 +227,12 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 	for range twtsch {
 	}
 
-	expvar.Get("sources").(*expvar.Int).Set(int64(len(cache)))
-
-	var count int64
-	for _, cahced := range cache {
-		count += int64(len(cahced.Twts))
+	metrics.Gauge("feed", "sources").Set(float64(len(cache)))
+	count := 0
+	for _, cached := range cache {
+		count += len(cached.Twts)
 	}
-	expvar.Get("cached").(*expvar.Int).Set(count)
+	metrics.Gauge("cache", "size").Set(float64(count))
 }
 
 // GetAll ...
