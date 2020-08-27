@@ -601,6 +601,12 @@
           "interval": "",
           "legendFormat": "twts",
           "refId": "D"
+        },
+        {
+          "expr": "twtd_archive_size",
+          "interval": "",
+          "legendFormat": "old",
+          "refId": "E"
         }
       ],
       "thresholds": [],
@@ -1423,5 +1429,5 @@
   "timezone": "",
   "title": "Twtxt",
   "uid": "ukIHxwIMz",
-  "version": 27
+  "version": 28
 }
