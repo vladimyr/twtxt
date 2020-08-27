@@ -1282,7 +1282,7 @@ func (s *Server) LogoutHandler() httprouter.Handle {
 
 // RegisterHandler ...
 func (s *Server) RegisterHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
@@ -1321,7 +1321,14 @@ func (s *Server) RegisterHandler() httprouter.Handle {
 			return
 		}
 
-		fn := filepath.Join(s.config.Data, feedsDir, username)
+		p := filepath.Join(s.config.Data, feedsDir)
+		if err := os.MkdirAll(p, 0755); err != nil {
+			log.WithError(err).Error("error creating feeds directory")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fn := filepath.Join(p, username)
 		if _, err := os.Stat(fn); err == nil {
 			ctx.Error = true
 			ctx.Message = "Deleted user with that username already exists! Please pick another!"
