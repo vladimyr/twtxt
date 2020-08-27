@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -47,6 +48,9 @@ type Server struct {
 
 	// Feed Cache
 	cache Cache
+
+	// Feed Archiver
+	archive Archiver
 
 	// Data Store
 	db Store
@@ -196,6 +200,12 @@ func (s *Server) setupMetrics() {
 		"Number of seconds for a feed cache cycle",
 	)
 
+	// archive size
+	metrics.NewCounter(
+		"archive", "size",
+		"Number of items inserted into the global feed archive",
+	)
+
 	// server info
 	metrics.NewGaugeVec(
 		"server", "info",
@@ -305,7 +315,7 @@ func (s *Server) setupWebMentions() {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
-		job := jobSpec.Factory(s.config, s.cache, s.db)
+		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
@@ -320,7 +330,7 @@ func (s *Server) runStartupJobs() {
 	log.Info("running startup jobs")
 
 	for name, jobSpec := range StartupJobs {
-		job := jobSpec.Factory(s.config, s.cache, s.db)
+		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
 		log.Infof("running %s now...", name)
 		job.Run()
 	}
@@ -468,6 +478,12 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
+	archive, err := NewDiskArchiver(filepath.Join(config.Data, archiveDir))
+	if err != nil {
+		log.WithError(err).Error("error creating feed archiver")
+		return nil, err
+	}
+
 	db, err := NewStore(config.Store)
 	if err != nil {
 		log.WithError(err).Error("error creating store")
@@ -501,7 +517,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		db,
 	)
 
-	api := NewAPI(router, config, cache, db, pm)
+	api := NewAPI(router, config, cache, archive, db, pm)
 
 	server := &Server{
 		bind:      bind,
@@ -525,8 +541,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		api: api,
 
 		// Feed Cache
-
 		cache: cache,
+
+		// Feed Archiver
+		archive: archive,
 
 		// Data Store
 		db: db,
@@ -564,6 +582,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("Admin Name: %s", server.config.AdminName)
 	log.Infof("Admin Email: %s", server.config.AdminEmail)
 	log.Infof("Max Twts per Page: %d", server.config.TwtsPerPage)
+	log.Infof("Max Cache TTL: %s", server.config.MaxCacheTTL)
+	log.Infof("Max Cache Items: %d", server.config.MaxCacheItems)
 	log.Infof("Maximum length of Posts: %d", server.config.MaxTwtLength)
 	log.Infof("Open User Profiles: %t", server.config.OpenProfiles)
 	log.Infof("Open Registrations: %t", server.config.OpenRegistrations)
@@ -573,7 +593,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	log.Infof("SMTP From: %s", server.config.SMTPFrom)
 	log.Infof("Max Fetch Limit: %s", humanize.Bytes(uint64(server.config.MaxFetchLimit)))
 	log.Infof("Max Upload Size: %s", humanize.Bytes(uint64(server.config.MaxUploadSize)))
-	log.Infof("API Session Time: %s", (server.config.APISessionTime))
+	log.Infof("API Session Time: %s", server.config.APISessionTime)
 
 	// Warn about user registration being disabled.
 	if !server.config.OpenRegistrations {

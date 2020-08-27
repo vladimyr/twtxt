@@ -43,6 +43,8 @@ var (
 	maxTwtLength  int
 	maxUploadSize int64
 	maxFetchLimit int64
+	maxCacheTTL   time.Duration
+	maxCacheItems int
 
 	// Pod Secrets
 	apiSigningKey   string
@@ -108,6 +110,14 @@ func init() {
 	flag.Int64VarP(
 		&maxFetchLimit, "max-fetch-limit", "F", internal.DefaultMaxFetchLimit,
 		"maximum feed fetch limit in bytes",
+	)
+	flag.DurationVarP(
+		&maxCacheTTL, "max-cache-ttl", "C", internal.DefaultMaxCacheTTL,
+		"maximum cache ttl (time-to-live) of cached twts in memory",
+	)
+	flag.IntVarP(
+		&maxCacheItems, "max-cache-items", "I", internal.DefaultMaxCacheItems,
+		"maximum cache items (per feed source) of cached twts in memory",
 	)
 
 	// Pod Secrets
@@ -222,6 +232,8 @@ func main() {
 		internal.WithMaxTwtLength(maxTwtLength),
 		internal.WithMaxUploadSize(maxUploadSize),
 		internal.WithMaxFetchLimit(maxFetchLimit),
+		internal.WithMaxCacheTTL(maxCacheTTL),
+		internal.WithMaxCacheItems(maxCacheItems),
 
 		// Pod Secrets
 		internal.WithAPISigningKey(apiSigningKey),

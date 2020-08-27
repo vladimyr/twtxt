@@ -187,7 +187,7 @@ func GetUserTwts(conf *Config, username string) (types.Twts, error) {
 		return nil, err
 	}
 	s := bufio.NewScanner(f)
-	t, err := ParseFile(s, twter)
+	t, _, err := ParseFile(s, twter, 0, 0)
 	if err != nil {
 		log.WithError(err).Errorf("error processing feed %s", fn)
 		return nil, err
@@ -224,25 +224,37 @@ func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	return
 }
 
-func ParseFile(scanner *bufio.Scanner, twter types.Twter) (types.Twts, error) {
-	var twts types.Twts
+func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N int) (types.Twts, types.Twts, error) {
+	var (
+		twts types.Twts
+		old  types.Twts
+	)
 
+	oldTime := time.Now().Add(-ttl)
+
+	count := 0
 	for scanner.Scan() {
+		count++
 		line := scanner.Text()
 		twt, err := ParseLine(line, twter)
 		if err != nil {
 			log.Warnf("could not parse: '%s' (source:%s)\n", line, twter.URL)
 			continue
 		}
+		if twt.IsZero() {
+			continue
+		}
 
-		if (types.Twt{}) != twt {
+		if twt.Created.Before(oldTime) || (N > 0 && count > N) {
+			old = append(old, twt)
+		} else {
 			twts = append(twts, twt)
 		}
 	}
 	if err := scanner.Err(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return twts, nil
+	return twts, old, nil
 }
 
 func ParseTime(timestr string) time.Time {
