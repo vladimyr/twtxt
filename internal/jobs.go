@@ -24,23 +24,20 @@ var (
 
 func init() {
 	Jobs = map[string]JobSpec{
-		"SyncStore":            NewJobSpec("@every 1m", NewSyncStoreJob),
-		"UpdateFeeds":          NewJobSpec("@every 5m", NewUpdateFeedsJob),
-		"SyncCache":            NewJobSpec("@every 10m", NewSyncCacheJob),
-		"UpdateFeedSources":    NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
-		"FixUserAccounts":      NewJobSpec("@hourly", NewFixUserAccountsJob),
-		"DeleteOldSessions":    NewJobSpec("@hourly", NewDeleteOldSessionsJob),
-		"CleanupStaleSessions": NewJobSpec("@daily", NewCleanupStaleSessionsJob),
-		"Stats":                NewJobSpec("@daily", NewStatsJob),
-		"MergeStore":           NewJobSpec("@daily", NewMergeStoreJob),
+		"SyncStore":         NewJobSpec("@every 1m", NewSyncStoreJob),
+		"UpdateFeeds":       NewJobSpec("@every 5m", NewUpdateFeedsJob),
+		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
+		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
+		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
+		"Stats":             NewJobSpec("@daily", NewStatsJob),
+		"MergeStore":        NewJobSpec("@daily", NewMergeStoreJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
-		"UpdateFeeds":          Jobs["UpdateFeeds"],
-		"UpdateFeedSources":    Jobs["UpdateFeedSources"],
-		"FixUserAccounts":      Jobs["FixUserAccounts"],
-		"DeleteOldSessions":    Jobs["DeleteOldSessions"],
-		"CleanupStaleSessions": Jobs["CleanupStaleSessions"],
+		"UpdateFeeds":       Jobs["UpdateFeeds"],
+		"UpdateFeedSources": Jobs["UpdateFeedSources"],
+		"FixUserAccounts":   Jobs["FixUserAccounts"],
+		"DeleteOldSessions": Jobs["DeleteOldSessions"],
 	}
 }
 
@@ -177,26 +174,16 @@ func (job *UpdateFeedsJob) Run() {
 	job.cache.GetByPrefix(job.conf.BaseURL, true)
 
 	log.Info("updated feed cache")
-}
 
-type SyncCacheJob struct {
-	conf    *Config
-	cache   Cache
-	archive Archiver
-	db      Store
-}
+	log.Info("syncing feed cache")
 
-func NewSyncCacheJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
-	return &SyncCacheJob{conf: conf, cache: cache, archive: archive, db: db}
-}
-
-func (job *SyncCacheJob) Run() {
 	if err := job.cache.Store(job.conf.Data); err != nil {
 		log.WithError(err).Warn("error saving feed cache")
 		return
 	}
 
 	log.Info("synced feed cache")
+
 }
 
 type UpdateFeedSourcesJob struct {
@@ -295,36 +282,6 @@ func (job *DeleteOldSessionsJob) Run() {
 	for _, session := range sessions {
 		if session.Expired() {
 			log.Infof("deleting expired session %s", session.ID)
-			if err := job.db.DelSession(session.ID); err != nil {
-				log.WithError(err).Error("error deleting session object")
-			}
-		}
-	}
-}
-
-type CleanupStaleSessionsJob struct {
-	conf    *Config
-	cache   Cache
-	archive Archiver
-	db      Store
-}
-
-func NewCleanupStaleSessionsJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
-	return &CleanupStaleSessionsJob{conf: conf, cache: cache, archive: archive, db: db}
-}
-
-func (job *CleanupStaleSessionsJob) Run() {
-	log.Info("cleaning up stale sessions")
-
-	sessions, err := job.db.GetAllSessions()
-	if err != nil {
-		log.WithError(err).Error("error loading seessions")
-		return
-	}
-
-	for _, session := range sessions {
-		if !session.Has("username") {
-			log.Infof("deleting statle session (no  user) %s", session.ID)
 			if err := job.db.DelSession(session.ID); err != nil {
 				log.WithError(err).Error("error deleting session object")
 			}
