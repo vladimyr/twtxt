@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -232,7 +233,6 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 
 	oldTime := time.Now().Add(-ttl)
 
-	count := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		twt, err := ParseLine(line, twter)
@@ -244,16 +244,25 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 			continue
 		}
 
-		if (ttl > 0 && twt.Created.Before(oldTime)) || (N > 0 && count > N) {
+		if ttl > 0 && twt.Created.Before(oldTime) {
 			old = append(old, twt)
 		} else {
 			twts = append(twts, twt)
 		}
-		count++
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, nil, err
 	}
+
+	// Sort by CreatedAt timestamp
+	sort.Sort(sort.Reverse(twts))
+
+	// Further limit by Max Cache Items
+	if N > 0 {
+		old = append(old, twts[N:]...)
+		twts = twts[:N]
+	}
+
 	return twts, old, nil
 }
 
