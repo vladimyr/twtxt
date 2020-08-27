@@ -1052,7 +1052,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var twts types.Twts
+		twts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
