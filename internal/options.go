@@ -61,6 +61,9 @@ const (
 	// DefaultMaxUploadSize is the default maximum upload size permitted
 	DefaultMaxUploadSize = 1 << 24 // ~16MB (enough for high-res photos)
 
+	// DefaultSessionCacheTTL is the server's default session cache ttl
+	DefaultSessionCacheTTL = 1 * time.Hour
+
 	// DefaultSessionExpiry is the server's default session expiry time
 	DefaultSessionExpiry = 240 * time.Hour // 10 days
 
@@ -274,6 +277,14 @@ func WithOpenProfiles(openProfiles bool) Option {
 func WithMaxUploadSize(maxUploadSize int64) Option {
 	return func(cfg *Config) error {
 		cfg.MaxUploadSize = maxUploadSize
+		return nil
+	}
+}
+
+// WithSessionCacheTTL sets the server's session cache ttl
+func WithSessionCacheTTL(cacheTTL time.Duration) Option {
+	return func(cfg *Config) error {
+		cfg.SessionCacheTTL = cacheTTL
 		return nil
 	}
 }

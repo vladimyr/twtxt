@@ -42,3 +42,17 @@ func (m *Manager) MustAuth(next httprouter.Handle) httprouter.Handle {
 		http.Redirect(w, r, m.options.login, http.StatusFound)
 	}
 }
+
+// ShouldAuth ...
+func (m *Manager) ShouldAuth(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		if sess := r.Context().Value(session.SessionKey); sess != nil {
+			if _, ok := sess.(*session.Session).Get("username"); ok {
+				next(w, r, p)
+				return
+			}
+		}
+
+		http.Redirect(w, r, m.options.login, http.StatusFound)
+	}
+}

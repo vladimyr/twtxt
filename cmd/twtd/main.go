@@ -59,8 +59,9 @@ var (
 	smtpFrom string
 
 	// Timeouts
-	sessionExpiry  time.Duration
-	apiSessionTime time.Duration
+	sessionExpiry   time.Duration
+	sessionCacheTTL time.Duration
+	apiSessionTime  time.Duration
 
 	// Whitelists, Sources
 	feedSources        []string
@@ -145,6 +146,10 @@ func init() {
 	flag.DurationVar(
 		&sessionExpiry, "session-expiry", internal.DefaultSessionExpiry,
 		"timeout for sessions to expire",
+	)
+	flag.DurationVar(
+		&sessionCacheTTL, "session-cache-ttl", internal.DefaultSessionCacheTTL,
+		"time-to-live for cached sessions",
 	)
 	flag.DurationVar(
 		&apiSessionTime, "api-session-time", internal.DefaultAPISessionTime,
@@ -249,6 +254,7 @@ func main() {
 
 		// Timeouts
 		internal.WithSessionExpiry(sessionExpiry),
+		internal.WithSessionCacheTTL(sessionCacheTTL),
 		internal.WithAPISessionTime(apiSessionTime),
 
 		// Whitelists, Sources

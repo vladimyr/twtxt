@@ -33,6 +33,7 @@ type Config struct {
 	OpenProfiles      bool          `json:"open_profiles"`
 	OpenRegistrations bool          `json:"open_registrations"`
 	SessionExpiry     time.Duration `json:"session_expiry"`
+	SessionCacheTTL   time.Duration `json:"session_cache_ttl"`
 
 	MagicLinkSecret string `json:"magiclink_secret"`
 

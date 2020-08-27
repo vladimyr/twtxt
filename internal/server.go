@@ -521,7 +521,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			strings.HasPrefix(config.BaseURL, "https"),
 			config.SessionExpiry,
 		),
-		db,
+		NewSessionStore(db, config.SessionCacheTTL),
 	)
 
 	api := NewAPI(router, config, cache, archive, db, pm)
