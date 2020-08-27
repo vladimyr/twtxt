@@ -279,6 +279,9 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			// Update user's own timeline with their own new post.
 			sources := map[string]string{user.Username: user.URL}
 			a.cache.FetchTwts(a.config, a.archive, sources)
+
+			// Re-populate/Warm cache with local twts for this pod
+			a.cache.GetByPrefix(a.config.BaseURL, true)
 		}()
 
 		req, err := types.NewPostRequest(r.Body)

@@ -715,6 +715,9 @@ func (s *Server) PostHandler() httprouter.Handle {
 				ctx.User.Username: ctx.User.URL,
 			}
 			s.cache.FetchTwts(s.config, s.archive, sources)
+
+			// Re-populate/Warm cache with local twts for this pod
+			s.cache.GetByPrefix(s.config.BaseURL, true)
 		}()
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
