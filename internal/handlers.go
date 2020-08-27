@@ -1052,14 +1052,24 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		twts := s.cache.GetByPrefix(s.config.BaseURL, false)
+		var twts types.Twts
 
+		// Search for @mentions on feeds user is following
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
 				for _, twter := range twt.Mentions() {
 					if ctx.User.Is(twter.URL) {
 						twts = append(twts, twt)
 					}
+				}
+			}
+		}
+
+		// Search for @mentions in local twts too (i.e: /discover)
+		for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
+			for _, twter := range twt.Mentions() {
+				if ctx.User.Is(twter.URL) {
+					twts = append(twts, twt)
 				}
 			}
 		}
