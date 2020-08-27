@@ -32,7 +32,7 @@ func init() {
 		"DeleteOldSessions":    NewJobSpec("@hourly", NewDeleteOldSessionsJob),
 		"CleanupStaleSessions": NewJobSpec("@daily", NewCleanupStaleSessionsJob),
 		"Stats":                NewJobSpec("@daily", NewStatsJob),
-		"MergeStore":           NewJobSpec("@dailsy", NewMergeStoreJob),
+		"MergeStore":           NewJobSpec("@daily", NewMergeStoreJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
