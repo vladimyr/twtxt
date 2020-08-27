@@ -259,8 +259,11 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 
 	// Further limit by Max Cache Items
 	if N > 0 {
-		old = append(old, twts[N:]...)
-		twts = twts[:N]
+		if N > len(twts) {
+			N = len(twts)
+		}
+		old = append(old, twts[:N]...)
+		twts = twts[N:]
 	}
 
 	return twts, old, nil
