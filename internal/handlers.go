@@ -1057,12 +1057,15 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		var twts types.Twts
 
+		seen := make(map[string]bool)
+
 		// Search for @mentions on feeds user is following
 		for _, url := range ctx.User.Following {
 			for _, twt := range s.cache.GetByURL(url) {
 				for _, twter := range twt.Mentions() {
-					if ctx.User.Is(twter.URL) {
+					if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
 						twts = append(twts, twt)
+						seen[twt.Hash()] = true
 					}
 				}
 			}
@@ -1071,8 +1074,9 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		// Search for @mentions in local twts too (i.e: /discover)
 		for _, twt := range s.cache.GetByPrefix(s.config.BaseURL, false) {
 			for _, twter := range twt.Mentions() {
-				if ctx.User.Is(twter.URL) {
+				if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
 					twts = append(twts, twt)
+					seen[twt.Hash()] = true
 				}
 			}
 		}
