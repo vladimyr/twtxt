@@ -245,7 +245,7 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 			continue
 		}
 
-		if twt.Created.Before(oldTime) || (N > 0 && count > N) {
+		if (ttl > 0 && twt.Created.Before(oldTime)) || (N > 0 && count > N) {
 			old = append(old, twt)
 		} else {
 			twts = append(twts, twt)
