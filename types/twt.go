@@ -98,7 +98,7 @@ func (twts Twts) Len() int {
 	return len(twts)
 }
 func (twts Twts) Less(i, j int) bool {
-	return twts[i].Created.Before(twts[j].Created)
+	return twts[i].Created.After(twts[j].Created)
 }
 func (twts Twts) Swap(i, j int) {
 	twts[i], twts[j] = twts[j], twts[i]
