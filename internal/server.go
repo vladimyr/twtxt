@@ -334,6 +334,11 @@ func (s *Server) runStartupJobs() {
 		log.Infof("running %s now...", name)
 		job.Run()
 	}
+
+	// Merge store
+	if err := s.db.Merge(); err != nil {
+		log.WithError(err).Error("error merging store")
+	}
 }
 
 func (s *Server) initRoutes() {
@@ -603,12 +608,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	server.initRoutes()
 	api.initRoutes()
 
-	server.runStartupJobs()
-
-	if err := db.Merge(); err != nil {
-		log.WithError(err).Error("error merging store")
-		return nil, err
-	}
+	go server.runStartupJobs()
 
 	return server, nil
 }
