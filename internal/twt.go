@@ -234,7 +234,6 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 
 	count := 0
 	for scanner.Scan() {
-		count++
 		line := scanner.Text()
 		twt, err := ParseLine(line, twter)
 		if err != nil {
@@ -250,6 +249,7 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 		} else {
 			twts = append(twts, twt)
 		}
+		count++
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, nil, err
