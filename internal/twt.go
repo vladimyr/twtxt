@@ -256,6 +256,7 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 
 	// Sort by CreatedAt timestamp
 	sort.Sort(sort.Reverse(twts))
+	sort.Sort(sort.Reverse(old))
 
 	// Further limit by Max Cache Items
 	if N > 0 {

@@ -240,7 +240,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -853,7 +853,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -1011,7 +1011,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
-		sort.Sort(sort.Reverse(localTwts))
+		sort.Sort(localTwts)
 
 		var pagedTwts types.Twts
 
@@ -1064,7 +1064,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 			}
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -1116,7 +1116,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		twts = getTweetsByTag()
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -1896,7 +1896,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		twts := s.cache.GetByURL(url)
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -2273,7 +2273,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			return
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()

@@ -191,7 +191,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 				}
 
 				// Archive old twts
-				sort.Sort(sort.Reverse(old))
+				sort.Sort(old)
 				for _, twt := range old {
 					if archive.Has(twt.Hash()) {
 						// assume we have archived this twt and all older ones

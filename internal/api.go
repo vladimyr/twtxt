@@ -341,7 +341,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 			twts = append(twts, a.cache.GetByURL(url)...)
 		}
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -387,7 +387,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 
 		twts := a.cache.GetByPrefix(a.config.BaseURL, false)
 
-		sort.Sort(sort.Reverse(twts))
+		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
