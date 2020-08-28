@@ -297,7 +297,6 @@ func (bs *BitcaskStore) GetUserTokens(user *User) ([]*Token, error) {
 	tokens := []*Token{}
 	for _, signature := range user.Tokens {
 
-		fmt.Printf("looking up %s\n", signature)
 		data, err := bs.db.Get([]byte(fmt.Sprintf("/token/%s", signature)))
 		if err == bitcask.ErrKeyNotFound {
 			return nil, ErrTokenNotFound
