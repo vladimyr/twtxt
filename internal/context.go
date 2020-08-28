@@ -110,12 +110,9 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 	}
 
 	if sess := req.Context().Value(session.SessionKey); sess != nil {
-		log.Debugf("sess: %#v", sess)
 		if username, ok := sess.(*session.Session).Get("username"); ok {
 			ctx.Authenticated = true
 			ctx.Username = username
-		} else {
-			log.Debugf("username not found in session")
 		}
 	}
 
