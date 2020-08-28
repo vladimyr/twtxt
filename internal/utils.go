@@ -20,7 +20,6 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
-	_ "image/png"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/chai2010/webp"

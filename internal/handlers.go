@@ -2,11 +2,11 @@ package internal
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
+	"image/png"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -459,7 +459,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			w.Header().Set("Content-Type", "image/png")
 			fn = filepath.Join(s.config.Data, mediaDir, name)
 		} else {
-			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+			if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
 				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
 			} else {
@@ -526,7 +526,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
 			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -582,8 +582,6 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		buf := bytes.Buffer{}
-
 		img, err := GenerateAvatar(s.config, nick)
 		if err != nil {
 			log.WithError(err).Errorf("error generating avatar for %s", nick)
@@ -591,29 +589,30 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
 			w.Header().Set("Content-Type", "image/webp")
-			if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
+			if r.Method == http.MethodHead {
+				return
+			}
+			if err := webp.Encode(w, img, &webp.Options{Lossless: true}); err != nil {
 				log.WithError(err).Error("error encoding auto generated avatar")
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-		} else {
-			// Support older browsers like IE11 that don't support WebP :/
-			metrics.Counter("media", "old_avatar").Inc()
-			w.Header().Set("Content-Type", "image/png")
-			if err := webp.Encode(&buf, img, &webp.Options{Lossless: true}); err != nil {
-				log.WithError(err).Error("error encoding auto generated avatar")
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-		}
-
-		if r.Method == http.MethodHead {
 			return
 		}
 
-		w.Write(buf.Bytes())
+		// Support older browsers like IE11 that don't support WebP :/
+		if r.Method == http.MethodHead {
+			return
+		}
+		metrics.Counter("media", "old_avatar").Inc()
+		w.Header().Set("Content-Type", "image/png")
+		if err := png.Encode(w, img); err != nil {
+			log.WithError(err).Error("error encoding auto generated avatar")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
@@ -1974,7 +1973,7 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
 			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
