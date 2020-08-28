@@ -18,7 +18,6 @@ import (
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/prologic/observe"
-	"github.com/prologic/webmention"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"github.com/unrolled/logger"
@@ -27,6 +26,7 @@ import (
 	"github.com/prologic/twtxt/internal/auth"
 	"github.com/prologic/twtxt/internal/passwords"
 	"github.com/prologic/twtxt/internal/session"
+	"github.com/prologic/twtxt/internal/webmention"
 )
 
 var (
