@@ -60,6 +60,36 @@ type User struct {
 	sources map[string]string
 }
 
+// Token ...
+type Token struct {
+	Signature string
+	Value     string
+	UserAgent string
+	CreatedAt time.Time
+	ExpiresAt time.Time
+}
+
+func LoadToken(data []byte) (token *Token, err error) {
+	token = &Token{}
+	if err := defaults.Set(token); err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(data, &token); err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func (t *Token) Bytes() ([]byte, error) {
+	data, err := json.Marshal(t)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
 	if user != nil {
 		if !force && len(user.Feeds) > maxUserFeeds {
@@ -230,12 +260,14 @@ func (f *Feed) Bytes() ([]byte, error) {
 	return data, nil
 }
 
-func (u *User) AddToken(token string) {
-	if !u.HasToken(token) {
-		u.Tokens = append(u.Tokens, token)
+// HasToken will add a token to a user if it doesn't exist already
+func (u *User) AddToken(token *Token) {
+	if !u.HasToken(token.Signature) {
+		u.Tokens = append(u.Tokens, token.Signature)
 	}
 }
 
+// HasToken will compare a token value with stored tokens
 func (u *User) HasToken(token string) bool {
 	for _, t := range u.Tokens {
 		if t == token {
