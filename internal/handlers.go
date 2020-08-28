@@ -708,17 +708,6 @@ func (s *Server) PostHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		defer func() {
-			// Update user's own timeline with their own new post.
-			sources := map[string]string{
-				ctx.User.Username: ctx.User.URL,
-			}
-			s.cache.FetchTwts(s.config, s.archive, sources)
-
-			// Re-populate/Warm cache with local twts for this pod
-			s.cache.GetByPrefix(s.config.BaseURL, true)
-		}()
-
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
 
 		// TODO: Support deleting/patching last feed (`postas`) twt too.
@@ -798,6 +787,15 @@ func (s *Server) PostHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
+
+		// Update user's own timeline with their own new post.
+		sources := map[string]string{
+			ctx.User.Username: ctx.User.URL,
+		}
+		s.cache.FetchTwts(s.config, s.archive, sources)
+
+		// Re-populate/Warm cache with local twts for this pod
+		s.cache.GetByPrefix(s.config.BaseURL, true)
 
 		// WebMentions ...
 		for _, twter := range twt.Mentions() {

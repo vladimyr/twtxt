@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -241,41 +242,73 @@ func (s *Server) processWebMention(source, target *url.URL, sourceData *microfor
 		WithField("target", target).
 		Infof("received webmention from %s to %s", source.String(), target.String())
 
-	var hEntry *microformats.MicroFormat
-
-	for _, item := range sourceData.Items {
-		if HasString(item.Type, "h-entry") {
-			hEntry = item
+	getEntry := func(data *microformats.Data) (*microformats.MicroFormat, error) {
+		if data != nil {
+			for _, item := range sourceData.Items {
+				if HasString(item.Type, "h-entry") {
+					return item, nil
+				}
+			}
 		}
+		return nil, errors.New("error: no entry found")
 	}
 
-	var author *microformats.MicroFormat
-
-	authors := hEntry.Properties["author"]
-	if len(authors) > 0 {
-		if v, ok := authors[0].(*microformats.MicroFormat); ok {
-			author = v
+	getAuthor := func(entry *microformats.MicroFormat) (*microformats.MicroFormat, error) {
+		if entry != nil {
+			authors := entry.Properties["author"]
+			if len(authors) > 0 {
+				if v, ok := authors[0].(*microformats.MicroFormat); ok {
+					return v, nil
+				}
+			}
 		}
+		return nil, errors.New("error: no author found")
 	}
 
-	var authorName string
-
-	if author != nil {
-		authorName = strings.TrimSpace(author.Value)
-	}
-
-	var sourceFeed string
-
-	for _, alternate := range sourceData.Alternates {
-		if alternate.Type == "text/plain" {
-			sourceFeed = alternate.URL
+	parseSourceData := func(data *microformats.Data) (string, string, error) {
+		if data == nil {
+			log.Warn("no source data to parse")
+			return "", "", nil
 		}
+
+		entry, err := getEntry(data)
+		if err != nil {
+			log.WithError(err).Error("error getting entry")
+			return "", "", err
+		}
+
+		author, err := getAuthor(entry)
+		if err != nil {
+			log.WithError(err).Error("error getting author")
+			return "", "", err
+		}
+
+		var authorName string
+
+		if author != nil {
+			authorName = strings.TrimSpace(author.Value)
+		}
+
+		var sourceFeed string
+
+		for _, alternate := range sourceData.Alternates {
+			if alternate.Type == "text/plain" {
+				sourceFeed = alternate.URL
+			}
+		}
+
+		return authorName, sourceFeed, nil
 	}
 
 	user, err := GetUserFromURL(s.config, s.db, target.String())
 	if err != nil {
 		log.WithError(err).WithField("target", target.String()).Warn("unable to get used from webmention target")
 		return err
+	}
+
+	authorName, sourceFeed, err := parseSourceData(sourceData)
+	if err != nil {
+		log.WithError(err).Warn("error parsing mf2 source data from %s", source)
 	}
 
 	if authorName != "" && sourceFeed != "" {
@@ -291,15 +324,14 @@ func (s *Server) processWebMention(source, target *url.URL, sourceData *microfor
 			log.WithError(err).Warnf("error appending special MENTION post")
 			return err
 		}
-
 	} else {
 		if _, err := AppendSpecial(
 			s.config, s.db,
 			twtxtBot,
 			fmt.Sprintf(
-				"WEBMENTION: @<%s %s> from %s on %s",
+				"WEBMENTION: @<%s %s> on %s",
 				user.Username, user.URL,
-				source.String(), target.String(),
+				source.String(),
 			),
 		); err != nil {
 			log.WithError(err).Warnf("error appending special MENTION post")
