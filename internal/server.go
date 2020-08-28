@@ -308,7 +308,7 @@ func (s *Server) processWebMention(source, target *url.URL, sourceData *microfor
 
 	authorName, sourceFeed, err := parseSourceData(sourceData)
 	if err != nil {
-		log.WithError(err).Warn("error parsing mf2 source data from %s", source)
+		log.WithError(err).Warnf("error parsing mf2 source data from %s", source)
 	}
 
 	if authorName != "" && sourceFeed != "" {
