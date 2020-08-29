@@ -59,6 +59,9 @@ RUN apk --no-cache -U add ca-certificates tzdata
 WORKDIR /
 VOLUME /data
 
+# force cgo resolver
+ENV GODEBUG=netdns=cgo
+
 COPY --from=build /src/twtd /twtd
 
 ENTRYPOINT ["/twtd"]
