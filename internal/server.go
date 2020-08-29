@@ -203,8 +203,14 @@ func (s *Server) setupMetrics() {
 
 	// feed cache size
 	metrics.NewGauge(
-		"cache", "size",
-		"Number of items in the global feed cache",
+		"cache", "feeds",
+		"Number of unique feeds in the global feed cache",
+	)
+
+	// feed cache size
+	metrics.NewGauge(
+		"cache", "twts",
+		"Number of active twts in the global feed cache",
 	)
 
 	// feed cache processing time

@@ -112,6 +112,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 	// max parallel http fetchers
 	var fetchers = make(chan struct{}, maxfetchers)
 
+	metrics.Gauge("feed", "sources").Set(float64(len(feeds)))
 	for feed := range feeds {
 		wg.Add(1)
 		fetchers <- struct{}{}
@@ -234,12 +235,12 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 	for range twtsch {
 	}
 
-	metrics.Gauge("feed", "sources").Set(float64(len(cache)))
+	metrics.Gauge("cache", "feeds").Set(float64(len(cache)))
 	count := 0
 	for _, cached := range cache {
 		count += len(cached.Twts)
 	}
-	metrics.Gauge("cache", "size").Set(float64(count))
+	metrics.Gauge("cache", "twts").Set(float64(count))
 }
 
 // GetAll ...
