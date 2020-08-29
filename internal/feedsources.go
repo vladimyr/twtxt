@@ -93,7 +93,7 @@ func FetchFeedSources(conf *Config, sources []string) *FeedSources {
 
 			res, err := Request(conf, http.MethodGet, url, nil)
 			if err != nil {
-				log.WithError(err).Error("error fetching feedsource %s", url)
+				log.WithError(err).Errorf("error fetching feedsource %s", url)
 				return
 			}
 			defer res.Body.Close()
