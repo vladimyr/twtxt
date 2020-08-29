@@ -62,6 +62,7 @@ type Server struct {
 	am *auth.Manager
 
 	// Sessions
+	sc *SessionStore
 	sm *session.Manager
 
 	// API
@@ -159,6 +160,15 @@ func (s *Server) setupMetrics() {
 		"Number of nanoseconds the server has been running",
 		func() float64 {
 			return float64(time.Since(ctime).Nanoseconds())
+		},
+	)
+
+	// sessions
+	metrics.NewGaugeFunc(
+		"server", "sessions",
+		"Number of active in-memory sessions (non-persistent)",
+		func() float64 {
+			return float64(s.sc.Count())
 		},
 	)
 
@@ -547,6 +557,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	pm := passwords.NewScryptPasswords(nil)
 
+	sc := NewSessionStore(db, config.SessionCacheTTL)
+
 	sm := session.NewManager(
 		session.NewOptions(
 			config.Name,
@@ -554,7 +566,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 			strings.HasPrefix(config.BaseURL, "https"),
 			config.SessionExpiry,
 		),
-		NewSessionStore(db, config.SessionCacheTTL),
+		sc,
 	)
 
 	api := NewAPI(router, config, cache, archive, db, pm)
@@ -596,6 +608,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		am: am,
 
 		// Session Manager
+		sc: sc,
 		sm: sm,
 
 		// Password Manager

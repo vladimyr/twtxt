@@ -22,6 +22,10 @@ func NewSessionStore(store Store, sessionCacheTTL time.Duration) *SessionStore {
 	}
 }
 
+func (s *SessionStore) Count() int {
+	return s.cached.ItemCount()
+}
+
 func (s *SessionStore) GetSession(sid string) (*session.Session, error) {
 	val, found := s.cached.Get(sid)
 	if found {
