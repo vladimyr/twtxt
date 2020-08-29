@@ -47,6 +47,7 @@ type Store interface {
 	GetUserTokens(user *User) ([]*Token, error)
 	SetToken(signature string, token *Token) error
 	DelToken(signature string) error
+	LenTokens() int64
 }
 
 func NewStore(store string) (Store, error) {

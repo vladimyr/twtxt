@@ -194,6 +194,13 @@ func (s *Server) setupMetrics() {
 			return float64(s.db.LenUsers())
 		},
 	)
+	metrics.NewGaugeFunc(
+		"db", "tokens",
+		"Number of database /tokens keys",
+		func() float64 {
+			return float64(s.db.LenTokens())
+		},
+	)
 
 	// feed sources
 	metrics.NewGauge(
