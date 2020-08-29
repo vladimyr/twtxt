@@ -782,10 +782,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 		}
 
 		// Update user's own timeline with their own new post.
-		sources := map[string]string{
-			ctx.User.Username: ctx.User.URL,
-		}
-		s.cache.FetchTwts(s.config, s.archive, sources)
+		s.cache.FetchTwts(s.config, s.archive, user.Source())
 
 		// Re-populate/Warm cache with local twts for this pod
 		s.cache.GetByPrefix(s.config.BaseURL, true)
@@ -832,8 +829,8 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.Title = "Timeline"
 			user := ctx.User
 			if user != nil {
-				for _, url := range user.Following {
-					twts = append(twts, s.cache.GetByURL(url)...)
+				for feed := range user.Sources() {
+					twts = append(twts, s.cache.GetByURL(feed.URL)...)
 				}
 			}
 		}
@@ -1050,8 +1047,8 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 		seen := make(map[string]bool)
 
 		// Search for @mentions on feeds user is following
-		for _, url := range ctx.User.Following {
-			for _, twt := range s.cache.GetByURL(url) {
+		for feed := range ctx.User.Sources() {
+			for _, twt := range s.cache.GetByURL(feed.URL) {
 				for _, twter := range twt.Mentions() {
 					if ctx.User.Is(twter.URL) && !seen[twt.Hash()] {
 						twts = append(twts, twt)
@@ -1932,7 +1929,8 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		}
 
 		if !s.cache.IsCached(url) {
-			sources := map[string]string{nick: url}
+			sources := make(types.Feeds)
+			sources[types.Feed{Nick: nick, URL: url}] = true
 			s.cache.FetchTwts(s.config, s.archive, sources)
 		}
 

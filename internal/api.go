@@ -297,15 +297,6 @@ func (a *API) PostEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		user := r.Context().Value(UserContextKey).(*User)
 
-		defer func() {
-			// Update user's own timeline with their own new post.
-			sources := map[string]string{user.Username: user.URL}
-			a.cache.FetchTwts(a.config, a.archive, sources)
-
-			// Re-populate/Warm cache with local twts for this pod
-			a.cache.GetByPrefix(a.config.BaseURL, true)
-		}()
-
 		req, err := types.NewPostRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing post request")
@@ -341,6 +332,12 @@ func (a *API) PostEndpoint() httprouter.Handle {
 			return
 		}
 
+		// Update user's own timeline with their own new post.
+		a.cache.FetchTwts(a.config, a.archive, user.Source())
+
+		// Re-populate/Warm cache with local twts for this pod
+		a.cache.GetByPrefix(a.config.BaseURL, true)
+
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{}`))
@@ -362,8 +359,8 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 
 		var twts types.Twts
 
-		for _, url := range user.Following {
-			twts = append(twts, a.cache.GetByURL(url)...)
+		for feed := range user.Sources() {
+			twts = append(twts, a.cache.GetByURL(feed.URL)...)
 		}
 
 		sort.Sort(twts)

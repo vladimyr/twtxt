@@ -128,13 +128,6 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			URL:  URLForUser(conf, user.Username),
 		}
 
-		// Every registered new user follows themselves
-		// TODO: Make  this configurable server behaviour?
-		if user.Following == nil {
-			user.Following = make(map[string]string)
-		}
-		user.Following[user.Username] = user.URL
-
 		ctx.User = user
 
 		tokens, err := db.GetUserTokens(user)

@@ -311,8 +311,18 @@ func (u *User) Follows(url string) bool {
 	return ok
 }
 
-func (u *User) Sources() map[string]string {
-	return u.sources
+func (u *User) Source() types.Feeds {
+	feeds := make(types.Feeds)
+	feeds[types.Feed{Nick: u.Username, URL: u.URL}] = true
+	return feeds
+}
+
+func (u *User) Sources() types.Feeds {
+	feeds := u.Source()
+	for url, nick := range u.sources {
+		feeds[types.Feed{Nick: nick, URL: url}] = true
+	}
+	return feeds
 }
 
 func (u *User) Profile() Profile {

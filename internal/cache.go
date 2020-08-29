@@ -91,7 +91,7 @@ func LoadCache(path string) (Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]string) {
+func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
 	var mu sync.RWMutex
 
 	stime := time.Now()
@@ -106,25 +106,30 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 
 	// buffered to let goroutines write without blocking before the main thread
 	// begins reading
-	twtsch := make(chan types.Twts, len(sources))
+	twtsch := make(chan types.Twts, len(feeds))
 
 	var wg sync.WaitGroup
 	// max parallel http fetchers
 	var fetchers = make(chan struct{}, maxfetchers)
 
-	for nick, url := range sources {
+	for feed := range feeds {
 		wg.Add(1)
 		fetchers <- struct{}{}
+
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
-		go func(nick string, url string) {
+		go func(feed types.Feed) {
+			stime := time.Now()
+			log.Infof("fetching feed %s", feed)
+
 			defer func() {
 				<-fetchers
 				wg.Done()
+				log.Infof("fetched feed %s (%s)", feed, time.Now().Sub(stime))
 			}()
 
-			req, err := http.NewRequest("GET", url, nil)
+			req, err := http.NewRequest("GET", feed.URL, nil)
 			if err != nil {
-				log.WithError(err).Errorf("%s: http.NewRequest fail: %s", url, err)
+				log.WithError(err).Errorf("%s: http.NewRequest fail: %s", feed.URL, err)
 				twtsch <- nil
 				return
 			}
@@ -132,7 +137,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
 
 			mu.RLock()
-			if cached, ok := cache[url]; ok {
+			if cached, ok := cache[feed.URL]; ok {
 				if cached.Lastmodified != "" {
 					req.Header.Set("If-Modified-Since", cached.Lastmodified)
 				}
@@ -144,20 +149,20 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 			}
 			resp, err := client.Do(req)
 			if err != nil {
-				log.WithError(err).Errorf("%s: client.Do fail: %s", url, err)
+				log.WithError(err).Errorf("%s: client.Do fail: %s", feed.URL, err)
 				twtsch <- nil
 				return
 			}
 			defer resp.Body.Close()
 
 			actualurl := resp.Request.URL.String()
-			if actualurl != url {
-				log.WithError(err).Errorf("feed for %s changed from %s to %s", nick, url, actualurl)
-				url = actualurl
+			if actualurl != feed.URL {
+				log.WithError(err).Errorf("feed for %s changed from %s to %s", feed.Nick, feed.URL, actualurl)
+				feed.URL = actualurl
 			}
 
-			if url == "" {
-				log.WithField("nick", nick).WithField("url", url).Warn("empty url")
+			if feed.URL == "" {
+				log.WithField("feed", feed).Warn("empty url")
 				twtsch <- nil
 				return
 			}
@@ -168,23 +173,24 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: resp.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
-				twter := types.Twter{Nick: nick}
-				if strings.HasPrefix(url, conf.BaseURL) {
-					twter.URL = URLForUser(conf, nick)
-					twter.Avatar = URLForAvatar(conf, nick)
+				twter := types.Twter{Nick: feed.Nick}
+				if strings.HasPrefix(feed.URL, conf.BaseURL) {
+					twter.URL = URLForUser(conf, feed.Nick)
+					twter.Avatar = URLForAvatar(conf, feed.Nick)
 				} else {
-					twter.URL = url
-					avatar := GetExternalAvatar(conf, url)
+					twter.URL = feed.URL
+					avatar := GetExternalAvatar(conf, feed.URL)
 					if avatar != "" {
-						twter.Avatar = URLForExternalAvatar(conf, url)
+						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
 				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 				if err != nil {
-					log.WithError(err).Errorf("error parsing feed %s: %s", nick, url)
+					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil
 					return
 				}
+				log.Infof("fetched %d new and %d old twts from %s", len(twts), len(old), feed)
 
 				// Archive old twts
 				for _, twt := range old {
@@ -206,16 +212,17 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, sources map[string]
 
 				lastmodified := resp.Header.Get("Last-Modified")
 				mu.Lock()
-				cache[url] = Cached{Twts: twts, Lastmodified: lastmodified}
+				cache[feed.URL] = Cached{Twts: twts, Lastmodified: lastmodified}
 				mu.Unlock()
 			case http.StatusNotModified: // 304
+				log.Infof("feed %s has not changed", feed)
 				mu.RLock()
-				twts = cache[url].Twts
+				twts = cache[feed.URL].Twts
 				mu.RUnlock()
 			}
 
 			twtsch <- twts
-		}(nick, url)
+		}(feed)
 	}
 
 	// close twts channel when all goroutines are done

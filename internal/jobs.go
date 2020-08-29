@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 
+	"github.com/prologic/twtxt/types"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 )
@@ -142,28 +143,27 @@ func (job *UpdateFeedsJob) Run() {
 
 	log.Infof("updating feeds for %d users and  %d feeds", len(users), len(feeds))
 
-	sources := make(map[string]string)
+	sources := make(types.Feeds)
 
 	// Ensure all specialUsername feeds are in the cache
 	for _, username := range specialUsernames {
-		sources[username] = URLForUser(job.conf, username)
+		sources[types.Feed{Nick: username, URL: URLForUser(job.conf, username)}] = true
 	}
 
 	// Ensure all twtxtBots feeds are in the cache
 	for _, bot := range twtxtBots {
-		sources[bot] = URLForUser(job.conf, bot)
+		sources[types.Feed{Nick: bot, URL: URLForUser(job.conf, bot)}] = true
 	}
 
 	for _, feed := range feeds {
 		// Ensure we fetch the feed's own posts in the cache
-		sources[feed.Name] = feed.URL
+		sources[types.Feed{Nick: feed.Name, URL: feed.URL}] = true
 	}
 
 	for _, user := range users {
 		// Ensure we fetch the user's own posts in the cache
-		sources[user.Username] = user.URL
-		for u, n := range user.sources {
-			sources[n] = u
+		for feed := range user.Sources() {
+			sources[feed] = true
 		}
 	}
 
