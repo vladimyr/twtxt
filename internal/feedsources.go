@@ -4,18 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	"github.com/prologic/twtxt"
 )
 
 type FeedSource struct {
@@ -77,7 +73,7 @@ func LoadFeedSources(path string) (*FeedSources, error) {
 	return feedsources, nil
 }
 
-func FetchFeedSources(sources []string) *FeedSources {
+func FetchFeedSources(conf *Config, sources []string) *FeedSources {
 	var (
 		mu sync.RWMutex
 		wg sync.WaitGroup
@@ -95,27 +91,16 @@ func FetchFeedSources(sources []string) *FeedSources {
 				wg.Done()
 			}()
 
-			req, err := http.NewRequest("GET", url, nil)
+			res, err := Request(conf, http.MethodGet, url, nil)
 			if err != nil {
-				log.WithError(err).Errorf("%s: http.NewRequest fail: %s", url, err)
+				log.WithError(err).Error("error fetching feedsource %s", url)
 				return
 			}
+			defer res.Body.Close()
 
-			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
-
-			client := http.Client{
-				Timeout: time.Second * 15,
-			}
-			resp, err := client.Do(req)
-			if err != nil {
-				log.WithError(err).Errorf("%s: client.Do fail: %s", url, err)
-				return
-			}
-			defer resp.Body.Close()
-
-			switch resp.StatusCode {
+			switch res.StatusCode {
 			case http.StatusOK: // 200
-				scanner := bufio.NewScanner(resp.Body)
+				scanner := bufio.NewScanner(res.Body)
 				fs, err := ParseFeedSource(scanner)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed source: %s", url)

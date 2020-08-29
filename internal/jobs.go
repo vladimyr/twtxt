@@ -200,7 +200,7 @@ func NewUpdateFeedSourcesJob(conf *Config, cache Cache, archive Archiver, db Sto
 func (job *UpdateFeedSourcesJob) Run() {
 	log.Infof("updating %d feed sources", len(job.conf.FeedSources))
 
-	feedsources := FetchFeedSources(job.conf.FeedSources)
+	feedsources := FetchFeedSources(job.conf, job.conf.FeedSources)
 
 	log.Infof("fetched %d feed sources", len(feedsources.Sources))
 

@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	// Blank import so we can handle image/jpeg
 	_ "image/gif"
@@ -33,6 +34,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nfnt/resize"
 	"github.com/nullrocks/identicon"
+	"github.com/prologic/twtxt"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 )
@@ -52,6 +54,8 @@ const (
 
 	maxUsernameLength = 15 // avg 6 chars / 2 syllables per name commonly
 	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
+
+	requestTimeout = time.Second * 30
 )
 
 var (
@@ -167,7 +171,7 @@ func GetExternalAvatar(conf *Config, uri string) string {
 
 	for _, candidate := range candidates {
 		source, _ := base.Parse(candidate)
-		if ResourceExists(source.String()) {
+		if ResourceExists(conf, source.String()) {
 			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
 			_, err := DownloadImage(conf, source.String(), externalDir, name, opts)
 			if err != nil {
@@ -186,10 +190,43 @@ func GetExternalAvatar(conf *Config, uri string) string {
 	return ""
 }
 
-func ResourceExists(url string) bool {
-	res, err := http.Head(url)
+func Request(conf *Config, method, url string, headers http.Header) (*http.Response, error) {
+	req, err := http.NewRequest(method, url, nil)
 	if err != nil {
-		log.WithError(err).Errorf("error requesting HEAD from %s", url)
+		log.WithError(err).Errorf("%s: http.NewRequest fail: %s", url, err)
+		return nil, err
+	}
+
+	if headers == nil {
+		headers = make(http.Header)
+	}
+
+	headers.Set(
+		"User-Agent",
+		fmt.Sprintf(
+			"twtxt/%s (Pod: %s Support: %s)",
+			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+		),
+	)
+	req.Header = headers
+
+	client := http.Client{
+		Timeout: requestTimeout,
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.WithError(err).Errorf("%s: client.Do fail: %s", url, err)
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func ResourceExists(conf *Config, url string) bool {
+	res, err := Request(conf, http.MethodHead, url, nil)
+	if err != nil {
+		log.WithError(err).Errorf("error checking if %s exists", url)
 		return false
 	}
 	defer res.Body.Close()
@@ -630,6 +667,14 @@ func UserURL(url string) string {
 		return strings.TrimSuffix(url, "/twtxt.txt")
 	}
 	return url
+}
+
+func URLForPage(baseURL, page string) string {
+	return fmt.Sprintf(
+		"%s/%s",
+		strings.TrimSuffix(baseURL, "/"),
+		page,
+	)
 }
 
 func URLForTwt(baseURL, hash string) string {

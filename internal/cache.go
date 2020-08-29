@@ -15,7 +15,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 )
 
@@ -128,35 +127,25 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 				log.Infof("fetched feed %s (%s)", feed, time.Now().Sub(stime))
 			}()
 
-			req, err := http.NewRequest("GET", feed.URL, nil)
-			if err != nil {
-				log.WithError(err).Errorf("%s: http.NewRequest fail: %s", feed.URL, err)
-				twtsch <- nil
-				return
-			}
-
-			req.Header.Set("User-Agent", fmt.Sprintf("twtxt/%s", twtxt.FullVersion()))
+			headers := make(http.Header)
 
 			mu.RLock()
 			if cached, ok := cache[feed.URL]; ok {
 				if cached.Lastmodified != "" {
-					req.Header.Set("If-Modified-Since", cached.Lastmodified)
+					headers.Set("If-Modified-Since", cached.Lastmodified)
 				}
 			}
 			mu.RUnlock()
 
-			client := http.Client{
-				Timeout: time.Second * 15,
-			}
-			resp, err := client.Do(req)
+			res, err := Request(conf, http.MethodGet, feed.URL, headers)
 			if err != nil {
-				log.WithError(err).Errorf("%s: client.Do fail: %s", feed.URL, err)
+				log.WithError(err).Errorf("error fetching feed %s", feed)
 				twtsch <- nil
 				return
 			}
-			defer resp.Body.Close()
+			defer res.Body.Close()
 
-			actualurl := resp.Request.URL.String()
+			actualurl := res.Request.URL.String()
 			if actualurl != feed.URL {
 				log.WithError(err).Errorf("feed for %s changed from %s to %s", feed.Nick, feed.URL, actualurl)
 				feed.URL = actualurl
@@ -170,9 +159,9 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 
 			var twts types.Twts
 
-			switch resp.StatusCode {
+			switch res.StatusCode {
 			case http.StatusOK: // 200
-				limitedReader := &io.LimitedReader{R: resp.Body, N: conf.MaxFetchLimit}
+				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
@@ -206,12 +195,7 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 					metrics.Counter("archive", "size").Inc()
 				}
 
-				if len(twts) == 0 {
-					twtsch <- nil
-					return
-				}
-
-				lastmodified := resp.Header.Get("Last-Modified")
+				lastmodified := res.Header.Get("Last-Modified")
 				mu.Lock()
 				cache[feed.URL] = Cached{Twts: twts, Lastmodified: lastmodified}
 				mu.Unlock()
