@@ -231,14 +231,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			},
 		}...)
 
-		twts, err := GetUserTwts(s.config, profile.Username)
-		if err != nil {
-			log.WithError(err).Error("error loading twts")
-			ctx.Error = true
-			ctx.Message = "An error occurred while loading the profile"
-			s.render("error", w, ctx)
-			return
-		}
+		twts := s.cache.GetByURL(profile.URL)
 
 		sort.Sort(twts)
 
@@ -248,7 +241,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
-		if err = pager.Results(&pagedTwts); err != nil {
+		if err := pager.Results(&pagedTwts); err != nil {
 			log.WithError(err).Error("error sorting and paging twts")
 			ctx.Error = true
 			ctx.Message = "An error occurred while loading the timeline"
@@ -2284,18 +2277,18 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick != "" {
 			if s.db.HasUser(nick) {
-				twts, err = GetUserTwts(s.config, nick)
 				if user, err := s.db.GetUser(nick); err == nil {
 					profile = user.Profile()
+					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 					return
 				}
 			} else if s.db.HasFeed(nick) {
-				twts, err = GetUserTwts(s.config, nick)
 				if feed, err := s.db.GetFeed(nick); err == nil {
 					profile = feed.Profile()
+					twts = s.cache.GetByURL(profile.URL)
 				} else {
 					log.WithError(err).Error("error loading user object")
 					http.Error(w, "Internal Server Error", http.StatusInternalServerError)

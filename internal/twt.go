@@ -166,39 +166,6 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 	return
 }
 
-func GetUserTwts(conf *Config, username string) (types.Twts, error) {
-	p := filepath.Join(conf.Data, feedsDir)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating feeds directory")
-		return nil, err
-	}
-
-	username = NormalizeUsername(username)
-
-	var twts types.Twts
-
-	twter := types.Twter{
-		Nick: username,
-		URL:  URLForUser(conf, username),
-	}
-	fn := filepath.Join(p, username)
-	f, err := os.Open(fn)
-	if err != nil {
-		log.WithError(err).Warnf("error opening feed: %s", fn)
-		return nil, err
-	}
-	s := bufio.NewScanner(f)
-	t, _, err := ParseFile(s, twter, 0, 0)
-	if err != nil {
-		log.WithError(err).Errorf("error processing feed %s", fn)
-		return nil, err
-	}
-	twts = append(twts, t...)
-	f.Close()
-
-	return twts, nil
-}
-
 func ParseLine(line string, twter types.Twter) (twt types.Twt, err error) {
 	if line == "" {
 		return
