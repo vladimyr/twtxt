@@ -1,4 +1,4 @@
 {{define "content"}}
-  {{ template "post" . }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "AutoFocus" true) }}
   {{ template "feed" . }}
 {{end}}

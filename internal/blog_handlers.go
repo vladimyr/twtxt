@@ -48,7 +48,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		twts := getTweetsByTag(b.Hash())
 
-		sort.Sort(twts)
+		sort.Sort(sort.Reverse(twts))
 
 		// If the twt is not in the cache look for it in the archive
 		if len(twts) == 0 {

@@ -1,9 +1,17 @@
 {{define "content"}}
-  {{ template "post" . }}
-  {{ template "feed" . }}
-  <article class="grid">
-    <div>
-      {{ .Content }}
-    </div>
+  <article class="contianer-fluid">
+    {{ .Content }}
   </article>
+  <div class="container">
+    <hgroup>
+      <h2>Comments:</h2>
+      <footer>Recent tws in reply to this post.</footer>
+    </hgroup>
+    {{ template "feed" . }}
+    <hgroup>
+      <h2>Have your say!</h2>
+      <footer>Post your twt here and add to the discussion!</footer>
+    </hgroup>
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "AutoFocus" false) }}
+  </div>
 {{ end }}

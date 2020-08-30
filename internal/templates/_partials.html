@@ -1,5 +1,5 @@
 {{ define "post" }}
-  {{ if .Authenticated }}
+  {{ if $.Authenticated }}
     <nav>
       <ul>
         <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
@@ -26,7 +26,7 @@
       <input type="hidden" id="replaceTwt" name="hash" value="" />
       <input type="hidden" id="title" name="title" placeholder="Title" value="" />
       <div class="textarea-container">
-        <textarea id="text" name="text" placeholder="{{ .TwtPrompt }}" rows=3 maxlength={{ .MaxTwtLength }} wrap="soft" autofocus required></textarea>
+        <textarea id="text" name="text" placeholder="{{ $.TwtPrompt }}" rows=3 maxlength={{ $.MaxTwtLength }} wrap="soft" {{ if $.AutoFocus }}autofocus{{ end }} required></textarea>
           <div id="mentioned-list" class="users-list">
             <div id="mentioned-list-content" class="mentioned-list-content">
             </div>
@@ -35,9 +35,9 @@
       <div class="grid">
         <div>
           <select id="postas" class="postas" name="postas">
-            <option value="{{ .User.Username }}" selected>Post as {{ .User.Username }}</option>
-            {{ range $index, $Feed := .User.Feeds }}
-              <option value="{{ $Feed }}">{{ $Feed }}</option>
+            <option value="{{ $.User.Username }}" selected>Post as {{ $.User.Username }}</option>
+            {{ range $index, $feed := $.User.Feeds }}
+              <option value="{{ $feed }}">{{ $feed }}</option>
             {{ end }}
           </select>
         </div>
