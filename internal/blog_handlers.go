@@ -155,6 +155,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			return
 		}
 
+		ctx.Reply = fmt.Sprintf("#%s", b.Hash())
 		ctx.Twts = pagedTwts
 		ctx.Pager = pager
 
@@ -211,8 +212,8 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		}
 
 		summary := fmt.Sprintf(
-			"@%s (#%s) 📝 New Post: [%s](%s)",
-			b.Author, b.Hash(), b.Title, b.URL(s.config.BaseURL),
+			"(#%s) New Blog Post [%s](%s) by @%s 📝",
+			b.Hash(), b.Title, b.URL(s.config.BaseURL), b.Author,
 		)
 
 		var twt types.Twt

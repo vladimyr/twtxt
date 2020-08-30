@@ -48,6 +48,7 @@ type Context struct {
 
 	Timezones []*timezones.Zoneinfo
 
+	Reply         string
 	Username      string
 	User          *User
 	Tokens        []*Token

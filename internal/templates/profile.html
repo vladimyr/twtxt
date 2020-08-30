@@ -49,6 +49,6 @@
       <footer>Recent twts from {{ .Profile.Username }}</footer>
     </hgroup>
   </div>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "AutoFocus" true) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}
   {{ template "feed" . }}
 {{end}}

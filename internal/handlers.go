@@ -743,6 +743,15 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
+		reply := strings.TrimSpace(r.FormValue("reply"))
+		if reply != "" {
+			re := regexp.MustCompile(`^(@<.*>[, ]*)*(\(.*?\))(.*)`)
+			match := re.FindStringSubmatch(text)
+			if match == nil {
+				text = fmt.Sprintf("(%s) %s", reply, text)
+			}
+		}
+
 		user, err := s.db.GetUser(ctx.Username)
 		if err != nil {
 			log.WithError(err).Errorf("error loading user object for %s", ctx.Username)

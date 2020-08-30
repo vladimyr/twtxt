@@ -12,6 +12,6 @@
       <h2>Have your say!</h2>
       <footer>Post your twt here and add to the discussion!</footer>
     </hgroup>
-    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "AutoFocus" false) }}
+    {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false) }}
   </div>
 {{ end }}
