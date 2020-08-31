@@ -452,7 +452,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 			w.Header().Set("Content-Type", "image/png")
 			fn = filepath.Join(s.config.Data, mediaDir, name)
 		} else {
-			if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
+			if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 				w.Header().Set("Content-Type", "image/webp")
 				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", name))
 			} else {
@@ -519,7 +519,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -582,7 +582,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 			w.Header().Set("Content-Type", "image/webp")
 			if r.Method == http.MethodHead {
 				return
@@ -1993,7 +1993,7 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/") == "image/webp" {
+		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
 			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
