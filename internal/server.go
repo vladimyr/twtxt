@@ -384,6 +384,7 @@ func (s *Server) setupCronJobs() error {
 
 func (s *Server) runStartupJobs() {
 	time.Sleep(time.Second * 5)
+
 	log.Info("running startup jobs")
 
 	for name, jobSpec := range StartupJobs {

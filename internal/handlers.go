@@ -2236,8 +2236,6 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
-		time.Sleep(5 * time.Second)
-
 		mediaFile, _, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
 			log.WithError(err).Error("error parsing form file")
