@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
 
-	"github.com/Bowery/prompt"
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/prologic/twtxt/client"
 )
@@ -36,16 +39,31 @@ func init() {
 	RootCmd.AddCommand(loginCmd)
 }
 
-func login(cli *client.Client) {
-	username, err := prompt.Basic("Username:", true)
+func readCredentials() (string, string, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Username: ")
+	username, err := reader.ReadString('\n')
 	if err != nil {
 		log.WithError(err).Error("error reading username")
-		os.Exit(1)
+		return "", "", err
 	}
 
-	password, err := prompt.Password("Password:")
+	fmt.Print("Password: ")
+	data, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
 		log.WithError(err).Error("error reading password")
+		return "", "", err
+	}
+	password := string(data)
+
+	return username, password, nil
+}
+
+func login(cli *client.Client) {
+	username, password, err := readCredentials()
+	if err != nil {
+		log.WithError(err).Error("error reading credentials")
 		os.Exit(1)
 	}
 
