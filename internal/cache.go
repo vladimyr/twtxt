@@ -34,6 +34,9 @@ func (cached Cached) Lookup(hash string) (types.Twt, bool) {
 
 	for _, twt := range cached.Twts {
 		if twt.Hash() == hash {
+			if cached.cache == nil {
+				cached.cache = make(map[string]types.Twt)
+			}
 			cached.cache[hash] = twt
 			return twt, true
 		}
