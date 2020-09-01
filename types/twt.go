@@ -101,6 +101,9 @@ func (twt Twt) IsZero() bool {
 	return twt.Twter.IsZero() && twt.Created.IsZero() && twt.Text == ""
 }
 
+// TwtMap ...
+type TwtMap map[string]Twt
+
 // Twts typedef to be able to attach sort methods
 type Twts []Twt
 

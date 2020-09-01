@@ -900,47 +900,37 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		var (
-			twts types.Twts
-			err  error
-		)
-
 		hash := p.ByName("hash")
 		if hash == "" {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		// TODO: Improve this by making this an O(1) lookup on the Twt.Hash()
-		for _, twt := range s.cache.GetAll() {
-			if twt.Hash() == hash {
-				twts = append(twts, twt)
-			}
-		}
+		var err error
 
-		// If the twt is not in the cache look for it in the archive
-		if len(twts) == 0 {
+		twt, ok := s.cache.Lookup(hash)
+		if !ok {
+			// If the twt is not in the cache look for it in the archive
 			if s.archive.Has(hash) {
-				twt, err := s.archive.Get(hash)
+				twt, err = s.archive.Get(hash)
 				if err != nil {
 					ctx.Error = true
 					ctx.Message = "Error loading twt from archive, please try again"
 					s.render("error", w, ctx)
 					return
 				}
-
-				twts = append(twts, twt)
 			}
 		}
 
-		if len(twts) == 0 {
+		log.Debugf("twt: #%v", twt)
+
+		if twt.IsZero() {
 			ctx.Error = true
 			ctx.Message = "No matching twt found!"
 			s.render("404", w, ctx)
 			return
 		}
 
-		twt := twts[0]
 		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
 		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
@@ -997,7 +987,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			}...)
 		}
 
-		ctx.Twts = twts
+		ctx.Twts = types.Twts{twt}
 		s.render("permalink", w, ctx)
 		return
 	}

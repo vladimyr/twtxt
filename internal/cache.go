@@ -20,8 +20,26 @@ import (
 
 // Cached ...
 type Cached struct {
+	cache        types.TwtMap
 	Twts         types.Twts
 	Lastmodified string
+}
+
+// Lookup ...
+func (cached Cached) Lookup(hash string) (types.Twt, bool) {
+	twt, ok := cached.cache[hash]
+	if ok {
+		return twt, true
+	}
+
+	for _, twt := range cached.Twts {
+		if twt.Hash() == hash {
+			cached.cache[hash] = twt
+			return twt, true
+		}
+	}
+
+	return types.Twt{}, false
 }
 
 // Cache key: url
@@ -198,7 +216,11 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 
 				lastmodified := res.Header.Get("Last-Modified")
 				mu.Lock()
-				cache[feed.URL] = Cached{Twts: twts, Lastmodified: lastmodified}
+				cache[feed.URL] = Cached{
+					cache:        make(map[string]types.Twt),
+					Twts:         twts,
+					Lastmodified: lastmodified,
+				}
 				mu.Unlock()
 			case http.StatusNotModified: // 304
 				log.Infof("feed %s has not changed", feed)
@@ -228,6 +250,17 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 	metrics.Gauge("cache", "twts").Set(float64(count))
 }
 
+// Lookup ...
+func (cache Cache) Lookup(hash string) (types.Twt, bool) {
+	for _, cached := range cache {
+		twt, ok := cached.Lookup(hash)
+		if ok {
+			return twt, true
+		}
+	}
+	return types.Twt{}, false
+}
+
 // GetAll ...
 func (cache Cache) GetAll() types.Twts {
 	var alltwts types.Twts
@@ -254,7 +287,11 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	}
 
 	// FIXME: This is probably not thread safe :/
-	cache[key] = Cached{Twts: twts, Lastmodified: time.Now().Format(time.RFC3339)}
+	cache[key] = Cached{
+		cache:        make(map[string]types.Twt),
+		Twts:         twts,
+		Lastmodified: time.Now().Format(time.RFC3339),
+	}
 
 	return twts
 }
