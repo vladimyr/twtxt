@@ -133,8 +133,8 @@
             <li>
               <a class="u-url" href="{{ $blogPost.URL ($.BaseURL) }}">
                 {{ $blogPost.Title }}
-                <time class="dt-published" datetime="{{ $blogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
-                  {{ dateInZone "Mon, Jan 2 3:04PM 2006" $blogPost.Created $.User.DisplayDatesInTimezone }}
+                <time class="dt-published" datetime="{{ $blogPost.Created | date "2006-01-02" }}">
+                  {{ dateInZone "Mon, Jan 2 2006" $blogPost.Created $.User.DisplayDatesInTimezone }}
                 </time>
               </a>
               &nbsp;({{ $blogPost.Created | time }})
