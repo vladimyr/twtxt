@@ -251,7 +251,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Title = fmt.Sprintf("%s's Profile", profile.Username)
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("profile", w, ctx)
 	}
@@ -880,8 +880,10 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
+		log.Debugf("pager.Nums(): %d", pager.Nums())
+
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
 	}
@@ -1026,9 +1028,11 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 			ctx.LastTwt = lastTwt
 		}
 
+		log.Debugf("pager.Nums(): %d", pager.Nums())
+
 		ctx.Title = "Local timeline"
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
 	}
@@ -1082,7 +1086,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		ctx.Title = "Mentions"
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 		s.render("timeline", w, ctx)
 	}
 }
@@ -1133,7 +1137,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 		}
 
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("timeline", w, ctx)
 	}
@@ -1950,7 +1954,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		}
 
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 		ctx.Twter = types.Twter{
 			Nick:   nick,
 			URL:    url,

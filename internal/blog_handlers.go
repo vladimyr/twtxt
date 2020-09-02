@@ -157,7 +157,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		ctx.Reply = fmt.Sprintf("#%s", b.Hash())
 		ctx.Twts = pagedTwts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("blog", w, ctx)
 	}
@@ -253,7 +253,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 
 		ctx.Title = fmt.Sprintf("%s's Twt Blog Posts", profile.Username)
 		ctx.BlogPosts = pagedBlogPosts
-		ctx.Pager = pager
+		ctx.Pager = &pager
 
 		s.render("blogs", w, ctx)
 	}

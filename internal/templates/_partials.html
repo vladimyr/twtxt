@@ -161,11 +161,11 @@
             <a href="?page={{ .PrevPage }}">Prev</a>
           {{ else }}
             <a href="#" data-tooltip="No previous page">Prev</a>
-          {{ end}}
+          {{ end }}
         </li>
       </ul>
       <ul>
-        <li><small>Page {{ .Page }}/{{ .PageNums }} of Unknown Twts</small></li>
+        <li><small>Page {{ .Page }}/{{ .PageNums }} of {{ .Nums }} Twts</small></li>
       </ul>
       <ul>
         <li>
@@ -173,7 +173,7 @@
             <a href="?page={{ .NextPage }}">Next</a>
           {{ else }}
             <a href="#" data-tooltip="No next page">Next</a>
-          {{ end}}
+          {{ end }}
         </li>
       </ul>
     </nav>

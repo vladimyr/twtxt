@@ -74,7 +74,7 @@ type Context struct {
 	BlogPosts   BlogPosts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap
-	Pager       paginator.Paginator
+	Pager       *paginator.Paginator
 
 	// Reset Password Token
 	PasswordResetToken string
