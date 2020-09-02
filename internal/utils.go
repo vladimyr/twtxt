@@ -912,6 +912,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")
 		p.AllowAttrs("alt", "loading").OnElements("a", "img")
+		p.AllowAttrs("style").OnElements("a", "code", "img", "p", "pre", "span")
 		html := p.SanitizeBytes(maybeUnsafeHTML)
 
 		return template.HTML(html)
