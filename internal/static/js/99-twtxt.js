@@ -131,8 +131,14 @@ function replyTo(e) {
   var el = u("textarea#text");
   var text = document.getElementById("text");
 
+  var reply = u(e.target).data("reply");
+
+  if (u("#replyTo").first().value != "") {
+    reply = reply.replace("(" + u("#replyTo").first().value + ") ", "")
+  }
+
   el.empty();
-  text.value = u(e.target).data("reply");
+  text.value = reply;
   el.scroll();
 
   text.focus();
