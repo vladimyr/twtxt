@@ -31,7 +31,7 @@ var (
 // or if they exist on the local pod. Also turns @user@domain into
 // @<user URL> as a convenient way to mention users across pods.
 func ExpandMentions(conf *Config, db Store, user *User, text string) string {
-	re := regexp.MustCompile(`@([_a-zA-Z0-9]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
+	re := regexp.MustCompile(`@([a-zA-Z0-9][a-zA-Z0-9_-]+)(?:@)?((?:[_a-z0-9](?:[_a-z0-9-]{0,61}[a-z0-9]\.)|(?:[0-9]+/[0-9]{2})\.)+(?:[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?)?)?`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		mentionedNick := parts[1]
