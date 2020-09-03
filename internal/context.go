@@ -71,6 +71,7 @@ type Context struct {
 
 	Twter       types.Twter
 	Twts        types.Twts
+	BlogPost    *BlogPost
 	BlogPosts   BlogPosts
 	Feeds       []*Feed
 	FeedSources FeedSourceMap

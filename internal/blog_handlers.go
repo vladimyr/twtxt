@@ -24,7 +24,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
-		b, err := BlogPostFromParams(s.config, p)
+		blogPost, err := BlogPostFromParams(s.config, p)
 		if err != nil {
 			log.WithError(err).Error("error loading blog post")
 			ctx.Error = true
@@ -46,17 +46,20 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			return result
 		}
 
-		twts := getTweetsByTag(b.Hash())
+		twts := getTweetsByTag(blogPost.Hash())
 
 		sort.Sort(sort.Reverse(twts))
 
 		// If the twt is not in the cache look for it in the archive
 		if len(twts) == 0 {
-			if s.archive.Has(b.Twt) {
-				twt, err := s.archive.Get(b.Twt)
+			if s.archive.Has(blogPost.Twt) {
+				twt, err := s.archive.Get(blogPost.Twt)
 				if err != nil {
 					ctx.Error = true
-					ctx.Message = fmt.Sprintf("Error loading associated twt for blog post %s from archive", b)
+					ctx.Message = fmt.Sprintf(
+						"Error loading associated twt for blog post %s from archive",
+						blogPost,
+					)
 					s.render("error", w, ctx)
 					return
 				}
@@ -67,7 +70,10 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		if len(twts) == 0 {
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("No associated twt found for blog post %s", b)
+			ctx.Message = fmt.Sprintf(
+				"No associated twt found for blog post %s",
+				blogPost,
+			)
 			s.render("404", w, ctx)
 			return
 		}
@@ -82,7 +88,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		}
 		renderer := html.NewRenderer(opts)
 
-		html := markdown.ToHTML(b.Bytes(), mdParser, renderer)
+		html := markdown.ToHTML(blogPost.Bytes(), mdParser, renderer)
 
 		twt := twts[0]
 		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
@@ -116,7 +122,11 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("%s @ %s > %s: %s ", who, when, b.String(), b.Title)
+		ctx.Title = fmt.Sprintf(
+			"%s @ %s > %s: %s ",
+			who, when,
+			blogPost.String(), blogPost.Title,
+		)
 		ctx.Content = template.HTML(html)
 		ctx.Meta = Meta{
 			Author:      who,
@@ -155,11 +165,12 @@ func (s *Server) BlogHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Reply = fmt.Sprintf("#%s", b.Hash())
+		ctx.Reply = fmt.Sprintf("#%s", blogPost.Hash())
+		ctx.BlogPost = blogPost
 		ctx.Twts = pagedTwts
 		ctx.Pager = &pager
 
-		s.render("blog", w, ctx)
+		s.render("blogpost", w, ctx)
 	}
 }
 
