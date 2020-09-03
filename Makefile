@@ -8,7 +8,7 @@ all: dev
 
 deps:
 	@go get -u github.com/GeertJohan/go.rice/rice
-	@go get -u github.com/tdewolff/minify/cmd/minify
+	@go get -u github.com/tdewolff/minify/v2/cmd/...
 
 dev: build
 	@./twt -v
@@ -32,8 +32,8 @@ build: cli server
 
 generate:
 	@rice -i ./internal embed-go
-	@minify -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
-	@minify -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
+	@minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
+	@minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
 
 install: build
 	@go install ./cmd/twt/...
