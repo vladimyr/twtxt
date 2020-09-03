@@ -731,6 +731,36 @@ func URLForExternalAvatar(conf *Config, url string) string {
 	)
 }
 
+func URLForBlogFactory(conf *Config, blogs BlogsCache) func(twt types.Twt) string {
+	return func(twt types.Twt) string {
+		subject := twt.Subject()
+		if subject == "" {
+			return ""
+		}
+
+		var hash string
+
+		re := regexp.MustCompile(`\(#([a-z0-9]+)\)`)
+		match := re.FindStringSubmatch(subject)
+		if match != nil {
+			hash = match[1]
+		} else {
+			re = regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
+			match = re.FindStringSubmatch(subject)
+			if match != nil {
+				hash = match[2]
+			}
+		}
+
+		blogPost, ok := blogs.Get(hash)
+		if !ok {
+			return ""
+		}
+
+		return blogPost.URL(conf.BaseURL)
+	}
+}
+
 func URLForConvFactory(conf *Config, cache Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject()

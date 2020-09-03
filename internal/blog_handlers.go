@@ -237,7 +237,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 			},
 		}...)
 
-		blogPosts, err := GetBlogPosts(s.config, author)
+		blogPosts, err := GetBlogPostsByAuthor(s.config, author)
 		if err != nil {
 			log.WithError(err).Errorf("error loading blog posts for %s", author)
 			ctx.Error = true
@@ -297,14 +297,14 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
-		var b *BlogPost
+		var blogPost *BlogPost
 
 		switch postas {
 		case "", user.Username:
-			b, err = WriteBlog(s.config, user, title, text)
+			blogPost, err = WriteBlog(s.config, user, title, text)
 		default:
 			if user.OwnsFeed(postas) {
-				b, err = WriteBlogAs(s.config, postas, title, text)
+				blogPost, err = WriteBlogAs(s.config, postas, title, text)
 			} else {
 				err = ErrFeedImposter
 			}
@@ -320,7 +320,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 
 		summary := fmt.Sprintf(
 			"(#%s) New Blog Post [%s](%s) by @%s 📝",
-			b.Hash(), b.Title, b.URL(s.config.BaseURL), b.Author,
+			blogPost.Hash(), blogPost.Title, blogPost.URL(s.config.BaseURL), blogPost.Author,
 		)
 
 		var twt types.Twt
@@ -339,14 +339,17 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
-		b.Twt = twt.Hash()
-		if err := b.Save(s.config); err != nil {
+		blogPost.Twt = twt.Hash()
+		if err := blogPost.Save(s.config); err != nil {
 			log.WithError(err).Error("error persisting twt metdata for blog post")
 			ctx.Error = true
 			ctx.Message = "Error recording twt for new blog post"
 			s.render("error", w, ctx)
 			return
 		}
+
+		// Update blogs cache
+		s.blogs.Add(blogPost)
 
 		// Update user's own timeline with their own new post.
 		s.cache.FetchTwts(s.config, s.archive, user.Source())

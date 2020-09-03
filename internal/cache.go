@@ -18,6 +18,10 @@ import (
 	"github.com/prologic/twtxt/types"
 )
 
+const (
+	feedCacheFile = "cache"
+)
+
 // Cached ...
 type Cached struct {
 	cache        types.TwtMap
@@ -58,7 +62,7 @@ func (cache Cache) Store(path string) error {
 		return err
 	}
 
-	f, err := os.OpenFile(filepath.Join(path, "cache"), os.O_CREATE|os.O_WRONLY, 0666)
+	f, err := os.OpenFile(filepath.Join(path, feedCacheFile), os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.WithError(err).Error("error opening cache file for writing")
 		return err
@@ -75,7 +79,7 @@ func (cache Cache) Store(path string) error {
 
 // CacheLastModified ...
 func CacheLastModified(path string) (time.Time, error) {
-	stat, err := os.Stat(filepath.Join(path, "cache"))
+	stat, err := os.Stat(filepath.Join(path, feedCacheFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return time.Time{}, err
@@ -89,7 +93,7 @@ func CacheLastModified(path string) (time.Time, error) {
 func LoadCache(path string) (Cache, error) {
 	cache := make(Cache)
 
-	f, err := os.Open(filepath.Join(path, "cache"))
+	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.WithError(err).Error("error loading cache, cache not found")

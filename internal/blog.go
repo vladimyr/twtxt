@@ -52,7 +52,7 @@ func (bs BlogPosts) Swap(i, j int) {
 	bs[i], bs[j] = bs[j], bs[i]
 }
 
-func GetBlogPosts(conf *Config, author string) (BlogPosts, error) {
+func GetBlogPostsByAuthor(conf *Config, author string) (BlogPosts, error) {
 	var blogPosts BlogPosts
 
 	p := filepath.Join(conf.Data, blogsDir, author)
@@ -79,6 +79,39 @@ func GetBlogPosts(conf *Config, author string) (BlogPosts, error) {
 	})
 	if err != nil {
 		log.WithError(err).Errorf("error listing blog posts for %s", author)
+		return nil, err
+	}
+
+	return blogPosts, nil
+}
+
+func GetAllBlogPosts(conf *Config) (BlogPosts, error) {
+	var blogPosts BlogPosts
+
+	p := filepath.Join(conf.Data, blogsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating blogs directory")
+		return nil, err
+	}
+
+	err := filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.WithError(err).Error("error walking blog directory")
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".md" {
+			blogPost, err := BlogPostFromFile(conf, path)
+			if err != nil {
+				log.WithError(err).Errorf("error loading blog post %s", path)
+				return err
+			}
+			blogPosts = append(blogPosts, blogPost)
+		}
+		return nil
+	})
+	if err != nil {
+		log.WithError(err).Errorf("error listing all blog posts")
 		return nil, err
 	}
 
