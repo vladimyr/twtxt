@@ -451,6 +451,16 @@ u("#writeBtn").on("click", function (e) {
   u("#form").attr("action", "/blog");
 });
 
+u("textarea#text").on("keydown", function (e) {
+  console.log(e.ctrlKey);
+  console.log(e.keyCode);
+  console.log(e.key);
+  if (e.ctrlKey && e.keyCode == 13) {
+    e.preventDefault();
+    u("#post").trigger("click");
+  }
+});
+
 u("textarea#text").on("focus", function (e) {
   if (e.relatedTarget === u("#usrBtn").first()) {
     showMentionedList();
