@@ -57,6 +57,11 @@ const (
 	maxFeedNameLength = 25 // avg 4.7 chars per word in English so ~5 words
 
 	requestTimeout = time.Second * 30
+
+	DayAgo   = time.Hour * 24
+	WeekAgo  = DayAgo * 7
+	MonthAgo = DayAgo * 30
+	YearAgo  = MonthAgo * 12
 )
 
 var (
@@ -837,6 +842,26 @@ func PreprocessImage(conf *Config, u *url.URL, alt string) string {
 	}
 
 	return html
+}
+
+func FormatForDateTime(t time.Time) string {
+	var format string
+
+	dt := time.Since(t)
+
+	if dt > YearAgo {
+		format = "Mon, Jan 2 3:04PM 2006"
+	} else if dt > MonthAgo {
+		format = "Mon, Jan 2 3:04PM"
+	} else if dt > WeekAgo {
+		format = "Mon, Jan 2 3:04PM"
+	} else if dt > DayAgo {
+		format = "Mon 2, 3:04PM"
+	} else {
+		format = "3:04PM"
+	}
+
+	return format
 }
 
 // FormatTwtFactory formats a twt into a valid HTML snippet
