@@ -121,3 +121,9 @@ func NewFollowRequest(r io.Reader) (req FollowRequest, err error) {
 	err = json.Unmarshal(body, &req)
 	return
 }
+
+type ProfileResponse struct {
+	Profile      Profile      `json:"profile"`
+	Links        Links        `json:"links"`
+	Alternatives Alternatives `json:"alternatives"`
+}

@@ -183,7 +183,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		nick = NormalizeUsername(nick)
 
-		var profile Profile
+		var profile types.Profile
 
 		if s.db.HasUser(nick) {
 			user, err := s.db.GetUser(nick)
@@ -214,17 +214,18 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		ctx.Profile = profile
 
-		ctx.Links = append(ctx.Links, Link{
+		ctx.Links = append(ctx.Links, types.Link{
 			Href: fmt.Sprintf("%s/webmention", UserURL(profile.URL)),
 			Rel:  "webmention",
 		})
-		ctx.Alternatives = append(ctx.Alternatives, Alternatives{
-			Alternative{
+
+		ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
+			types.Alternative{
 				Type:  "text/plain",
 				Title: fmt.Sprintf("%s's Twtxt Feed", profile.Username),
 				URL:   profile.URL,
 			},
-			Alternative{
+			types.Alternative{
 				Type:  "application/atom+xml",
 				Title: fmt.Sprintf("%s's Atom Feed", profile.Username),
 				URL:   fmt.Sprintf("%s/atom.xml", UserURL(profile.URL)),
@@ -967,17 +968,17 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			Keywords:    strings.Join(ks, ", "),
 		}
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
-			ctx.Links = append(ctx.Links, Link{
+			ctx.Links = append(ctx.Links, types.Link{
 				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
 				Rel:  "webmention",
 			})
-			ctx.Alternatives = append(ctx.Alternatives, Alternatives{
-				Alternative{
+			ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
+				types.Alternative{
 					Type:  "text/plain",
 					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter.Nick),
 					URL:   twt.Twter.URL,
 				},
-				Alternative{
+				types.Alternative{
 					Type:  "application/atom+xml",
 					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter.Nick),
 					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter.URL)),
@@ -1956,7 +1957,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			URL:    url,
 			Avatar: URLForExternalAvatar(s.config, url),
 		}
-		ctx.Profile = Profile{
+		ctx.Profile = types.Profile{
 			Username: nick,
 			TwtURL:   url,
 			URL:      URLForExternalProfile(s.config, nick, url),
@@ -2269,7 +2270,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var (
 			twts    types.Twts
-			profile Profile
+			profile types.Profile
 			err     error
 		)
 
@@ -2300,7 +2301,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		} else {
 			twts = s.cache.GetByPrefix(s.config.BaseURL, false)
 
-			profile = Profile{
+			profile = types.Profile{
 				Type:     "Local",
 				Username: s.config.Name,
 				Tagline:  "", // TODO: Maybe Twtxt Pods should have a configurable description?

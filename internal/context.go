@@ -15,20 +15,6 @@ import (
 	"github.com/theplant-retired/timezones"
 )
 
-type Link struct {
-	Href string
-	Rel  string
-}
-
-type Alternative struct {
-	Type  string
-	Title string
-	URL   string
-}
-
-type Alternatives []Alternative
-type Links []Link
-
 type Meta struct {
 	Title       string
 	Author      string
@@ -53,7 +39,7 @@ type Context struct {
 	User          *User
 	Tokens        []*Token
 	LastTwt       types.Twt
-	Profile       Profile
+	Profile       types.Profile
 	Authenticated bool
 
 	Error   bool
@@ -66,8 +52,8 @@ type Context struct {
 
 	Title        string
 	Meta         Meta
-	Links        Links
-	Alternatives Alternatives
+	Links        types.Links
+	Alternatives types.Alternatives
 
 	Twter       types.Twter
 	Twts        types.Twts
@@ -104,8 +90,8 @@ func NewContext(conf *Config, db Store, req *http.Request) *Context {
 			Description: DefaultMetaDescription,
 		},
 
-		Alternatives: Alternatives{
-			Alternative{
+		Alternatives: types.Alternatives{
+			types.Alternative{
 				Type:  "application/atom+xml",
 				Title: fmt.Sprintf("%s local feed", conf.Name),
 				URL:   fmt.Sprintf("%s/atom.xml", conf.BaseURL),
