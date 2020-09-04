@@ -761,7 +761,7 @@ func URLForBlogFactory(conf *Config, blogs BlogsCache) func(twt types.Twt) strin
 	}
 }
 
-func URLForConvFactory(conf *Config, cache Cache) func(twt types.Twt) string {
+func URLForConvFactory(conf *Config, cache *Cache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject()
 		if subject == "" {

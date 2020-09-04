@@ -44,14 +44,14 @@ var (
 type API struct {
 	router  *Router
 	config  *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 	pm      passwords.Passwords
 }
 
 // NewAPI ...
-func NewAPI(router *Router, config *Config, cache Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
+func NewAPI(router *Router, config *Config, cache *Cache, archive Archiver, db Store, pm passwords.Passwords) *API {
 	api := &API{router, config, cache, archive, db, pm}
 
 	api.initRoutes()

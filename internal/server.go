@@ -47,11 +47,10 @@ type Server struct {
 	server    *http.Server
 
 	// Blogs Cache
-
 	blogs BlogsCache
 
 	// Feed Cache
-	cache Cache
+	cache *Cache
 
 	// Feed Archiver
 	archive Archiver

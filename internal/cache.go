@@ -49,8 +49,14 @@ func (cached Cached) Lookup(hash string) (types.Twt, bool) {
 	return types.Twt{}, false
 }
 
-// Cache key: url
-type Cache map[string]Cached
+// OldCache ...
+type OldCache map[string]Cached
+
+// Cache ...
+type Cache struct {
+	mu   sync.RWMutex
+	Twts map[string]Cached
+}
 
 // Store ...
 func (cache Cache) Store(path string) error {
@@ -90,8 +96,10 @@ func CacheLastModified(path string) (time.Time, error) {
 }
 
 // LoadCache ...
-func LoadCache(path string) (Cache, error) {
-	cache := make(Cache)
+func LoadCache(path string) (*Cache, error) {
+	cache := &Cache{
+		Twts: make(map[string]Cached),
+	}
 
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
@@ -106,8 +114,19 @@ func LoadCache(path string) (Cache, error) {
 	dec := gob.NewDecoder(f)
 	err = dec.Decode(&cache)
 	if err != nil {
-		log.WithError(err).Error("error decoding cache")
-		return nil, err
+		log.WithError(err).Error("error decoding cache (trying OldCache)")
+
+		f.Seek(0, io.SeekStart)
+		oldcache := make(OldCache)
+		dec := gob.NewDecoder(f)
+		err = dec.Decode(&oldcache)
+		if err != nil {
+			log.WithError(err).Error("error decoding cache")
+			return nil, err
+		}
+		for url, cached := range oldcache {
+			cache.Twts[url] = cached
+		}
 	}
 	return cache, nil
 }
@@ -116,8 +135,6 @@ const maxfetchers = 50
 
 // FetchTwts ...
 func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
-	var mu sync.RWMutex
-
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -155,13 +172,13 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 
 			headers := make(http.Header)
 
-			mu.RLock()
-			if cached, ok := cache[feed.URL]; ok {
+			cache.mu.RLock()
+			if cached, ok := cache.Twts[feed.URL]; ok {
 				if cached.Lastmodified != "" {
 					headers.Set("If-Modified-Since", cached.Lastmodified)
 				}
 			}
-			mu.RUnlock()
+			cache.mu.RUnlock()
 
 			res, err := Request(conf, http.MethodGet, feed.URL, headers)
 			if err != nil {
@@ -222,18 +239,18 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 				}
 
 				lastmodified := res.Header.Get("Last-Modified")
-				mu.Lock()
-				cache[feed.URL] = Cached{
+				cache.mu.Lock()
+				cache.Twts[feed.URL] = Cached{
 					cache:        make(map[string]types.Twt),
 					Twts:         twts,
 					Lastmodified: lastmodified,
 				}
-				mu.Unlock()
+				cache.mu.Unlock()
 			case http.StatusNotModified: // 304
 				log.Infof("feed %s has not changed", feed)
-				mu.RLock()
-				twts = cache[feed.URL].Twts
-				mu.RUnlock()
+				cache.mu.RLock()
+				twts = cache.Twts[feed.URL].Twts
+				cache.mu.RUnlock()
 			}
 
 			twtsch <- twts
@@ -249,17 +266,21 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 	for range twtsch {
 	}
 
-	metrics.Gauge("cache", "feeds").Set(float64(len(cache)))
+	cache.mu.RLock()
+	metrics.Gauge("cache", "feeds").Set(float64(len(cache.Twts)))
 	count := 0
-	for _, cached := range cache {
+	for _, cached := range cache.Twts {
 		count += len(cached.Twts)
 	}
+	cache.mu.RUnlock()
 	metrics.Gauge("cache", "twts").Set(float64(count))
 }
 
 // Lookup ...
 func (cache Cache) Lookup(hash string) (types.Twt, bool) {
-	for _, cached := range cache {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+	for _, cached := range cache.Twts {
 		twt, ok := cached.Lookup(hash)
 		if ok {
 			return twt, true
@@ -271,34 +292,41 @@ func (cache Cache) Lookup(hash string) (types.Twt, bool) {
 // GetAll ...
 func (cache Cache) GetAll() types.Twts {
 	var alltwts types.Twts
-	for _, cached := range cache {
+	cache.mu.RLock()
+	for _, cached := range cache.Twts {
 		alltwts = append(alltwts, cached.Twts...)
 	}
+	cache.mu.RUnlock()
 	return alltwts
 }
 
 // GetByPrefix ...
 func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)
-	cached, ok := cache[key]
+	cache.mu.RLock()
+	cached, ok := cache.Twts[key]
+	cache.mu.RUnlock()
 	if ok && !refresh {
 		return cached.Twts
 	}
 
 	var twts types.Twts
 
-	for url, cached := range cache {
+	cache.mu.RLock()
+	for url, cached := range cache.Twts {
 		if strings.HasPrefix(url, prefix) {
 			twts = append(twts, cached.Twts...)
 		}
 	}
+	cache.mu.RUnlock()
 
-	// FIXME: This is probably not thread safe :/
-	cache[key] = Cached{
+	cache.mu.Lock()
+	cache.Twts[key] = Cached{
 		cache:        make(map[string]types.Twt),
 		Twts:         twts,
 		Lastmodified: time.Now().Format(time.RFC3339),
 	}
+	cache.mu.Unlock()
 
 	return twts
 }
@@ -306,13 +334,17 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 // IsCached ...
 
 func (cache Cache) IsCached(url string) bool {
-	_, ok := cache[url]
+	cache.mu.RLock()
+	_, ok := cache.Twts[url]
+	cache.mu.RUnlock()
 	return ok
 }
 
 // GetByURL ...
 func (cache Cache) GetByURL(url string) types.Twts {
-	if cached, ok := cache[url]; ok {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
+	if cached, ok := cache.Twts[url]; ok {
 		return cached.Twts
 	}
 	return types.Twts{}

@@ -42,16 +42,16 @@ func init() {
 	}
 }
 
-type JobFactory func(conf *Config, cache Cache, archive Archiver, store Store) cron.Job
+type JobFactory func(conf *Config, cache *Cache, archive Archiver, store Store) cron.Job
 
 type SyncStoreJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewSyncStoreJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewSyncStoreJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &SyncStoreJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -64,12 +64,12 @@ func (job *SyncStoreJob) Run() {
 
 type StatsJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewStatsJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewStatsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &StatsJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -119,12 +119,12 @@ func (job *StatsJob) Run() {
 
 type UpdateFeedsJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedsJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewUpdateFeedsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &UpdateFeedsJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -188,12 +188,12 @@ func (job *UpdateFeedsJob) Run() {
 
 type UpdateFeedSourcesJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewUpdateFeedSourcesJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewUpdateFeedSourcesJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &UpdateFeedSourcesJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -213,12 +213,12 @@ func (job *UpdateFeedSourcesJob) Run() {
 
 type FixUserAccountsJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewFixUserAccountsJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewFixUserAccountsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &FixUserAccountsJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -261,12 +261,12 @@ func (job *FixUserAccountsJob) Run() {
 
 type DeleteOldSessionsJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewDeleteOldSessionsJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewDeleteOldSessionsJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &DeleteOldSessionsJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
@@ -291,12 +291,12 @@ func (job *DeleteOldSessionsJob) Run() {
 
 type MergeStoreJob struct {
 	conf    *Config
-	cache   Cache
+	cache   *Cache
 	archive Archiver
 	db      Store
 }
 
-func NewMergeStoreJob(conf *Config, cache Cache, archive Archiver, db Store) cron.Job {
+func NewMergeStoreJob(conf *Config, cache *Cache, archive Archiver, db Store) cron.Job {
 	return &MergeStoreJob{conf: conf, cache: cache, archive: archive, db: db}
 }
 
