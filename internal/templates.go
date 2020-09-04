@@ -28,7 +28,7 @@ type Templates struct {
 	templates map[string]*template.Template
 }
 
-func NewTemplates(conf *Config, blogs BlogsCache, cache *Cache) (*Templates, error) {
+func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, error) {
 	templates := make(map[string]*template.Template)
 
 	funcMap := sprig.FuncMap()

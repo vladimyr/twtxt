@@ -14,12 +14,14 @@
 /cmd/twtd/twtd
 
 /data/cache
+/data/blogscache
+/data/feedsources
+
 /data/feeds/*
 /data/blogs/*
 /data/media/*
 /data/archive/*
 /data/avatars/*
 /data/external/*
-/data/feedsources
 
 /internal/rice-box.go

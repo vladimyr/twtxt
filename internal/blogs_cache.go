@@ -3,8 +3,10 @@ package internal
 import (
 	"bytes"
 	"encoding/gob"
+	"io"
 	"os"
 	"path/filepath"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -13,8 +15,21 @@ const (
 	blogsCacheFile = "blogscache"
 )
 
-// Cache key: BlogPost.Hash() -> BlogPost
-type BlogsCache map[string]*BlogPost
+// OldBlogsCache ...
+type OldBlogsCache map[string]*BlogPost
+
+// BlogsCache ...
+type BlogsCache struct {
+	mu    sync.RWMutex
+	Blogs map[string]*BlogPost
+}
+
+// NewBlogsCache ...
+func NewBlogsCache() *BlogsCache {
+	return &BlogsCache{
+		Blogs: make(map[string]*BlogPost),
+	}
+}
 
 // Store ...
 func (cache BlogsCache) Store(path string) error {
@@ -42,13 +57,15 @@ func (cache BlogsCache) Store(path string) error {
 }
 
 // LoadBlogsCache ...
-func LoadBlogsCache(path string) (BlogsCache, error) {
-	cache := make(BlogsCache)
+func LoadBlogsCache(path string) (*BlogsCache, error) {
+	cache := &BlogsCache{
+		Blogs: make(map[string]*BlogPost),
+	}
 
 	f, err := os.Open(filepath.Join(path, blogsCacheFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			log.WithError(err).Error("error loading cache, cache not found")
+			log.WithError(err).Error("error loading blogs cache, cache not found")
 			return nil, err
 		}
 		return cache, nil
@@ -58,8 +75,19 @@ func LoadBlogsCache(path string) (BlogsCache, error) {
 	dec := gob.NewDecoder(f)
 	err = dec.Decode(&cache)
 	if err != nil {
-		log.WithError(err).Error("error decoding cache")
-		return nil, err
+		log.WithError(err).Error("error decoding blogs cache (trying OldBlogsCache)")
+
+		f.Seek(0, io.SeekStart)
+		oldcache := make(OldBlogsCache)
+		dec := gob.NewDecoder(f)
+		err = dec.Decode(&oldcache)
+		if err != nil {
+			log.WithError(err).Error("error decoding cache")
+			return nil, err
+		}
+		for hash, blogPost := range oldcache {
+			cache.Blogs[hash] = blogPost
+		}
 	}
 	return cache, nil
 }
@@ -75,24 +103,34 @@ func (cache BlogsCache) UpdateBlogs(conf *Config) {
 	for _, blogPost := range blogPosts {
 		cache.Add(blogPost)
 	}
+
+	if err := cache.Store(conf.Data); err != nil {
+		log.WithError(err).Error("error saving blogs cache")
+	}
 }
 
 // Add ...
 func (cache BlogsCache) Add(blogPost *BlogPost) {
-	cache[blogPost.Hash()] = blogPost
+	cache.mu.Lock()
+	cache.Blogs[blogPost.Hash()] = blogPost
+	cache.mu.Unlock()
 }
 
 // Get ...
 func (cache BlogsCache) Get(hash string) (*BlogPost, bool) {
-	blogPost, ok := cache[hash]
+	cache.mu.RLock()
+	blogPost, ok := cache.Blogs[hash]
+	cache.mu.RUnlock()
 	return blogPost, ok
 }
 
 // GetAll ...
 func (cache BlogsCache) GetAll() BlogPosts {
 	var blogPosts BlogPosts
-	for _, blogPost := range cache {
+	cache.mu.RLock()
+	for _, blogPost := range cache.Blogs {
 		blogPosts = append(blogPosts, blogPost)
 	}
+	cache.mu.RUnlock()
 	return blogPosts
 }

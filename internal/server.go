@@ -47,7 +47,7 @@ type Server struct {
 	server    *http.Server
 
 	// Blogs Cache
-	blogs BlogsCache
+	blogs *BlogsCache
 
 	// Feed Cache
 	cache *Cache
@@ -388,9 +388,6 @@ func (s *Server) setupCronJobs() error {
 func (s *Server) runStartupJobs() {
 	time.Sleep(time.Second * 5)
 
-	log.Info("updating blogs cache")
-	s.blogs.UpdateBlogs(s.config)
-
 	log.Info("running startup jobs")
 	for name, jobSpec := range StartupJobs {
 		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
@@ -553,8 +550,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	blogs, err := LoadBlogsCache(config.Data)
 	if err != nil {
-		log.WithError(err).Error("error loading blogs cache")
-		return nil, err
+		log.WithError(err).Error("error loading blogs cache (re-creating)")
+		blogs = NewBlogsCache()
+		log.Info("updating blogs cache")
+		blogs.UpdateBlogs(config)
 	}
 
 	cache, err := LoadCache(config.Data)

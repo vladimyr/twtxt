@@ -731,7 +731,7 @@ func URLForExternalAvatar(conf *Config, url string) string {
 	)
 }
 
-func URLForBlogFactory(conf *Config, blogs BlogsCache) func(twt types.Twt) string {
+func URLForBlogFactory(conf *Config, blogs *BlogsCache) func(twt types.Twt) string {
 	return func(twt types.Twt) string {
 		subject := twt.Subject()
 		if subject == "" {
