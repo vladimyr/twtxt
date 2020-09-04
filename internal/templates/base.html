@@ -48,21 +48,27 @@
       </li>
       {{ if .Authenticated }}
         <li>
+          <a href="/">
+            <i class="icss-chat"></i>
+            Timeline
+          </a>
+        </li>
+        <li>
           <a href="/discover">
             <i class="icss-users"></i>
-            /discover
+            Discover
           </a>
         </li>
         <li>
           <a href="/mentions">
             <i class="icss-smiley"></i>
-            /mentions
+            Mentions
           </a>
         </li>
         <li>
           <a href="/feeds">
             <i class="icss-rss"></i>
-            /feeds
+            Feeds
           </a>
         </li>
       {{ end }}
@@ -72,40 +78,40 @@
         <li>
           <a href="/follow">
             <i class="icss-plus"></i>
-            /follow
+            Follow
           </a>
         </li>
         <li>
           <a class="secondary" href="/settings">
             <i class="icss-gear"></i>
-            /settings
+            Settings
           </a>
         </li>
         <li>
           <a class="secondary" href="/logout">
             <i class="icss-exit"></i>
-            /logout
+            Logout
           </a>
         </li>
       {{ else }}
         <li>
           <a href="/login">
             <i class="icss-key"></i>
-            /login
+            Login
           </a>
         </li>
         {{ if .RegisterDisabled }}
           <li>
             <a href="#" data-tooltip="{{ with .RegisterDisabledMessage }}{{ .RegisterDisabledMessage }}{{ else }}Registrations are disabled on this instance. Please contact the operator.{{ end }}">
               <i class="icss-warning" style="color:red;"></i>
-              /register
+              Register
             </a>
           </li>
         {{ else }}
           <li>
             <a href="/register">
               <i class="icss-smiley"></i>
-              /register
+              Register
             </a>
           </li>
         {{ end }}
