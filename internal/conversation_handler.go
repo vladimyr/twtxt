@@ -138,6 +138,18 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 			}...)
 		}
 
+		if ctx.Authenticated {
+			lastTwt, _, err := GetLastTwt(s.config, ctx.User)
+			if err != nil {
+				log.WithError(err).Error("error getting user last twt")
+				ctx.Error = true
+				ctx.Message = "An error occurred while loading the timeline"
+				s.render("error", w, ctx)
+				return
+			}
+			ctx.LastTwt = lastTwt
+		}
+
 		ctx.Reply = fmt.Sprintf("#%s", twt.Hash())
 		ctx.Twts = pagedTwts
 		ctx.Pager = &pager
