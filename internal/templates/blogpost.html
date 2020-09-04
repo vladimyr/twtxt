@@ -1,34 +1,34 @@
 {{define "content"}}
   <article class="contianer-fluid">
     <hgroup>
-      <h1><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h1>
-      <h2 class="u-author h-card">
+      <h2><a href="{{ $.BlogPost.URL $.BaseURL }}">{{ $.BlogPost.Title }}</a></h2>
+      <h3 class="u-author h-card">
         <a href="/user/{{ $.BlogPost.Author }}" class="u-url">
           <img class="avatar u-photo" src="/user/{{ $.BlogPost.Author }}/avatar" />
         <span class="p-name">{{ $.BlogPost.Author }}</span>
         </a>
-      </h2>
-      <footer>
-        <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
-          <time class="dt-published" datetime="{{ $.BlogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
-            {{ dateInZone ($.BlogPost.Created | formatForDateTime) $.BlogPost.Created $.User.DisplayDatesInTimezone }}
-          </time>
-        </a>
-        &nbsp;({{ $.BlogPost.Created | time }})
-      </footer>
+      </h3>
     </hgroup>
     {{ .Content }}
+    <footer>
+      <a class="u-url" href="{{ $.BlogPost.URL $.BaseURL }}">
+        <time class="dt-published" datetime="{{ $.BlogPost.Created | date "2006-01-02T15:04:05Z07:00" }}">
+          {{ dateInZone ($.BlogPost.Created | formatForDateTime) $.BlogPost.Created $.User.DisplayDatesInTimezone }}
+        </time>
+      </a>
+      &nbsp;({{ $.BlogPost.Created | time }})
+    </footer>
   </article>
   <div class="container">
     <hgroup>
       <h2>Comments:</h2>
-      <footer>Recent tws in reply to this post.</footer>
+      <h3>Recent tws in reply to this post.</h3>
     </hgroup>
     {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
     {{ if .Authenticated }}
       <hgroup>
         <h2>Have your say!</h2>
-        <footer>Post your twt here and add to the discussion!</footer>
+        <h3>Post your twt here and add to the discussion!</h3>
       </hgroup>
       {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" false) }}
     {{ else }}

@@ -2,7 +2,7 @@
   <article class="container-fluid">
     <hgroup>
       <h2>Conversation <a href="/conv/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h2>
-      <footer>Recent tws in this reply to <a href="/twt/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></footer>
+      <h3>Recent tws in this reply to <a href="/twt/{{ ($.Twts | first).Hash  }}">#{{ ($.Twts | first).Hash }}</a></h3>
     </hgroup>
     {{ template "twt" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Twt" ( $.Twts | first) ) }}
   </article>

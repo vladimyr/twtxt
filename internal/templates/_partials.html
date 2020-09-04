@@ -41,8 +41,6 @@
               <option value="{{ $feed }}">{{ $feed }}</option>
             {{ end }}
           </select>
-        </div>
-        <div>
           <button id="post" type="submit">
             <i class="icss-paper-plane"></i>
             Post
@@ -78,14 +76,14 @@
           </a>
         {{ end }}
       </h2>
-      <footer>
+      <h3>
         <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
           <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
             {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
           </time>
         </a>
         &nbsp;({{ $.Twt.Created | time }})
-      </footer>
+      </h3>
     </hgroup>
     <div class="p-summary">
       {{ $.Twt.Text | formatTwt }}

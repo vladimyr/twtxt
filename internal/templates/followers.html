@@ -3,13 +3,13 @@
     <div>
       <hgroup>
         <h2>Followers</h2>
-        <footer>
+        <h3>
           {{ if $.User.Is .Profile.URL }}
             List of users following you
           {{ else }}
             List of users following <b>{{ .Profile.Username }}</b>
           {{ end }}
-        </footer>
+        </h3>
       </hgroup>
       {{ if .Profile.Followers }}
         <ol>

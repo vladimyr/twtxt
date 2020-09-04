@@ -25,19 +25,17 @@
             </a>
           {{ end }}
         </h3>
-        <footer>
-          <p><i>{{ .Profile.Tagline }}</i></p>
-          <ul>
-            <li><a href="{{ .Profile.TwtURL }}">Twtxt<i class="icss-link"></i></a></li>
-          </ul>
-        </footer>
+        <p><i>{{ .Profile.Tagline }}</i></p>
+        <ul>
+          <li><a href="{{ .Profile.TwtURL }}">Twtxt<i class="icss-link"></i></a></li>
+        </ul>
       </hgroup>
     </div>
   </div>
   <div class="container">
     <hgroup>
       <h2>Recent Twts</h2>
-      <footer>Recent twts from {{ .Profile.Username }}</footer>
+      <h3>Recent twts from {{ .Profile.Username }}</h3>
     </hgroup>
   </div>
   {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}

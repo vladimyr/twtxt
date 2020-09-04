@@ -3,13 +3,12 @@
     <div>
       <hgroup>
         <h2>Create Feed</h2>
-        <footer>
-          <p>
-            Create your  own feed or topic of interest you want to share
-            with others. This allows you to "post as" this new feed and
-            create a series of twts (<i>posts</i>) about a "thing".
-          </p>
-        </footer>
+        <h3>Create a new local feed on this pod</h3>
+        <p>
+          Create your  own feed or topic of interest you want to share
+          with others. This allows you to "post as" this new feed and
+          create a series of twts (<i>posts</i>) about a "thing".
+        </p>
       </hgroup>
       <form action="/feed" method="POST">
         <input type="text" name="name" placeholder="Name of your feed" aria-label="Username" autofocus required />
@@ -21,7 +20,7 @@
     <div>
       <hgroup>
         <h2>My Feeds</h2>
-        <footer><p>Here are all your feeds that you can view or manage</p></footer>
+        <h3>Here are all your feeds that you can view or manage</h3>
       </hgroup>
       {{ if .User.Feeds }}
         <ul>
@@ -50,15 +49,14 @@
     <div>
       <hgroup>
         <h2>Local Feeds</h2>
-        <footer>
-          <p>
-            Here is a list of local feeds available that you can subscribe to
-            and follow. These are feeds created by users on {{ .InstanceName }}
-            that are effectively "special interest", "topic" or "group" whereby
-            users posts interesting things as <i>that</i> feed as a sort of
-            "Persona".
-          </p>
-        </footer>
+        <h3>Local feeds available on this pod</h3>
+        <p>
+          Here is a list of local feeds available that you can subscribe to
+          and follow. These are feeds created by users on {{ .InstanceName }}
+          that are effectively "special interest", "topic" or "group" whereby
+          users posts interesting things as <i>that</i> feed as a sort of
+          "Persona".
+        </p>
       </hgroup>
       <ul>
         {{ range .Feeds }}
@@ -81,36 +79,32 @@
     <div>
       <hgroup>
         <h2>External Feeds</h2>
-        <footer>
-          <p>
-            Here is a list of external feeds available that you can subscribe
-            to and follow. These sources of feeds are externally sourced and
-            configured by the operator of {{ .InstanceName }}. By default
-            <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
-            following sources:
-            <ul>
-              <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
-              <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
-              <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
-            </ul>
-          </p>
-          <p>
-            If you want to add a new external feed source:
-            <ul>
-              <li>First make sure it has a valid RSS or Atom feed.(<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>)</li>
-              <li>Visit <a href="https://feeds.twtxt.net">feeds.twtxt.net</a> and give the feed a name and enter the RSS/Atom URL and hit Submit</li>
-            </ul>
-            In a few minutes the newly added external feed will show up in
-            <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
-          </p>
-        </footer>
+        <h3>External feeds from news sources and exteral users</h3>
+        <p>
+          Here is a list of external feeds available that you can subscribe
+          to and follow. These sources of feeds are externally sourced and
+          configured by the operator of {{ .InstanceName }}. By default
+          <a href="https://twtxt.net">twtxt.net</a> sources feeds from the
+          following sources:
+          <ul>
+            <li><a href="https://feeds.twtxt.net">feeds.twtxt.net</a> an RSS/Atom to twtxt feed aggregator</li>
+            <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt">we-are-bots</a>a directory of twtxt bots (<i>automated feeds</i>)</li>
+            <li><a href="https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt">we-are-twtxt</a>a directory of twtxt users (<i>this is managed by users voluntarily adding themselves to this list</i>)</li>
+          </ul>
+        </p>
+        <p>
+          If you want to add a new external feed source:
+          <ul>
+            <li>First make sure it has a valid RSS or Atom feed.(<i><a href="https://en.wikipedia.org/wiki/Atom_(Web_standard)">What's this?</a></i>)</li>
+            <li>Visit <a href="https://feeds.twtxt.net">feeds.twtxt.net</a> and give the feed a name and enter the RSS/Atom URL and hit Submit</li>
+          </ul>
+          In a few minutes the newly added external feed will show up in
+          <a href="https://twtxt.net/feeds">/feeds</a> here on {{ .InstanceName }}.
+        </p>
       </hgroup>
       {{ range $Source, $Feeds := .FeedSources }}
         <details>
           <summary>{{ $Source | prettyURL }}</summary>
-          <hgroup>
-            <footer>External feeds from <a href="{{ $Source }}">{{ $Source }}</a></h3>
-          </hgroup>
           <ul>
             {{ range $Feeds }}
               <li>

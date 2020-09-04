@@ -2,14 +2,14 @@
   <article class="grid">
     <div>
       <hgroup>
-        <h2>Following</h1>
-        <footer>
+        <h2>Following</h2>
+        <h3>
           {{ if $.User.Is .Profile.URL }}
             List of users and feeds you are following
           {{ else }}
             List of users and feeds <b>{{ .Profile.Username }}</b> is following
           {{ end }}
-        </footer>
+        </h3>
       </hgroup>
       {{ if .Profile.Following }}
         <ol>

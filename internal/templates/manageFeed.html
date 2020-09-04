@@ -1,33 +1,33 @@
 {{define "content"}}
 <article class="grid">
-    <div>
-        <hgroup>
-            <h1>Manage feed</h1>
-            <h2>Manage <b>{{ .Profile.Username}}</b> details</h2>
-        </hgroup>
-        <form action="/feed/{{  .Profile.Username }}/manage"  enctype="multipart/form-data" method="POST">
-            <label for="avatar_upload">
-              Change avatar
-              <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
-            </label>
-            <label for="description">
-                Description
-                <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">
-            </label>
-            <button type="submit">Update</button>
-        </form>
+  <div>
+    <hgroup>
+      <h2>Manage feed</h2>
+      <h3>Manage <b>{{ .Profile.Username}}</b> details</h3>
+    </hgroup>
+    <form action="/feed/{{  .Profile.Username }}/manage"  enctype="multipart/form-data" method="POST">
+      <label for="avatar_upload">
+        Change avatar
+        <input id="avatar_upload" type="file" accept="image/png, image/jpeg" name="avatar_file" aria-label="Upload Avatar" />
+     </label>
+     <label for="description">
+       Description
+       <input type="text" id="description" name="description" placeholder="A short description about the feed" required value="{{ .Profile.Tagline }}">
+     </label>
+     <button type="submit">Update</button>
+   </form>
 
-        <hgroup>
-            <h1>Archive feed</h1>
-            <h2>Here you may archive your custom feed</h2>
-        </hgroup>
-        <p>
-            <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
-            (<i>There is no confirmation!</i>)
-        </p>
-        <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
-            <button type="submit" class="contrast">Archive</button>
-        </form>
-    </div>
+   <hgroup>
+     <h2>Archive feed</h3>
+     <h3>Here you may archive your custom feed</h3>
+   </hgroup>
+   <p>
+     <b>WARNING:</b>&nbsp;This is permanent and cannot be undone!
+     (<i>There is no confirmation!</i>)
+   </p>
+   <form action="/feed/{{  .Profile.Username }}/archive" method="POST" onsubmit="return confirm('Are you sure you want to archive this feed? This cannot be undone!');">
+    <button type="submit" class="contrast">Archive</button>
+   </form>
+  </div>
 </article>
 {{ end }}
