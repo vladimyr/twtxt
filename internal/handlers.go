@@ -1756,33 +1756,6 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 	}
 }
 
-// DeleteHandler ...
-func (s *Server) DeleteHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		ctx := NewContext(s.config, s.db, r)
-
-		user := ctx.User
-		if user == nil {
-			log.Fatalf("user not found in context")
-		}
-
-		if err := s.db.DelUser(ctx.Username); err != nil {
-			ctx.Error = true
-			ctx.Message = "Error deleting account"
-			s.render("error", w, ctx)
-			return
-		}
-
-		s.sm.Delete(w, r)
-		ctx.Authenticated = false
-
-		ctx.Error = false
-		ctx.Message = "Successfully deleted account"
-		s.render("error", w, ctx)
-		return
-	}
-}
-
 // DeleteTokenHandler ...
 func (s *Server) DeleteTokenHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -2454,5 +2427,206 @@ func (s *Server) CaptchaHandler() httprouter.Handle {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+// DeleteAllHandler ...
+func (s *Server) DeleteAllHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		// Get all user feeds
+		feeds, err := s.db.GetAllFeeds()
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occured whilst deleting your account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		for _, feed := range feeds {
+			// Get user's owned feeds
+			if ctx.User.OwnsFeed(feed.Name) {
+				// Get twts in a feed
+				nick := feed.Name
+				if nick != "" {
+					if s.db.HasFeed(nick) {
+						// Fetch feed twts
+						twts, err := GetAllTwts(s.config, nick)
+						if err != nil {
+							ctx.Error = true
+							ctx.Message = "An error occured whilst deleting your account"
+							s.render("error", w, ctx)
+							return
+						}
+
+						// Parse twts to search and remove uploaded media
+						for _, twt := range twts {
+							// Delete archived twts
+							if err := s.archive.Del(twt.Hash()); err != nil {
+								ctx.Error = true
+								ctx.Message = "An error occured whilst deleting your account"
+								s.render("error", w, ctx)
+								return
+							}
+
+							mediaPaths := GetMediaNamesFromText(twt.Text)
+
+							// Remove all uploaded media in a twt
+							for _, mediaPath := range mediaPaths {
+								// Delete .png
+								fn := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+								if FileExists(fn) {
+									if err := os.Remove(fn); err != nil {
+										ctx.Error = true
+										ctx.Message = "An error occured whilst deleting your account"
+										s.render("error", w, ctx)
+										return
+									}
+								}
+
+								// Delete .webp
+								fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+								if FileExists(fn) {
+									if err := os.Remove(fn); err != nil {
+										ctx.Error = true
+										ctx.Message = "An error occured whilst deleting your account"
+										s.render("error", w, ctx)
+										return
+									}
+								}
+							}
+						}
+					}
+				}
+
+				// Delete feed
+				if err := s.db.DelFeed(nick); err != nil {
+					ctx.Error = true
+					ctx.Message = "An error occured whilst deleting your account"
+					s.render("error", w, ctx)
+					return
+				}
+
+				// Delete feeds's twtxt.txt
+				fn := filepath.Join(s.config.Data, feedsDir, nick)
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing feed")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
+				}
+
+				// Delete feed from cache
+				s.cache.Delete(feed.Source())
+			}
+		}
+
+		// Get user's primary feed twts
+		twts, err := GetAllTwts(s.config, ctx.User.Username)
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occured whilst deleting your account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Parse twts to search and remove primary feed uploaded media
+		for _, twt := range twts {
+			// Delete archived twts
+			if err := s.archive.Del(twt.Hash()); err != nil {
+				ctx.Error = true
+				ctx.Message = "An error occured whilst deleting your account"
+				s.render("error", w, ctx)
+				return
+			}
+
+			mediaPaths := GetMediaNamesFromText(twt.Text)
+
+			// Remove all uploaded media in a twt
+			for _, mediaPath := range mediaPaths {
+				// Delete .png
+				fn := filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.png", mediaPath))
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing media")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
+				}
+
+				// Delete .webp
+				fn = filepath.Join(s.config.Data, mediaDir, fmt.Sprintf("%s.webp", mediaPath))
+				if FileExists(fn) {
+					if err := os.Remove(fn); err != nil {
+						log.WithError(err).Error("error removing media")
+						ctx.Error = true
+						ctx.Message = "An error occured whilst deleting your account"
+						s.render("error", w, ctx)
+					}
+				}
+			}
+		}
+
+		// Delete user's primary feed
+		if err := s.db.DelFeed(ctx.User.Username); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occured whilst deleting your account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Delete user's twtxt.txt
+		fn := filepath.Join(s.config.Data, feedsDir, ctx.User.Username)
+		if FileExists(fn) {
+			if err := os.Remove(fn); err != nil {
+				log.WithError(err).Error("error removing user's feed")
+				ctx.Error = true
+				ctx.Message = "An error occured whilst deleting your account"
+				s.render("error", w, ctx)
+			}
+		}
+
+		// Delete user
+		if err := s.db.DelUser(ctx.Username); err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occured whilst deleting your account"
+			s.render("error", w, ctx)
+			return
+		}
+
+		// Delete user's feed from cache
+		s.cache.Delete(ctx.User.Source())
+
+		// Re-populate/Warm cache with local twts for this pod
+		s.cache.GetByPrefix(s.config.BaseURL, true)
+
+		s.sm.Delete(w, r)
+		ctx.Authenticated = false
+
+		ctx.Error = false
+		ctx.Message = "Successfully deleted account"
+		s.render("error", w, ctx)
+	}
+}
+
+// DeleteAccountHandler ...
+func (s *Server) DeleteAccountHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		ctx := NewContext(s.config, s.db, r)
+
+		feeds, err := s.db.GetAllFeeds()
+		if err != nil {
+			ctx.Error = true
+			ctx.Message = "An error occurred while loading feeds"
+			s.render("error", w, ctx)
+			return
+		}
+
+		ctx.Feeds = feeds
+		s.render("deleteAccount", w, ctx)
 	}
 }
