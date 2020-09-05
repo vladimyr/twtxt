@@ -636,7 +636,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
 		w.Header().Set("Last-Modified", stat.ModTime().UTC().Format(http.TimeFormat))
 
@@ -821,7 +821,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 			return
 		}
 
-		w.Header().Set("Content-Type", "text/html")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Last-Modified", cacheLastModified.UTC().Format(http.TimeFormat))
 
 		if r.Method == http.MethodHead {
@@ -2352,7 +2352,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		}
 		feed.Items = items
 
-		w.Header().Set("Content-Type", "application/atom+xml")
+		w.Header().Set("Content-Type", "application/atom+xml; charset=utf-8")
 		data, err := feed.ToAtom()
 		if err != nil {
 			log.WithError(err).Error("error serializing feed")
