@@ -357,6 +357,8 @@ func (u *User) Reply(twt types.Twt) string {
 		mentions = append(mentions, fmt.Sprintf("@%s", nick))
 	}
 
+	mentions = UniqStrings(mentions)
+
 	subject := twt.Subject()
 
 	if subject != "" {
