@@ -312,13 +312,13 @@ func (cache Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 
 	var twts types.Twts
 
-	cache.mu.RLock()
+	cache.mu.Lock()
 	for url, cached := range cache.Twts {
 		if strings.HasPrefix(url, prefix) {
 			twts = append(twts, cached.Twts...)
 		}
 	}
-	cache.mu.RUnlock()
+	cache.mu.Unlock()
 
 	cache.mu.Lock()
 	cache.Twts[key] = Cached{
