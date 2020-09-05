@@ -637,7 +637,6 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
 		w.Header().Set("Last-Modified", stat.ModTime().UTC().Format(http.TimeFormat))
 
