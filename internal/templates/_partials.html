@@ -157,11 +157,11 @@
             <li>
               <a class="u-url" href="{{ $blogPost.URL ($.BaseURL) }}">
                 {{ $blogPost.Title }}
-                <time class="dt-published" datetime="{{ $blogPost.Created | date "2006-01-02" }}">
-                  {{ dateInZone "Mon, Jan 2 2006" $blogPost.Created $.User.DisplayDatesInTimezone }}
+                <time class="dt-published" datetime="{{ $blogPost.Published | date "2006-01-02" }}">
+                  {{ dateInZone "Mon, Jan 2 2006" $blogPost.Published $.User.DisplayDatesInTimezone }}
                 </time>
               </a>
-              &nbsp;({{ $blogPost.Created | time }})
+              &nbsp;({{ $blogPost.Published | time }})
               {{ if eq $.User.Username $blogPost.Author }}
                 &nbsp;
                 [<a href="{{ $blogPost.URL $.BaseURL }}/edit">Edit</a>]
