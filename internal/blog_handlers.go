@@ -330,6 +330,10 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
+		// Cleanup the text and convert DOS line ending \r\n to UNIX \n
+		text = strings.TrimSpace(text)
+		text = strings.ReplaceAll(text, "\r\n", "\n")
+
 		hash := r.FormValue("hash")
 		if hash != "" {
 			blogPost, ok := s.blogs.Get(hash)
