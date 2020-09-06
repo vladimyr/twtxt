@@ -97,7 +97,7 @@ func (s *Server) ConversationHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 

@@ -34,8 +34,9 @@ func NewTemplates(conf *Config, blogs *BlogsCache, cache *Cache) (*Templates, er
 	funcMap := sprig.FuncMap()
 
 	funcMap["time"] = humanize.Time
+	funcMap["slugify"] = Slugify
 	funcMap["prettyURL"] = PrettyURL
-	funcMap["isLocal"] = IsLocalFactory(conf)
+	funcMap["isLocalURL"] = IsLocalURLFactory(conf)
 	funcMap["formatTwt"] = FormatTwtFactory(conf)
 	funcMap["unparseTwt"] = UnparseTwtFactory(conf)
 	funcMap["formatForDateTime"] = FormatForDateTime

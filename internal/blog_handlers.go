@@ -154,7 +154,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -250,7 +250,7 @@ func (s *Server) BlogsHandler() httprouter.Handle {
 
 		var pagedBlogPosts BlogPosts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(blogPosts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 

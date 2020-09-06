@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -238,7 +239,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -858,7 +859,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -1004,7 +1005,7 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(localTwts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -1071,7 +1072,7 @@ func (s *Server) MentionsHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -1123,7 +1124,7 @@ func (s *Server) SearchHandler() httprouter.Handle {
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -1884,35 +1885,44 @@ func (s *Server) FollowingHandler() httprouter.Handle {
 func (s *Server) ExternalHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
-		query := r.URL.Query()
 
-		nick := query.Get("nick")
+		slug := p.ByName("slug")
+		nick := p.ByName("nick")
+
+		if slug == "" {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+			return
+		}
+
+		v, ok := slugs.Load(slug)
+		if !ok {
+			ctx.Error = true
+			ctx.Message = "Cannot find external feed"
+			s.render("error", w, ctx)
+			return
+		}
+		u := v.(*url.URL)
+
 		if nick == "" {
-			ctx.Error = true
-			ctx.Message = "Cannot find external feed"
-			s.render("error", w, ctx)
+			log.Warn("no nick given to external profile request")
+			nick = "unknown"
 		}
 
-		url := query.Get("url")
-		if url == "" {
-			ctx.Error = true
-			ctx.Message = "Cannot find external feed"
-			s.render("error", w, ctx)
-		}
-
-		if !s.cache.IsCached(url) {
+		if !s.cache.IsCached(u.String()) {
 			sources := make(types.Feeds)
-			sources[types.Feed{Nick: nick, URL: url}] = true
+			sources[types.Feed{Nick: nick, URL: u.String()}] = true
 			s.cache.FetchTwts(s.config, s.archive, sources)
 		}
 
-		twts := s.cache.GetByURL(url)
+		twts := s.cache.GetByURL(u.String())
 
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
-		page := SafeParseInt(r.FormValue("page"), 1)
+		page := SafeParseInt(r.FormValue("p"), 1)
 		pager := paginator.New(adapter.NewSliceAdapter(twts), s.config.TwtsPerPage)
 		pager.SetPage(page)
 
@@ -1928,16 +1938,16 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		ctx.Pager = &pager
 		ctx.Twter = types.Twter{
 			Nick:   nick,
-			URL:    url,
-			Avatar: URLForExternalAvatar(s.config, url),
+			URL:    u.String(),
+			Avatar: URLForExternalAvatar(s.config, nick, u.String()),
 		}
 		ctx.Profile = types.Profile{
 			Username: nick,
-			TwtURL:   url,
-			URL:      URLForExternalProfile(s.config, nick, url),
+			TwtURL:   u.String(),
+			URL:      URLForExternalProfile(s.config, nick, u.String()),
 		}
 
-		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, url)
+		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, u.String())
 		s.render("externalProfile", w, ctx)
 	}
 }
@@ -1949,7 +1959,7 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 
 		slug := p.ByName("slug")
 		if slug == "" {
-			log.Warn("no url provided for external avatar")
+			log.Warn("no slug provided for external avatar")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}

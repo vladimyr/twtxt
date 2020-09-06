@@ -15,10 +15,10 @@
         <ol>
           {{ range $Nick, $URL := .Profile.Following }}
             <li>
-              {{ if isLocal $URL }}
+              {{ if isLocalURL $URL }}
                 <a href="{{ $URL | trimSuffix "/twtxt.txt" }}">
               {{ else }}
-                <a href="/external/?url={{ $URL }}&nick={{ $Nick  }}">
+                <a href="/external/{{ $URL | slugify }}/{{ $Nick  }}">
               {{ end }}
               {{ if $.User.Is $URL }}me{{ else }}{{ $Nick }}{{ end }}
 

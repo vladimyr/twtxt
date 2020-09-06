@@ -61,11 +61,11 @@
             <span class="p-name">me</span>
           </a>
         {{ else }}
-          {{ if isLocal $.Twt.Twter.URL }}
+          {{ if isLocalURL $.Twt.Twter.URL }}
             <a href="{{ $.Twt.Twter.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
               <img class="avatar u-photo" src="/user/{{ $.Twt.Twter.Nick }}/avatar" />
           {{ else }}
-            <a href="/external/?url={{ $.Twt.Twter.URL }}&nick= {{ $.Twt.Twter.Nick  }}" class="u-url">
+            <a href="/external/{{ $.Twt.Twter.URL | slugify }}/{{ $.Twt.Twter.Nick  }}" class="u-url">
               {{ if $.Twt.Twter.Avatar }}
                 <img class="avatar u-photo" src="{{ $.Twt.Twter.Avatar }}" />
               {{ else }}
@@ -160,7 +160,7 @@
       <ul>
         <li>
           {{ if .HasPrev }}
-            <a href="?page={{ .PrevPage }}">Prev</a>
+            <a href="?p={{ .PrevPage }}">Prev</a>
           {{ else }}
             <a href="#" data-tooltip="No previous page">Prev</a>
           {{ end }}
@@ -172,7 +172,7 @@
       <ul>
         <li>
           {{ if .HasNext }}
-            <a href="?page={{ .NextPage }}">Next</a>
+            <a href="?p={{ .NextPage }}">Next</a>
           {{ else }}
             <a href="#" data-tooltip="No next page">Next</a>
           {{ end }}

@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	// Blank import so we can handle image/jpeg
@@ -66,6 +67,8 @@ const (
 )
 
 var (
+	slugs *sync.Map
+
 	specialUsernames = []string{
 		newsSpecialUser,
 		helpSpecialUser,
@@ -93,6 +96,23 @@ var (
 	ErrReservedUsername = errors.New("error: username is reserved")
 	ErrInvalidImage     = errors.New("error: invalid image")
 )
+
+func init() {
+	slugs = &sync.Map{}
+}
+
+func Slugify(uri string) string {
+	u, err := url.Parse(uri)
+	if err != nil {
+		log.WithError(err).Warnf("Slugify(): error parsing uri: %s", uri)
+		return ""
+	}
+
+	s := slug.Make(fmt.Sprintf("%s/%s", u.Hostname(), u.Path))
+	slugs.Store(s, u)
+
+	return s
+}
 
 func GenerateAvatar(conf *Config, username string) (image.Image, error) {
 	ig, err := identicon.New(conf.Name, 5, 3)
@@ -148,12 +168,12 @@ func ImageToPng(fn string) error {
 	return nil
 }
 
-func GetExternalAvatar(conf *Config, uri string) string {
-	name := slug.Make(uri)
+func GetExternalAvatar(conf *Config, nick, uri string) string {
+	name := Slugify(uri)
 
 	fn := filepath.Join(conf.Data, externalDir, fmt.Sprintf("%s.webp", name))
 	if FileExists(fn) {
-		return URLForExternalAvatar(conf, uri)
+		return URLForExternalAvatar(conf, nick, uri)
 	}
 
 	if !strings.HasSuffix(uri, "/") {
@@ -188,7 +208,7 @@ func GetExternalAvatar(conf *Config, uri string) string {
 					Error("error downloading external avatar")
 				return ""
 			}
-			return URLForExternalAvatar(conf, uri)
+			return URLForExternalAvatar(conf, nick, uri)
 		}
 	}
 
@@ -262,7 +282,19 @@ func RenderString(tpl string, ctx *Context) (string, error) {
 	return buf.String(), nil
 }
 
-func IsLocalFactory(conf *Config) func(url string) bool {
+func IsExternalFeedFactory(conf *Config) func(url string) bool {
+	baseURL := NormalizeURL(conf.BaseURL)
+	externalBaseURL := fmt.Sprintf("%s/external", strings.TrimSuffix(baseURL, "/"))
+
+	return func(url string) bool {
+		if NormalizeURL(url) == "" {
+			return false
+		}
+		return strings.HasPrefix(NormalizeURL(url), externalBaseURL)
+	}
+}
+
+func IsLocalURLFactory(conf *Config) func(url string) bool {
 	return func(url string) bool {
 		if NormalizeURL(url) == "" {
 			return false
@@ -718,17 +750,17 @@ func URLForAvatar(conf *Config, username string) string {
 
 func URLForExternalProfile(conf *Config, nick, url string) string {
 	return fmt.Sprintf(
-		"%s/external?nick=%s&url=%s",
+		"%s/external/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		nick, url,
+		Slugify(url), nick,
 	)
 }
 
-func URLForExternalAvatar(conf *Config, url string) string {
+func URLForExternalAvatar(conf *Config, nick, url string) string {
 	return fmt.Sprintf(
-		"%s/external/%s/avatar",
+		"%s/external/%s/%s/avatar",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		slug.Make(url),
+		Slugify(url), nick,
 	)
 }
 
@@ -837,7 +869,7 @@ func ValidateUsername(username string) error {
 
 // UnparseTwtFactory is the opposite of CleanTwt and ExpandMentions/ExpandTags
 func UnparseTwtFactory(conf *Config) func(text string) string {
-	isLocal := IsLocalFactory(conf)
+	isLocalURL := IsLocalURLFactory(conf)
 	return func(text string) string {
 		text = strings.ReplaceAll(text, "\u2028", "\n")
 
@@ -848,7 +880,7 @@ func UnparseTwtFactory(conf *Config) func(text string) string {
 
 			switch prefix {
 			case "@":
-				if uri != "" && !isLocal(uri) {
+				if uri != "" && !isLocalURL(uri) {
 					u, err := url.Parse(uri)
 					if err != nil {
 						log.WithField("uri", uri).Warn("UnparseTwt(): error parsing uri")
@@ -1021,14 +1053,14 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 // and `#<tag URL>` into `<a href="URL">#tag</a>` and a `!<hash URL>`
 // into a `<a href="URL">!hash</a>`.
 func FormatMentionsAndTags(conf *Config, text string) string {
-	isLocal := IsLocalFactory(conf)
+	isLocalURL := IsLocalURLFactory(conf)
 	re := regexp.MustCompile(`(@|#)<([^ ]+) *([^>]+)>`)
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
 		switch prefix {
 		case "@":
-			if isLocal(url) && strings.HasSuffix(url, "/twtxt.txt") {
+			if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
 				return fmt.Sprintf(
 					`<a href="%s">@%s</a>`,
 					UserURL(url), nick,
@@ -1071,11 +1103,11 @@ func FormatRequest(r *http.Request) string {
 }
 
 func GetMediaNamesFromText(text string) []string {
-	
+
 	var mediaNames []string
 
 	textSplit := strings.Split(text, "![](")
-	
+
 	for i, textSplitItem := range textSplit {
 		if i > 0 {
 			mediaEndIndex := strings.Index(textSplitItem, ")")

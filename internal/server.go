@@ -485,9 +485,9 @@ func (s *Server) initRoutes() {
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
 
 	// External Feeds
-	s.router.GET("/external", s.ExternalHandler())
-	s.router.GET("/external/:slug/avatar", s.ExternalAvatarHandler())
-	s.router.HEAD("/external/:slug/avatar", s.ExternalAvatarHandler())
+	s.router.GET("/external/:slug/:nick", s.ExternalHandler())
+	s.router.GET("/external/:slug/:nick/avatar", s.ExternalAvatarHandler())
+	s.router.HEAD("/external/:slug/:nick/avatar", s.ExternalAvatarHandler())
 
 	// Syndication Formats (RSS, Atom, JSON Feed)
 	s.router.HEAD("/atom.xml", s.SyndicationHandler())

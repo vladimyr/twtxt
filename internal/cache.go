@@ -212,9 +212,9 @@ func (cache Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) 
 					twter.Avatar = URLForAvatar(conf, feed.Nick)
 				} else {
 					twter.URL = feed.URL
-					avatar := GetExternalAvatar(conf, feed.URL)
+					avatar := GetExternalAvatar(conf, feed.Nick, feed.URL)
 					if avatar != "" {
-						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
+						twter.Avatar = URLForExternalAvatar(conf, feed.Nick, feed.URL)
 					}
 				}
 				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
