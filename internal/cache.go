@@ -125,7 +125,9 @@ func LoadCache(path string) (*Cache, error) {
 			return nil, err
 		}
 		for url, cached := range oldcache {
+			cache.mu.Lock()
 			cache.Twts[url] = cached
+			cache.mu.Unlock()
 		}
 	}
 	return cache, nil
