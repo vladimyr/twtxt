@@ -557,6 +557,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		log.Info("updating blogs cache")
 		blogs.UpdateBlogs(config)
 	}
+	if len(blogs.Blogs) == 0 {
+		log.Info("empty blogs cache, updating...")
+		blogs.UpdateBlogs(config)
+	}
 
 	cache, err := LoadCache(config.Data)
 	if err != nil {
