@@ -700,6 +700,8 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 // PostHandler ...
 func (s *Server) PostHandler() httprouter.Handle {
+	isLocalURL := IsLocalURLFactory(s.config)
+	isExternalFeed := IsExternalFeedFactory(s.config)
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
 
@@ -801,7 +803,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 
 		// WebMentions ...
 		for _, twter := range twt.Mentions() {
-			if !strings.HasPrefix(twter.URL, s.config.BaseURL) {
+			if !isLocalURL(twter.URL) || isExternalFeed(twter.URL) {
 				if err := WebMention(twter.URL, URLForTwt(s.config.BaseURL, twt.Hash())); err != nil {
 					log.WithError(err).Warnf("error sending webmention to %s", twter.URL)
 				}
