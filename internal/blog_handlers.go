@@ -106,7 +106,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		ks = append(ks, twt.Tags()...)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Last-Modified", twt.Created.Format(http.TimeFormat))
+		w.Header().Set("Last-Modified", blogPost.Modified().Format(http.TimeFormat))
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
 			w.Header().Set(
 				"Link",
@@ -123,7 +123,7 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		}
 
 		ctx.Title = fmt.Sprintf(
-			"%s @ %s > %s: %s ",
+			"%s @ %s > published Twt Blog %s: %s ",
 			who, when,
 			blogPost.String(), blogPost.Title,
 		)
