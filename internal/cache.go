@@ -292,6 +292,16 @@ func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 	return types.Twt{}, false
 }
 
+func (cache *Cache) Count() int {
+	var count int
+	cache.mu.RLock()
+	for _, cached := range cache.Twts {
+		count += len(cached.Twts)
+	}
+	cache.mu.RUnlock()
+	return count
+}
+
 // GetAll ...
 func (cache *Cache) GetAll() types.Twts {
 	var alltwts types.Twts

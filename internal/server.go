@@ -223,6 +223,15 @@ func (s *Server) setupMetrics() {
 		"Number of active twts in the global feed cache",
 	)
 
+	// blogs cache size
+	metrics.NewGaugeFunc(
+		"cache", "blogs",
+		"Number of blogs in the blogs cache",
+		func() float64 {
+			return float64(s.blogs.Count())
+		},
+	)
+
 	// feed cache processing time
 	metrics.NewGauge(
 		"cache", "last_processed_seconds",
@@ -375,7 +384,7 @@ func (s *Server) setupWebMentions() {
 
 func (s *Server) setupCronJobs() error {
 	for name, jobSpec := range Jobs {
-		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
+		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		if err := s.cron.AddJob(jobSpec.Schedule, job); err != nil {
 			return err
 		}
@@ -390,7 +399,7 @@ func (s *Server) runStartupJobs() {
 
 	log.Info("running startup jobs")
 	for name, jobSpec := range StartupJobs {
-		job := jobSpec.Factory(s.config, s.cache, s.archive, s.db)
+		job := jobSpec.Factory(s.config, s.blogs, s.cache, s.archive, s.db)
 		log.Infof("running %s now...", name)
 		job.Run()
 	}
