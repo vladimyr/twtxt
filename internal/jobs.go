@@ -30,7 +30,7 @@ func init() {
 		"UpdateFeedSources": NewJobSpec("@every 15m", NewUpdateFeedSourcesJob),
 		"FixUserAccounts":   NewJobSpec("@hourly", NewFixUserAccountsJob),
 		"DeleteOldSessions": NewJobSpec("@hourly", NewDeleteOldSessionsJob),
-		"Stats":             NewJobSpec("@every 5m", NewStatsJob),
+		"Stats":             NewJobSpec("@daily", NewStatsJob),
 		"MergeStore":        NewJobSpec("@daily", NewMergeStoreJob),
 	}
 
