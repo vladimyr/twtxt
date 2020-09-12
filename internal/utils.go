@@ -680,7 +680,7 @@ func StoreUploadedImage(conf *Config, f io.Reader, resource, name string, opts *
 	return fmt.Sprintf(
 		"%s/%s/%s",
 		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, filepath.Base(fn),
+		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
 	), nil
 }
 
