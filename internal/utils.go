@@ -1335,7 +1335,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 		maybeUnsafeHTML := markdown.ToHTML(md, mdParser, renderer)
 		p := bluemonday.UGCPolicy()
 		p.AllowAttrs("id", "controls").OnElements("audio")
-		p.AllowAttrs("id", "controls", "preload", "poster").OnElements("video")
+		p.AllowAttrs("id", "controls", "playsinline", "preload", "poster").OnElements("video")
 		p.AllowAttrs("src", "type").OnElements("source")
 		p.AllowAttrs("target").OnElements("a")
 		p.AllowAttrs("class").OnElements("i")
