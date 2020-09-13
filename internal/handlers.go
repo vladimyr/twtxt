@@ -2224,6 +2224,11 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 
 		mediaFile, mediaHeaders, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
+			if err.Error() == "http: request body too large" {
+				log.Warnf("request too large for media upload from %s", FormatRequest(r))
+				http.Error(w, "Media Upload Too Large", http.StatusRequestEntityTooLarge)
+				return
+			}
 			log.WithError(err).Error("error parsing form file")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
