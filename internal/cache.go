@@ -231,14 +231,16 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 				// Archive old twts
 				for _, twt := range old {
 					if archive.Has(twt.Hash()) {
-						// assume we have archived this twt and all older ones
-						break
+						metrics.Counter("archive", "dupe").Inc()
+						continue
 					}
+
 					if err := archive.Archive(twt); err != nil {
 						log.WithError(err).Errorf("error archiving twt %s aborting", twt.Hash())
-						break
+						metrics.Counter("archive", "error").Inc()
+					} else {
+						metrics.Counter("archive", "size").Inc()
 					}
-					metrics.Counter("archive", "size").Inc()
 				}
 
 				lastmodified := res.Header.Get("Last-Modified")
