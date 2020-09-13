@@ -478,6 +478,7 @@ func (s *Server) MediaHandler() httprouter.Handle {
 		if !FileExists(fn) {
 			log.Warnf("media not found: %s", name)
 			http.Error(w, "Media Not Found", http.StatusNotFound)
+			return
 		}
 
 		fileInfo, err := os.Stat(fn)
