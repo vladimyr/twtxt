@@ -50,34 +50,6 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		// If the twt is not in the cache look for it in the archive
-		if len(twts) == 0 {
-			if s.archive.Has(blogPost.Twt) {
-				twt, err := s.archive.Get(blogPost.Twt)
-				if err != nil {
-					ctx.Error = true
-					ctx.Message = fmt.Sprintf(
-						"Error loading associated twt for blog post %s from archive",
-						blogPost,
-					)
-					s.render("error", w, ctx)
-					return
-				}
-
-				twts = append(twts, twt)
-			}
-		}
-
-		if len(twts) == 0 {
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf(
-				"No associated twt found for blog post %s",
-				blogPost,
-			)
-			s.render("404", w, ctx)
-			return
-		}
-
 		extensions := parser.CommonExtensions | parser.AutoHeadingIDs
 		mdParser := parser.NewWithExtensions(extensions)
 
