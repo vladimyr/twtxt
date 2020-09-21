@@ -829,7 +829,9 @@ func StoreUploadedVideo(conf *Config, f io.Reader, resource, name string, opts *
 			log.WithError(err).Warnf("error cloding file %s", fn)
 		}
 		if err := ImageToPng(ReplaceExt(fn, ".webp")); err != nil {
-			log.WithError(err).Warnf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
+			log.WithError(err).Errorf("error reencoding thumbnail image to PNG (for older browsers: %s", fn)
+			errs <- err
+			return
 		}
 	}
 
