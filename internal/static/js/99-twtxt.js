@@ -196,9 +196,16 @@ u("#theme input").on("change", function (e) {
       u("html").data("theme", value);
       break;
     default:
-      console.log("invalid theme: " + value);
+      console.error("invalid theme: " + value);
   }
 });
+
+function persist(e) {
+  localStorage.setItem(e.target.id, e.target.value);
+}
+
+u("input#title").on("change", persist);
+u("textarea#text").on("change", persist);
 
 u(".reply").on("click", replyTo);
 u(".edit").on("click", editTwt);
@@ -207,7 +214,7 @@ u(".delete").on("click", deleteTwt);
 u("#post").on("click", function (e) {
   e.preventDefault();
   localStorage.setItem('title', '');
-  localStorage.setItem('content', '');
+  localStorage.setItem('text', '');
   u("#post").html('<i class="icss-spinner icss-pulse"></i>&nbsp;Posting...');
   u("#post").attr("disabled", true);
   u("#form").first().submit();
@@ -443,14 +450,16 @@ u("#usrBtn").on("click", function (e) {
 
 u("#writeBtn").on("click", function (e) {
   e.preventDefault();
+
+  u("#title").attr("type", "");
+
   var title = localStorage.getItem('title');
-  if ((title != undefined) && (JSON.parse(title) != undefined)) {
-	  if (u("input#title").attr("type") != 'hidden') {
-		  insertText(u("input#title"), JSON.parse(title));
-	  }
-  } else {
-	u("#title").attr("type", "");
+  if (title != undefined || title != "") {
+    if (u("input#title").attr("type") != 'hidden') {
+      insertText(u("input#title"), title);
+    }
   }
+
   u("#title").first().focus();
   u("#post").html('<i class="icss-print"></i>&nbsp;Publish!');
   u("#text").attr("maxlength", "");
@@ -459,9 +468,6 @@ u("#writeBtn").on("click", function (e) {
 });
 
 u("textarea#text").on("keydown", function (e) {
-  console.log(e.ctrlKey);
-  console.log(e.keyCode);
-  console.log(e.key);
   if (e.ctrlKey && e.keyCode == 13) {
     e.preventDefault();
     u("#post").trigger("click");
@@ -489,7 +495,6 @@ u("textarea#text").on("keyup", function (e) {
 
     if ($mentionedList.classList.contains("show")) {
       var searchStr = e.target.value.slice(startMention, idx);
-      console.log("searchStr", searchStr);
       if (!prevSymbol.trim()) {
         clearMentionedList();
         startMention = null;
@@ -687,7 +692,6 @@ u("body").on("keydown", function (e) {
         .value.slice(caret - 1, 1);
 
       if (e.key === "Backspace" && prevSymbol === "@") {
-        console.log("remove @");
         clearMentionedList();
       }
     }
@@ -717,21 +721,11 @@ window.onbeforeunload = function () {
     localStorage.getItem("currentOffset") || String(window.scrollY)
   );
   localStorage.setItem("currentOffset", String(window.scrollY));
-  var title = u("input#title").first().value;
-  var content = u("textarea#text").first().value;
-  if (title) localStorage.setItem('title', JSON.stringify(title));
-  if (content) localStorage.setItem('content', JSON.stringify(content));
 };
 
 window.onload =  function () {
-	var title = localStorage.getItem('title');
-	if ((title != undefined) && (JSON.parse(title) != undefined)) {
-		if (u("input#title").attr("type") != 'hidden') {
-			insertText(u("input#title"), JSON.parse(title));
-		}
-	}
-	var content = localStorage.getItem('content');
-	if ((content != undefined) && (JSON.parse(content) != undefined)) {
-		insertText(u("textarea#text"), JSON.parse(content));
-	}
+  var text = localStorage.getItem('text');
+  if (text != undefined || text != "") {
+    insertText(u("textarea#text"), text);
+  }
 }
