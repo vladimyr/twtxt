@@ -1411,9 +1411,12 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 		switch prefix {
 		case "@":
 			if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
-				return fmt.Sprintf(`[@%s](%s)`, nick, UserURL(url))
+				// Using (#) anchors to add the nick to URL for now. The Fluter app needs it since
+				// 	the Markdown plugin doesn't include the link text that contains the nick in its onTap callback
+				// https://github.com/flutter/flutter_markdown/issues/286
+				return fmt.Sprintf(`[@%s](%s#%s)`, nick, url, nick)
 			}
-			return fmt.Sprintf(`[@%s](%s)`, nick, URLForExternalProfile(conf, nick, url))
+			return fmt.Sprintf(`[@%s](%s#%s)`, nick, url, nick)
 		default:
 			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}
