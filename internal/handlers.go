@@ -26,7 +26,6 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
-	"github.com/k3a/html2text"
 	"github.com/rickb777/accept"
 	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
@@ -895,7 +894,6 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 // PermalinkHandler ...
 func (s *Server) PermalinkHandler() httprouter.Handle {
 	isLocal := IsLocalURLFactory(s.config)
-	formatTwt := FormatTwtFactory(s.config)
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		ctx := NewContext(s.config, s.db, r)
@@ -973,11 +971,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		title := fmt.Sprintf("%s at %s said", who, when)
-		description := strings.TrimSpace(
-			html2text.HTML2Text(
-				string(formatTwt(what)),
-			),
-		)
+		description := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		ctx.Title = title
 		ctx.Meta = Meta{

@@ -77,6 +77,8 @@ const (
 	MarkdownFmt TwtTextFormat = iota
 	// HTMLFmt to use HTML format
 	HTMLFmt
+	// TextFmt to use for og:description
+	TextFmt
 )
 
 var (
@@ -1581,6 +1583,19 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 	return re.ReplaceAllStringFunc(text, func(match string) string {
 		parts := re.FindStringSubmatch(match)
 		prefix, nick, url := parts[1], parts[2], parts[3]
+
+		if format == TextFmt {
+			switch prefix {
+			case "@":
+				if isLocalURL(url) && strings.HasSuffix(url, "/twtxt.txt") {
+					return fmt.Sprintf("%s@%s", nick, conf.baseURL.Hostname())
+				}
+				return fmt.Sprintf("@%s", nick)
+			default:
+				return fmt.Sprintf("%s%s", prefix, nick)
+			}
+		}
+
 		if format == HTMLFmt {
 			switch prefix {
 			case "@":
@@ -1602,7 +1617,6 @@ func FormatMentionsAndTags(conf *Config, text string, format TwtTextFormat) stri
 		default:
 			return fmt.Sprintf(`[%s%s](%s)`, prefix, nick, url)
 		}
-
 	})
 }
 
