@@ -565,7 +565,7 @@ u("#uploadImage").on("change", function (e) {
   });
 });
 
-const maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
+var maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
 
 function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback) {
     Twix.ajax({
