@@ -34,6 +34,7 @@ require (
 	github.com/jinzhu/gorm v1.9.15 // indirect
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/k3a/html2text v0.0.0-20191003111652-62431c4a3ba5
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/lib/pq v1.7.0 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.4

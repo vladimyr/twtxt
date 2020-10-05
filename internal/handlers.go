@@ -26,6 +26,7 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 	"github.com/julienschmidt/httprouter"
+	"github.com/k3a/html2text"
 	"github.com/rickb777/accept"
 	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
@@ -972,11 +973,16 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		title := fmt.Sprintf("%s at %s said", who, when)
+		description := strings.TrimSpace(
+			html2text.HTML2Text(
+				string(formatTwt(what)),
+			),
+		)
 
 		ctx.Title = title
 		ctx.Meta = Meta{
 			Title:       title,
-			Description: strings.TrimSpace(string(formatTwt(what))),
+			Description: description,
 			Author:      who,
 			Image:       image,
 			URL:         URLForTwt(s.config.BaseURL, hash),
