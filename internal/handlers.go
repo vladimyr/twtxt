@@ -893,6 +893,7 @@ func (s *Server) WebMentionHandler() httprouter.Handle {
 
 // PermalinkHandler ...
 func (s *Server) PermalinkHandler() httprouter.Handle {
+	isLocal := IsLocalURLFactory(s.config)
 	formatTwt := FormatTwtFactory(s.config)
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -927,7 +928,19 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		who := fmt.Sprintf("%s %s", twt.Twter.Nick, twt.Twter.URL)
+		var (
+			who   string
+			image string
+		)
+
+		if isLocal(twt.Twter.URL) {
+			who = fmt.Sprintf("%s@%s", twt.Twter.Nick, s.config.baseURL.Hostname())
+			image = URLForAvatar(s.config, twt.Twter.Nick)
+		} else {
+			who = fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL)
+			image = URLForExternalAvatar(s.config, twt.Twter.URL)
+		}
+
 		when := twt.Created.Format(time.RFC3339)
 		what := twt.Text
 
@@ -963,10 +976,10 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		ctx.Title = title
 		ctx.Meta = Meta{
 			Title:       title,
-			Description: string(formatTwt(what)),
+			Description: strings.TrimSpace(string(formatTwt(what))),
 			Author:      who,
-			Image:       URLForAvatar(s.config, who),
-			URL:         r.URL.String(),
+			Image:       image,
+			URL:         URLForTwt(s.config.BaseURL, hash),
 			Keywords:    strings.Join(ks, ", "),
 		}
 		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
