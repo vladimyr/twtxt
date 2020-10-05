@@ -2195,7 +2195,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 
-		mediaFile, mediaHeaders, err := r.FormFile("media_file")
+		mfile, headers, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {
 			if err.Error() == "http: request body too large" {
 				log.Warnf("request too large for media upload from %s", FormatRequest(r))
@@ -2207,30 +2207,33 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 			return
 		}
 
-		if mediaFile == nil || mediaHeaders == nil {
+		if mfile == nil || headers == nil {
 			log.Warn("no valid media file uploaded")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		var mediaURI string
+		ctype := headers.Header.Get("Content-Type")
 
-		ctype := mediaHeaders.Header.Get("Content-Type")
+		var uri URI
 
 		if strings.HasPrefix(ctype, "image/") {
 			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
-			mediaURI, err = StoreUploadedImage(
-				s.config, mediaFile,
+			mediaURI, err := StoreUploadedImage(
+				s.config, mfile,
 				mediaDir, "",
 				opts,
 			)
-
 			if err != nil {
 				log.WithError(err).Error("error storing the file")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else if strings.HasPrefix(ctype, "audio/") {
+			uri.Type = "mediaURI"
+			uri.Path = mediaURI
+		}
+
+		if strings.HasPrefix(ctype, "audio/") {
 			// TODO: Make this configurable.
 			opts := &AudioOptions{
 				Resample:   true,
@@ -2238,38 +2241,79 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 				Samplerate: 16000,
 				Bitrate:    96,
 			}
-			mediaURI, err = StoreUploadedAudio(
-				s.config, mediaFile,
+			mediaURI, err := StoreUploadedAudio(
+				s.config, mfile,
 				mediaDir, "",
 				opts,
 			)
-
 			if err != nil {
 				log.WithError(err).Error("error storing the file")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else if strings.HasPrefix(ctype, "video/") {
-			opts := &VideoOptions{} // Resize: true, Size: MediaResolution}
-			mediaURI, err = StoreUploadedVideo(
-				s.config, mediaFile,
-				mediaDir, "",
-				opts,
-			)
+			uri.Type = "mediaURI"
+			uri.Path = mediaURI
+		}
 
+		if strings.HasPrefix(ctype, "video/") {
+			fn, err := ReceiveVideo(mfile)
 			if err != nil {
-				log.WithError(err).Error("error storing the file")
+				log.WithError(err).Error("error writing uploaded video")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		} else {
+
+			uuid, err := s.tasks.Dispatch(NewTranscodeTask(s.config, fn))
+			if err != nil {
+				log.WithError(err).Error("error dispatching transcode task")
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			uri.Type = "taskURI"
+			uri.Path = URLForTask(s.config.BaseURL, uuid)
+		}
+
+		if uri.IsZero() {
 			log.Warn("no video or image file")
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
 
-		uri := URI{"mediaURI", mediaURI}
 		data, err := json.Marshal(uri)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if uri.Type == "taskURI" {
+			w.WriteHeader(http.StatusAccepted)
+		}
+		w.Write(data)
+
+		return
+	}
+}
+
+// TaskHandler ...
+func (s *Server) TaskHandler() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		uuid := p.ByName("uuid")
+
+		if uuid == "" {
+			log.Warn("no task uuid provided")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		t, ok := s.tasks.Lookup(uuid)
+		if !ok {
+			log.Warnf("no task found by uuid: %s", uuid)
+			http.Error(w, "Task Not Found", http.StatusNotFound)
+			return
+		}
+
+		data, err := json.Marshal(t.Result())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

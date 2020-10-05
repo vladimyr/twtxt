@@ -565,6 +565,41 @@ u("#uploadImage").on("change", function (e) {
   });
 });
 
+const maxTaskWait = (1000 * 60 * 10); // ~10mins TODO: Make this configurable
+
+function pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback) {
+    Twix.ajax({
+        type: "GET",
+        url: taskURL,
+        error: function (statusCode, statusText) {
+          errorCallback({
+            error: statusCode + " " + statusText
+          })
+        },
+        success: function (data) {
+            switch (data.state) {
+                case "pending":
+                case "running":
+                    if (Date.now() < timeout) {
+                        if (delay < maxDelay) {
+                            delay = delay * 2;
+                        }
+                        setTimeout(function () {
+                            pollForTask(taskURL, delay, maxDelay, timeout, errorCallback, successCallback);
+                        }, delay);
+                        return;
+                    }
+                    break;
+                case "complete":
+                    successCallback(data);
+                    break;
+                default:
+                    errorCallback(data);
+            }
+        },
+    });
+}
+
 u("#uploadVideo").on("change", function (e) {
   u("#uploadVideoButton").removeClass("icss-camera");
   u("#uploadVideoButton").addClass("icss-spinner icss-pulse");
@@ -579,20 +614,36 @@ u("#uploadVideo").on("change", function (e) {
       var el = u("textarea#text");
       var text = document.getElementById("text");
 
-      text.value += " ![](" + data.Path + ") ";
-      el.scroll();
-      text.focus();
-
-      var size = el.text().length;
-      text.setSelectionRange(size, size);
-
+      pollForTask(
+        data.Path,
+        1000,
+        30000,
+        Date.now() + maxTaskWait,
+        function (errorData) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadVideoButton").addClass("icss-camera");
-      u("#uploadVideo").data("tooltip", "Upload");
+      u("#uploadVideoButton").addClass("icss-video-camera");
+      alert(
+        "An error occurred uploading your video: " +
+          errorData.error
+      )
+        },
+        function (successData) {
+          text.value += " ![](" + successData.data.mediaURI + ") ";
+          el.scroll();
+          text.focus();
+
+          var size = el.text().length;
+          text.setSelectionRange(size, size);
+
+          u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
+          u("#uploadVideoButton").addClass("icss-video-camera");
+          u("#uploadVideo").data("tooltip", "Upload");
+        }
+      );
     },
     error: function (statusCode, statusText) {
       u("#uploadVideoButton").removeClass("icss-spinner icss-pulse");
-      u("#uploadVideoButton").addClass("icss-camera");
+      u("#uploadVideoButton").addClass("icss-video-camera");
       alert(
         "An error occurred uploading your video: " +
           statusCode +
