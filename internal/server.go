@@ -442,7 +442,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/about", s.PageHandler("about"))
 	s.router.GET("/help", s.PageHandler("help"))
 	s.router.GET("/privacy", s.PageHandler("privacy"))
-	s.router.GET("/buase", s.PageHandler("abuse"))
+	s.router.GET("/abuse", s.PageHandler("abuse"))
 
 	s.router.GET("/support", s.SupportHandler())
 	s.router.POST("/support", s.SupportHandler())
