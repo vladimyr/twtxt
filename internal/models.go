@@ -370,6 +370,11 @@ func (u *User) Twter() types.Twter {
 }
 
 func (u *User) Filter(twts []types.Twt) (filtered []types.Twt) {
+	// fast-path
+	if len(u.muted) == 0 {
+		return twts
+	}
+
 	for _, twt := range twts {
 		if u.HasMuted(twt.Twter.URL) {
 			continue
