@@ -369,8 +369,9 @@ func (u *User) Twter() types.Twter {
 	return types.Twter{Nick: u.Username, URL: u.URL}
 }
 
-func (u *User) Filter(twts []types.Twt) (filtered []types.Twt) {
-	for _, twt := range twts {
+func (u *User) Filter(twts []interface{}) (filtered []types.Twt) {
+	for _, twtI := range twts {
+		twt := twtI.(types.Twt)
 		if u.HasMuted(twt.Twter.URL) {
 			continue
 		}
