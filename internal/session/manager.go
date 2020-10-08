@@ -51,6 +51,7 @@ func (m *Manager) Create(w http.ResponseWriter) (*Session, error) {
 	cookie := &http.Cookie{
 		Name:     m.options.name,
 		Value:    sid.String(),
+		Path:     "/",
 		Secure:   m.options.secure,
 		HttpOnly: true,
 		MaxAge:   int(m.options.expiry.Seconds()),
