@@ -654,6 +654,15 @@ u("#uploadVideo").on("change", function (e) {
   });
 });
 
+u("#register > button").first().disabled = true;
+u("#register #agree").on("change", function (e) {
+  if (u(e.target).first().checked) {
+    u("#register > button").first().disabled = false;
+  } else {
+    u("#register > button").first().disabled = true;
+  }
+});
+
 u("#burgerMenu").on("click", function (e) {
   e.preventDefault();
 
