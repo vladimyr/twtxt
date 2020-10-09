@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -177,6 +178,45 @@ func GetLastTwt(conf *Config, user *User) (twt types.Twt, offset int, err error)
 	twt, err = ParseLine(string(data), user.Twter())
 
 	return
+}
+
+func GetAllFeeds(conf *Config) ([]string, error) {
+	p := filepath.Join(conf.Data, feedsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return nil, err
+	}
+
+	files, err := ioutil.ReadDir(p)
+	if err != nil {
+		log.WithError(err).Error("error reading feeds directory")
+		return nil, err
+	}
+
+	fns := []string{}
+	for _, fileInfo := range files {
+		fns = append(fns, filepath.Base(fileInfo.Name()))
+	}
+	return fns, nil
+}
+
+func GetFeedCount(conf *Config, name string) (int, error) {
+	p := filepath.Join(conf.Data, feedsDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating feeds directory")
+		return 0, err
+	}
+
+	fn := filepath.Join(p, name)
+
+	f, err := os.Open(fn)
+	if err != nil {
+		log.WithError(err).Error("error opening feed file")
+		return 0, err
+	}
+	defer f.Close()
+
+	return LineCount(f)
 }
 
 func GetAllTwts(conf *Config, name string) (types.Twts, error) {

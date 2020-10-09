@@ -117,12 +117,26 @@ func (job *StatsJob) Run() {
 	followers = UniqStrings(followers)
 	following = UniqStrings(following)
 
-	localTwts := job.cache.GetByPrefix(job.conf.BaseURL, false)
+	var twts int
+
+	allFeeds, err := GetAllFeeds(job.conf)
+	if err != nil {
+		log.WithError(err).Warn("unable to get all local feeds")
+		return
+	}
+	for _, feed := range allFeeds {
+		count, err := GetFeedCount(job.conf, feed)
+		if err != nil {
+			log.WithError(err).Warnf("error getting feed count for %s", feed)
+			return
+		}
+		twts += count
+	}
 
 	text := fmt.Sprintf(
-		"🧮  USERS:%d  FEEDS:%d  ARCHIVED:%d  BLOGS:%d  CACHED:%d  POSTS: %d  FOLLOWERS:%d  FOLLOWING:%d",
-		len(users), len(feeds), archiveSize, job.blogs.Count(),
-		job.cache.Count(), len(localTwts), len(followers), len(following),
+		"🧮 USERS:%d FEEDS:%d TWTS:%d BLOGS:%d ARCHIVED:%d CACHED:%d FOLLOWERS:%d FOLLOWING:%d",
+		len(users), len(feeds), twts, job.blogs.Count(),
+		archiveSize, job.cache.Count(), len(followers), len(following),
 	)
 
 	if _, err := AppendSpecial(job.conf, job.db, "stats", text); err != nil {
