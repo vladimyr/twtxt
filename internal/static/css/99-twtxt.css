@@ -3,7 +3,8 @@ body, html {
 }
 
 article p img {
-    display: block;
+  display: block;
+  margin-top: 0.5rem;
 }
 
 article hgroup h3 {
@@ -54,6 +55,7 @@ video {
   height: auto;
   background: #000;
   box-shadow: 0 3px 7px 0 rgba(0, 0, 0, 0.2);
+  margin-top: 0.5rem;
 }
 
 #imageUploadForm {
