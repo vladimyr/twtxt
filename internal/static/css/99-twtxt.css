@@ -37,6 +37,14 @@ article hgroup footer {
   width: 45px !important;
 }
 
+audio {
+  display: block;
+  filter: sepia(20%) saturate(70%) grayscale(1) contrast(99%) invert(12%);
+  width: 240px;
+  height: 25px;
+  margin: 0.5rem;
+}
+
 /* 480p */
 video {
   object-fit: contain;
