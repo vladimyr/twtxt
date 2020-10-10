@@ -828,7 +828,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config, loggedInUser)
+			profile = user.Profile(a.config.BaseURL, loggedInUser)
 
 			if loggedInUser == nil {
 				if !user.IsFollowersPubliclyVisible {
@@ -845,7 +845,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config, loggedInUser)
+			profile = feed.Profile(a.config.BaseURL, loggedInUser)
 		} else {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
@@ -923,7 +923,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = user.Profile(a.config, loggedInUser)
+			profile = user.Profile(a.config.BaseURL, loggedInUser)
 			twts = a.cache.GetByURL(profile.URL)
 		} else if a.db.HasFeed(nick) {
 			feed, err := a.db.GetFeed(nick)
@@ -932,7 +932,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-			profile = feed.Profile(a.config, loggedInUser)
+			profile = feed.Profile(a.config.BaseURL, loggedInUser)
 
 			twts = a.cache.GetByURL(profile.URL)
 		} else if req.URL != "" {
