@@ -97,6 +97,10 @@ video {
     padding: 0;
 }
 
+#uploadImageButton, #uploadAudioButton, #uploadVideoButton{
+  color: var(--primary);
+}
+
 .textarea-container {
   position: relative;
 }
