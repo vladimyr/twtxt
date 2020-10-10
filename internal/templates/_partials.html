@@ -1,6 +1,6 @@
 {{ define "post" }}
   {{ if $.Authenticated }}
-    <nav>
+    <nav class="toolbar-nav">
       <ul>
         <li><a id="bBtn" href="#" data-tooltip="Bold"><i class="icss-text-bold"></i></a></li>
         <li><a id="iBtn" href="#" data-tooltip="Italic"><i class="icss-text-italic"></i></a></li>
@@ -109,13 +109,13 @@
           </a>
         {{ end }}
       </div>
-      <div class="u-author-time">
+      <div class="author">
         {{ if $.User.Is $.Twt.Twter.URL }}
           <span class="p-name">me</span>
         {{ else }}
           <span class="p-name">{{ $.Twt.Twter.Nick }}</span>
         {{ end }}
-        <div class="u-author-time-child">
+        <div class="publish-time">
           <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
             <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
               {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}

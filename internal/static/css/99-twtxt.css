@@ -207,26 +207,33 @@ video {
 }
 
 /* Timeline styline */
-.u-author{
-	display:flex;
-    flex-direction:row !important;
-    align-items:center !important;
-    
-}
-.u-author-time-child{
-	display:flex;
-    flex-direction:row;
-}
-.u-author-time{
-	display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    margin-left:10px !important;
+.u-author {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center !important;
 }
 
-.p-name{
-	left:0px !important;
-    font-size:34px !important;
-    color:#1095c1;
+.p-name {
+  left: 0px !important;
+  font-size: 34px !important;
+  color: #1095c1;
 }
 
+.author {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 10px !important;
+}
+
+.publish-time {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Toolbar styling */
+@media (max-width: 576px) {
+  .toolbar-nav li {
+    padding: 1rem .2rem;
+  }
+}
