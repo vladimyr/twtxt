@@ -88,12 +88,11 @@
 
 {{ define "twt" }}
   <article id="{{ $.Twt.Hash }}" class="h-entry">
-    <hgroup>
-      <h2 class="u-author h-card">
+    <div class="u-author h-card">
+      <div>
         {{ if $.User.Is $.Twt.Twter.URL }}
           <a href="{{ $.User.URL | trimSuffix "/twtxt.txt" }}" class="u-url">
             <img class="avatar u-photo" src="/user/{{ $.User.Username }}/avatar" />
-            <span class="p-name">me</span>
           </a>
         {{ else }}
           {{ if isLocalURL $.Twt.Twter.URL }}
@@ -107,19 +106,25 @@
                 <i class="icss-rss" style="font-size:1.5em"></i>
               {{ end  }}
           {{ end }}
-            <span class="p-name">{{ $.Twt.Twter.Nick }}</span>
           </a>
         {{ end }}
-      </h2>
-      <h3>
-        <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
-          <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
-            {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
-          </time>
-        </a>
-        &nbsp;({{ $.Twt.Created | time }})
-      </h3>
-    </hgroup>
+      </div>
+      <div class="u-author-time">
+        {{ if $.User.Is $.Twt.Twter.URL }}
+          <span class="p-name">me</span>
+        {{ else }}
+          <span class="p-name">{{ $.Twt.Twter.Nick }}</span>
+        {{ end }}
+        <div class="u-author-time-child">
+          <a class="u-url" href="/twt/{{ $.Twt.Hash }}">
+            <time class="dt-published" datetime="{{ $.Twt.Created | date "2006-01-02T15:04:05Z07:00" }}">
+              {{ dateInZone ($.Twt.Created | formatForDateTime) $.Twt.Created $.User.DisplayDatesInTimezone }}
+            </time>
+          </a>
+          <span> &nbsp;({{ $.Twt.Created | time }})</span>   
+        </div>  
+      </div>
+    </div>
     <div class="p-summary">
       {{ $.Twt.Text | formatTwt }}
     </div>

@@ -205,3 +205,28 @@ video {
 .icss-print, .icss-paper-plane {
   margin-right:20px !important;
 }
+
+/* Timeline styline */
+.u-author{
+	display:flex;
+    flex-direction:row !important;
+    align-items:center !important;
+    
+}
+.u-author-time-child{
+	display:flex;
+    flex-direction:row;
+}
+.u-author-time{
+	display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    margin-left:10px !important;
+}
+
+.p-name{
+	left:0px !important;
+    font-size:34px !important;
+    color:#1095c1;
+}
+
