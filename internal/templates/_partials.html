@@ -12,19 +12,27 @@
         <li><a id="imgBtn" href="#" data-tooltip="Image"><i class="icss-image"></i></a></li>
         {{ with $.BlogPost }}
         {{ else }}
-          <li>&nbsp;</li>
           <li><a id="writeBtn" href="#" data-tooltip="Open blog post editor"><i class="icss-quill-pen"></i></a></li>
         {{ end }}
-        <li>
-          <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
+          <li>&nbsp;</li>
+        <li class="toolbar-form-button">
+          <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
             <label for="uploadImage">
               <i id="uploadImageButton" class="icss-camera"></i>
             </label>
             <input id="uploadImage" class="invisible" type="file" accept="image/*" name="media_file" />
           </form>
         </li>
-        <li>
-          <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload">
+        <li class="toolbar-form-button">
+          <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
+            <label for="uploadAudio">
+              <i id="uploadAudioButton" class="icss-microphone"></i>
+            </label>
+            <input id="uploadAudio" class="invisible" type="file" accept="audio/*" name="media_file" />
+          </form>
+        </li>
+        <li class="toolbar-form-button">
+          <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>
             </label>
