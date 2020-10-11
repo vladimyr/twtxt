@@ -80,6 +80,7 @@ func (a *API) initRoutes() {
 
 	router.GET("/profile/:nick", a.ProfileEndpoint())
 	router.POST("/fetch-twts", a.FetchTwtsEndpoint())
+	router.POST("/conv", a.ConversationEndpoint())
 
 	router.POST("/external", a.ExternalProfileEndpoint())
 
@@ -862,6 +863,93 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		}
 
 		data, err := json.Marshal(profileResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	}
+}
+
+// ConversationEndpoint ...
+func (a *API) ConversationEndpoint() httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
+
+		req, err := types.NewConversationRequest(r.Body)
+		if err != nil {
+			log.WithError(err).Error("error parsing conversation request")
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		hash := req.Hash
+
+		if hash == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		twt, ok := a.cache.Lookup(hash)
+		if !ok {
+			// If the twt is not in the cache look for it in the archive
+			if a.archive.Has(hash) {
+				twt, err = a.archive.Get(hash)
+				if err != nil {
+					log.WithError(err).Errorf("error fetching twt %s from archive", hash)
+					http.Error(w, "Bad Request", http.StatusBadRequest)
+					return
+				}
+			}
+		}
+
+		if twt.IsZero() {
+			http.Error(w, "Conversation Not Found", http.StatusNotFound)
+			return
+		}
+
+		getTweetsByHash := func(hash string, replyTo types.Twt) types.Twts {
+			var result types.Twts
+			seen := make(map[string]bool)
+			// TODO: Improve this by making this an O(1) lookup on the tag
+			for _, twt := range a.cache.GetAll() {
+				if HasString(UniqStrings(twt.Tags()), hash) && !seen[twt.Hash()] {
+					result = append(result, twt)
+					seen[twt.Hash()] = true
+				}
+			}
+			if !seen[replyTo.Hash()] {
+				result = append(result, replyTo)
+			}
+			return result
+		}
+
+		twts := getTweetsByHash(hash, twt)
+		sort.Sort(sort.Reverse(twts))
+
+		var pagedTwts types.Twts
+
+		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
+		pager.SetPage(req.Page)
+
+		if err = pager.Results(&pagedTwts); err != nil {
+			log.WithError(err).Error("error loading twts")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		res := types.PagedResponse{
+			Twts: a.formatTwtText(FilterTwts(loggedInUser, pagedTwts)),
+			Pager: types.PagerResponse{
+				Current:   pager.Page(),
+				MaxPages:  pager.PageNums(),
+				TotalTwts: pager.Nums(),
+			},
+		}
+
+		data, err := json.Marshal(res)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
