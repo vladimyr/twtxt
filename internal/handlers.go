@@ -247,7 +247,7 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = fmt.Sprintf("%s's Profile", profile.Username)
+		ctx.Title = fmt.Sprintf("%s's Profile: %s", profile.Username, profile.Tagline)
 		ctx.Twts = FilterTwts(ctx.User, pagedTwts)
 		ctx.Pager = &pager
 
@@ -884,13 +884,14 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			return
 		}
 
-		title := fmt.Sprintf("%s at %s said", who, when)
+		title := fmt.Sprintf("%s \"%s\"", who, what)
 		description := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		ctx.Title = title
 		ctx.Meta = Meta{
 			Title:       title,
 			Description: description,
+			UpdatedAt:   when,
 			Author:      who,
 			Image:       image,
 			URL:         URLForTwt(s.config.BaseURL, hash),
@@ -1114,7 +1115,7 @@ func (s *Server) FeedsHandler() httprouter.Handle {
 			return
 		}
 
-		ctx.Title = "Local and external feeds"
+		ctx.Title = "Feeds"
 		ctx.Feeds = feeds
 		ctx.FeedSources = feedsources.Sources
 
@@ -1326,7 +1327,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx := NewContext(s.config, s.db, r)
 
 		if r.Method == "GET" {
-			ctx.Title = "Account and profile settings"
+			ctx.Title = "Settings"
 			s.render("settings", w, ctx)
 			return
 		}
@@ -1594,7 +1595,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 			URL:      URLForExternalProfile(s.config, nick, uri),
 		}
 
-		ctx.Title = fmt.Sprintf("External feed for @<%s %s>", nick, uri)
+		ctx.Title = fmt.Sprintf("External profile for @<%s %s>", nick, uri)
 		s.render("externalProfile", w, ctx)
 	}
 }
