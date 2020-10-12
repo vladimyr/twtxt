@@ -855,7 +855,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		when := twt.Created.Format(time.RFC3339)
-		what := twt.Text
+		what := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
@@ -885,12 +885,11 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 		}
 
 		title := fmt.Sprintf("%s \"%s\"", who, what)
-		description := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
 
 		ctx.Title = title
 		ctx.Meta = Meta{
 			Title:       title,
-			Description: description,
+			Description: what,
 			UpdatedAt:   when,
 			Author:      who,
 			Image:       image,
