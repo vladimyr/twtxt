@@ -36,9 +36,9 @@ generate:
 	@rm -f -v ./internal/rice-box.go
 else
 generate:
-	@rice -i ./internal embed-go
 	@minify -b -o ./internal/static/css/twtxt.min.css ./internal/static/css/[0-9]*-*.css
 	@minify -b -o ./internal/static/js/twtxt.min.js ./internal/static/js/[0-9]*-*.js
+	@rice -i ./internal embed-go
 endif
 
 install: build
