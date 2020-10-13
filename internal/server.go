@@ -25,6 +25,7 @@ import (
 
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/internal/auth"
+	"github.com/prologic/twtxt/internal/middleware"
 	"github.com/prologic/twtxt/internal/passwords"
 	"github.com/prologic/twtxt/internal/session"
 	"github.com/prologic/twtxt/internal/webmention"
@@ -673,12 +674,14 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 		server: &http.Server{
 			Addr: bind,
-			Handler: logger.New(logger.Options{
-				Prefix:               "twtxt",
-				RemoteAddressHeaders: []string{"X-Forwarded-For"},
-			}).Handler(
-				gziphandler.GzipHandler(
-					sm.Handler(router),
+			Handler: middleware.RealIP(
+				logger.New(logger.Options{
+					Prefix:               "twtxt",
+					RemoteAddressHeaders: []string{"X-Forwarded-For", "X-Real-IP"},
+				}).Handler(
+					gziphandler.GzipHandler(
+						sm.Handler(router),
+					),
 				),
 			),
 		},
