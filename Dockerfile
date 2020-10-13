@@ -34,6 +34,7 @@ COPY *.go ./
 COPY ./internal/*.go ./internal/
 COPY ./internal/auth/*.go ./internal/auth/
 COPY ./internal/session/*.go ./internal/session/
+COPY ./internal/middleware/*.go ./internal/middleware/
 COPY ./internal/passwords/*.go ./internal/passwords/
 COPY ./internal/webmention/*.go ./internal/webmention/
 COPY ./types/*.go ./types/
