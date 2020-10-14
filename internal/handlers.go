@@ -888,7 +888,7 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 
 		ctx.Title = title
 		ctx.Meta = Meta{
-			Title:       title,
+			Title:       fmt.Sprintf("Twt #%s", twt.Hash()),
 			Description: what,
 			UpdatedAt:   when,
 			Author:      who,
