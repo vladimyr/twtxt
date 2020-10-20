@@ -24,6 +24,7 @@ const (
 
 // Cached ...
 type Cached struct {
+	mu           sync.RWMutex
 	cache        types.TwtMap
 	Twts         types.Twts
 	Lastmodified string
@@ -31,17 +32,21 @@ type Cached struct {
 
 // Lookup ...
 func (cached Cached) Lookup(hash string) (types.Twt, bool) {
+	cached.mu.RLock()
 	twt, ok := cached.cache[hash]
+	cached.mu.RUnlock()
 	if ok {
 		return twt, true
 	}
 
 	for _, twt := range cached.Twts {
 		if twt.Hash() == hash {
+			cached.mu.Lock()
 			if cached.cache == nil {
 				cached.cache = make(map[string]types.Twt)
 			}
 			cached.cache[hash] = twt
+			cached.mu.Unlock()
 			return twt, true
 		}
 	}
