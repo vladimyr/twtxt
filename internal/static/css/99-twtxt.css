@@ -262,7 +262,7 @@ video {
   padding: 5px 15px;
   font-size: 13px;
   color: #dcdcdc !important;
-  border-color: 1px solid #1095c1 !important; 
+  border-color: 1px solid var(--primary) !important; 
   border-radius: 0.25rem !important;
 }
 
@@ -271,6 +271,15 @@ article .p-summary p video,
 article .p-summary p img{
   width: auto;
   height: auto;
+}
+
+/* Blockquotes */
+article .p-summary blockquote {
+  border-left: 5px solid var(--primary) !important;
+  margin: 1.5em 10px;
+  padding: 10px 10px 10px 25px;
+  font-style: italic;
+  position: relative;
 }
 
 /* Toolbar styling */
