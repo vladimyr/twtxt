@@ -101,7 +101,7 @@ var (
 
 	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
 	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*);? @?(.*)\)`)
+	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*?);? @?(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
 	ErrBadRequest        = errors.New("error: request failed with non-200 response")
@@ -1123,6 +1123,8 @@ type TwtxtUserAgent struct {
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
+	log.Infof("ua: %q", ua)
+
 	match := userAgentRegex.FindStringSubmatch(ua)
 	if match == nil {
 		return nil, ErrInvalidUserAgent
