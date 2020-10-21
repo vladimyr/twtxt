@@ -585,10 +585,10 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 						s.config, s.db,
 						twtxtBot,
 						fmt.Sprintf(
-							"FOLLOW: @<%s %s> from @<%s %s> using %s/%s",
+							"FOLLOW: @<%s %s> from @<%s %s> using %s",
 							nick, URLForUser(s.config, nick),
 							followerClient.Nick, followerClient.URL,
-							followerClient.ClientName, followerClient.ClientVersion,
+							followerClient.Client,
 						),
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")

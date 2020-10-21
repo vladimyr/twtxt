@@ -99,10 +99,9 @@ var (
 		twtxtBot,
 	}
 
-	validFeedName         = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
-	validUsername         = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex        = regexp.MustCompile(`(.*?)(?:\s+|\/)?(.*?)?\s+?\(\+?(https?://.*);? @?(.*)\)`)
-	userAgentUserURLRegex = regexp.MustCompile(`\(\+?(https?://.*);? @(.*)\)`)
+	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
+	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
+	userAgentRegex = regexp.MustCompile(`(.*?)\s+?\(\+?(https?://.*);? @?(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
 	ErrBadRequest        = errors.New("error: request failed with non-200 response")
@@ -1118,47 +1117,23 @@ func (u URI) String() string {
 }
 
 type TwtxtUserAgent struct {
-	ClientName    string
-	ClientVersion string
-	Nick          string
-	URL           string
+	Client string
+	Nick   string
+	URL    string
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
-	var (
-		url  string
-		nick string
-	)
-
-	clientName := "unknown"
-	clientVersion := "unknown"
-
 	match := userAgentRegex.FindStringSubmatch(ua)
-	if match != nil {
-		if match[1] != "" {
-			clientName = match[1]
-		}
-		if match[2] != "" {
-			clientVersion = match[2]
-		}
-
-		url = match[3]
-		nick = match[4]
-	} else {
-		match := userAgentUserURLRegex.FindStringSubmatch(ua)
-		if match == nil {
-			return nil, ErrInvalidUserAgent
-		}
-
-		url = match[1]
-		nick = match[2]
+	if match == nil {
+		return nil, ErrInvalidUserAgent
 	}
 
+	log.Infof("match: %q", match)
+
 	return &TwtxtUserAgent{
-		ClientName:    clientName,
-		ClientVersion: clientVersion,
-		URL:           url,
-		Nick:          nick,
+		Client: match[1],
+		URL:    match[2],
+		Nick:   match[3],
 	}, nil
 }
 
