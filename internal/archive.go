@@ -73,7 +73,7 @@ func (a *DiskArchiver) makePath(hash string) (string, error) {
 		return "", err
 	}
 
-	if len(bs) < types.TwtHashLength {
+	if len(bs) < 2 {
 		return "", ErrInvalidTwtHash
 	}
 
