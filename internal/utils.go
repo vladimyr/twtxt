@@ -99,9 +99,10 @@ var (
 		twtxtBot,
 	}
 
-	validFeedName  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
-	validUsername  = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
-	userAgentRegex = regexp.MustCompile(`(.*?)\/(.*?) ?\(\+(https?://.*); @(.*)\)`)
+	validFeedName         = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]*$`)
+	validUsername         = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_-]+$`)
+	userAgentRegex        = regexp.MustCompile(`(.*?)(?:\s+|\/)?(.*?)?\s+?\(\+?(https?://.*);? @?(.*)\)`)
+	userAgentUserURLRegex = regexp.MustCompile(`\(\+?(https?://.*);? @(.*)\)`)
 
 	ErrInvalidFeedName   = errors.New("error: invalid feed name")
 	ErrBadRequest        = errors.New("error: request failed with non-200 response")
@@ -252,13 +253,17 @@ func Request(conf *Config, method, url string, headers http.Header) (*http.Respo
 		headers = make(http.Header)
 	}
 
-	headers.Set(
-		"User-Agent",
-		fmt.Sprintf(
-			"twtxt/%s (Pod: %s Support: %s)",
-			twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
-		),
-	)
+	// Set a default User-Agent (if none set)
+	if headers.Get("User-Agent") == "" {
+		headers.Set(
+			"User-Agent",
+			fmt.Sprintf(
+				"twtxt/%s (Pod: %s Support: %s)",
+				twtxt.FullVersion(), conf.Name, URLForPage(conf.BaseURL, "support"),
+			),
+		)
+	}
+
 	req.Header = headers
 
 	client := http.Client{
@@ -1120,15 +1125,40 @@ type TwtxtUserAgent struct {
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
+	var (
+		url  string
+		nick string
+	)
+
+	clientName := "unknown"
+	clientVersion := "unknown"
+
 	match := userAgentRegex.FindStringSubmatch(ua)
-	if match == nil {
-		return nil, ErrInvalidUserAgent
+	if match != nil {
+		if match[1] != "" {
+			clientName = match[1]
+		}
+		if match[2] != "" {
+			clientVersion = match[2]
+		}
+
+		url = match[3]
+		nick = match[4]
+	} else {
+		match := userAgentUserURLRegex.FindStringSubmatch(ua)
+		if match == nil {
+			return nil, ErrInvalidUserAgent
+		}
+
+		url = match[1]
+		nick = match[2]
 	}
+
 	return &TwtxtUserAgent{
-		ClientName:    match[1],
-		ClientVersion: match[2],
-		URL:           match[3],
-		Nick:          match[4],
+		ClientName:    clientName,
+		ClientVersion: clientVersion,
+		URL:           url,
+		Nick:          nick,
 	}, nil
 }
 
@@ -1335,6 +1365,16 @@ func URLForTask(baseURL, uuid string) string {
 		"%s/task/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		uuid,
+	)
+}
+
+func URLForWhoFollows(baseURL string, feed types.Feed) string {
+	token := GenerateToken()
+
+	return fmt.Sprintf(
+		"%s/whoFollows?uri=%s&nick=%s&token=%s",
+		strings.TrimSuffix(baseURL, "/"),
+		feed.URL, feed.Nick, token,
 	)
 }
 

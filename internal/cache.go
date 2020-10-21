@@ -15,6 +15,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 )
 
@@ -130,7 +131,7 @@ func LoadCache(path string) (*Cache, error) {
 const maxfetchers = 50
 
 // FetchTwts ...
-func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds) {
+func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds, followers map[types.Feed][]string) {
 	stime := time.Now()
 	defer func() {
 		metrics.Gauge(
@@ -167,6 +168,41 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds)
 			}()
 
 			headers := make(http.Header)
+
+			if followers != nil {
+				feedFollowers := followers[feed]
+				if len(feedFollowers) == 1 {
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (+%s; @%s)",
+							twtxt.FullVersion(),
+							URLForUser(conf, feedFollowers[0]), feedFollowers[0],
+						),
+					)
+				} else {
+					var followersString string
+
+					if len(feedFollowers) > 5 {
+						followersString = fmt.Sprintf(
+							"%s and %d more... %s",
+							strings.Join(feedFollowers[:5], " "),
+							(len(feedFollowers) - 5), URLForWhoFollows(conf.BaseURL, feed),
+						)
+					} else {
+						followersString = strings.Join(feedFollowers, " ")
+					}
+
+					headers.Set(
+						"User-Agent",
+						fmt.Sprintf(
+							"twtxt/%s (Pod: %s Followers: %s Support: %s)",
+							twtxt.FullVersion(), conf.Name,
+							followersString, URLForPage(conf.BaseURL, "support"),
+						),
+					)
+				}
+			}
 
 			cache.mu.RLock()
 			if cached, ok := cache.Twts[feed.URL]; ok {
