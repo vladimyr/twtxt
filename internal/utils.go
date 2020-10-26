@@ -1123,14 +1123,10 @@ type TwtxtUserAgent struct {
 }
 
 func DetectFollowerFromUserAgent(ua string) (*TwtxtUserAgent, error) {
-	log.Infof("ua: %q", ua)
-
 	match := userAgentRegex.FindStringSubmatch(ua)
 	if match == nil {
 		return nil, ErrInvalidUserAgent
 	}
-
-	log.Infof("match: %q", match)
 
 	return &TwtxtUserAgent{
 		Client: match[1],
