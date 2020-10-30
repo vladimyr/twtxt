@@ -483,6 +483,9 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/avatar.png", s.OldAvatarHandler())
 	s.router.HEAD("/user/:nick/avatar.png", s.OldAvatarHandler())
 
+	// XXX: HEAD is always exposed for IndieAuth Authorization Discovery
+	s.router.HEAD("/user/:nick", s.ProfileHandler())
+
 	if s.config.OpenProfiles {
 		s.router.GET("/user/:nick", s.ProfileHandler())
 		s.router.GET("/user/:nick/config.yaml", s.UserConfigHandler())
@@ -501,6 +504,11 @@ func (s *Server) initRoutes() {
 
 	// WebMentions
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
+
+	// IndieAuth  Authorization Endpoint
+	s.router.GET("/user/:nick/indieauth/auth", s.IndieAuthHandler())
+	s.router.POST("/user/:nick/indieauth/auth", s.IndieAuthVerifyHandler())
+	s.router.GET("/user/:nick/indieauth/callback", s.IndieAuthCallbackHandler())
 
 	// External Feeds
 	s.router.GET("/external", s.ExternalHandler())

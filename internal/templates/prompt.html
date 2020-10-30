@@ -1,0 +1,12 @@
+{{define "content"}}
+  <div class="grid">
+    <div>
+      <hgroup>
+        <h2>{{ .Title }}</h2>
+        <h3>{{ .Message }}</h3>
+      </hgroup>
+      <a href="{{ .Callback }}" role="button" class="primary">Approve</a>
+      <a href="/" role="button" class="contrast">Cancel</a>
+    </div>
+  </div>
+{{end}}

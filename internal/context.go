@@ -51,10 +51,12 @@ type Context struct {
 	Authenticated bool
 	IsAdmin       bool
 
-	Error   bool
-	Message string
-	Theme   string
-	Commit  string
+	Error    bool
+	Message  string
+	Callback string
+
+	Theme  string
+	Commit string
 
 	Page    string
 	Content template.HTML

@@ -9,9 +9,11 @@
 
 /twt
 /twtd
+/mfget
 
 /cmd/twt/twt
 /cmd/twtd/twtd
+/cmd/mfget/mfget
 
 /data/cache
 /data/blogscache

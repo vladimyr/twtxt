@@ -10,7 +10,7 @@ var tokenCache *TTLCache
 
 func init() {
 	// #244: How to make discoverability via user agents work again?
-	tokenCache = NewTTLCache(1 * time.Hour)
+	tokenCache = NewTTLCache(10 * time.Minute)
 }
 
 func GenerateToken() string {

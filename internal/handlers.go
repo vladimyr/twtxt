@@ -172,6 +172,11 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		nick := NormalizeUsername(p.ByName("nick"))
 		if nick == "" {
+			if r.Method == http.MethodHead {
+				http.Error(w, "Bad Request", http.StatusBadRequest)
+				return
+			}
+
 			ctx.Error = true
 			ctx.Message = "No user specified"
 			s.render("error", w, ctx)
@@ -186,6 +191,12 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			user, err := s.db.GetUser(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading user object for %s", nick)
+
+				if r.Method == http.MethodHead {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
 				ctx.Error = true
 				ctx.Message = "Error loading profile"
 				s.render("error", w, ctx)
@@ -196,6 +207,12 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			feed, err := s.db.GetFeed(nick)
 			if err != nil {
 				log.WithError(err).Errorf("error loading feed object for %s", nick)
+
+				if r.Method == http.MethodHead {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+
 				ctx.Error = true
 				ctx.Message = "Error loading profile"
 				s.render("error", w, ctx)
@@ -203,9 +220,26 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 			}
 			profile = feed.Profile(s.config.BaseURL, ctx.User)
 		} else {
+			if r.Method == http.MethodHead {
+				http.Error(w, "Not Found", http.StatusNotFound)
+				return
+			}
+
 			ctx.Error = true
 			ctx.Message = "User or Feed Not Found"
 			s.render("404", w, ctx)
+			return
+		}
+
+		w.Header().Set(
+			"Link",
+			fmt.Sprintf(
+				`<%s>; rel="authorization_endpoint"`,
+				fmt.Sprintf("%s/indieauth/auth", UserURL(profile.URL)),
+			),
+		)
+
+		if r.Method == http.MethodHead {
 			return
 		}
 
@@ -214,6 +248,10 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 		ctx.Links = append(ctx.Links, types.Link{
 			Href: fmt.Sprintf("%s/webmention", UserURL(profile.URL)),
 			Rel:  "webmention",
+		})
+		ctx.Links = append(ctx.Links, types.Link{
+			Href: fmt.Sprintf("%s/indieauth/auth", UserURL(profile.URL)),
+			Rel:  "authorization_endpoint",
 		})
 
 		ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
@@ -570,6 +608,7 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/webmention>; rel="webmention"`, s.config.BaseURL, nick))
+		w.Header().Set("Link", fmt.Sprintf(`<%s/user/%s/indieauth/auth>; rel="authorization_endpoint"`, s.config.BaseURL, nick))
 		w.Header().Set("Last-Modified", fileInfo.ModTime().UTC().Format(http.TimeFormat))
 
 		followerClient, err := DetectFollowerFromUserAgent(r.UserAgent())
