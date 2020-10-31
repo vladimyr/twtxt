@@ -1160,6 +1160,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 // ExternalProfileEndpoint ...
 func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		loggedInUser := a.getLoggedInUser(r)
 		req, err := types.NewExternalProfileRequest(r.Body)
 		if err != nil {
 			log.WithError(err).Error("error parsing external profile request")
@@ -1186,6 +1187,10 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 			Username: nick,
 			TwtURL:   url,
 			URL:      url,
+
+			Follows:    loggedInUser.Follows(url),
+			FollowedBy: loggedInUser.FollowedBy(url),
+			Muted:      loggedInUser.HasMuted(url),
 		}
 
 		profileResponse.Twter = types.Twter{
