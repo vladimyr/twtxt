@@ -19,7 +19,7 @@ require (
 	github.com/daaku/go.zipexe v1.0.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200620013148-b91950f658ec // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/disintegration/imageorient v0.0.0-20180920195336-8147d86e83ec
+	github.com/disintegration/imaging v1.6.2
 	github.com/dustin/go-humanize v1.0.0
 	github.com/elithrar/simple-scrypt v1.3.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -42,9 +42,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.3
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/nullrocks/identicon v0.0.0-20180626043057-7875f45b0022
-	github.com/oliamb/cutter v0.2.2
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prologic/bitcask v0.3.6
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928

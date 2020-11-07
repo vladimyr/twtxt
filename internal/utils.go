@@ -30,7 +30,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
-	"github.com/disintegration/imageorient"
+	"github.com/disintegration/imaging"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
@@ -39,9 +39,7 @@ import (
 	"github.com/h2non/filetype"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/nfnt/resize"
 	"github.com/nullrocks/identicon"
-	"github.com/oliamb/cutter"
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 	log "github.com/sirupsen/logrus"
@@ -531,7 +529,6 @@ func IsVideo(fn string) bool {
 }
 
 type ImageOptions struct {
-	Crop      bool
 	Resize    bool
 	Thumbnail bool
 	Width     int
@@ -787,7 +784,7 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 	}
 	defer f.Close()
 
-	img, _, err := imageorient.Decode(f)
+	img, err := imaging.Decode(f, imaging.AutoOrientation(true))
 	if err != nil {
 		log.WithError(err).Error("imageorient.Decode failed")
 		return "", err
@@ -797,17 +794,9 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 
 	if opts != nil {
 		if opts.Resize && (opts.Width+opts.Height > 0) && (opts.Height > 0 || img.Bounds().Size().X > opts.Width) {
-			newImg = resize.Resize(uint(opts.Width), uint(opts.Height), img, resize.Lanczos3)
+			newImg = imaging.Fit(img, opts.Width, opts.Height, imaging.Lanczos)
 		} else if opts.Thumbnail {
-			newImg = resize.Thumbnail(uint(opts.Width), uint(opts.Height), img, resize.Lanczos3)
-		}
-
-		if opts.Crop {
-			newImg, err = cutter.Crop(newImg, cutter.Config{Width: opts.Width, Height: opts.Height})
-			if err != nil {
-				log.WithError(err).Error("error cropping image")
-				return "", err
-			}
+			newImg = imaging.Thumbnail(img, opts.Width, opts.Height, imaging.Lanczos)
 		}
 	}
 
