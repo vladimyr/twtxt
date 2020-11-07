@@ -37,8 +37,8 @@ import (
 )
 
 const (
-	MediaResolution  = 640 // 640x480
-	AvatarResolution = 60  // 60x60
+	MediaResolution  = 720 // 720x576
+	AvatarResolution = 360 // 360x360
 	AsyncTaskLimit   = 5
 	MaxFailedLogins  = 3 // By default 3 failed login attempts per 5 minutes
 )
@@ -307,9 +307,9 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 			if avatarFile != nil {
 				opts := &ImageOptions{
-					Resize:  true,
-					ResizeW: AvatarResolution,
-					ResizeH: AvatarResolution,
+					Thumbnail: true,
+					Width:     AvatarResolution,
+					Height:    AvatarResolution,
 				}
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
@@ -1383,9 +1383,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		if avatarFile != nil {
 			opts := &ImageOptions{
-				Resize:  true,
-				ResizeW: AvatarResolution,
-				ResizeH: AvatarResolution,
+				Thumbnail: true,
+				Width:     AvatarResolution,
+				Height:    AvatarResolution,
 			}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,

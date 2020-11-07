@@ -383,8 +383,8 @@ footer small .footer-menu a:last-child::after{
     display: block;
   }
   .u-author.h-card>div img.avatar{
-    width: auto;
-    height: auto;
+    width: 60px;
+    height; 60px;
   }
   .u-author.h-card .author{
     flex: 80%;

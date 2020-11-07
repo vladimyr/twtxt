@@ -41,6 +41,7 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nfnt/resize"
 	"github.com/nullrocks/identicon"
+	"github.com/oliamb/cutter"
 	"github.com/prologic/twtxt"
 	"github.com/prologic/twtxt/types"
 	log "github.com/sirupsen/logrus"
@@ -223,7 +224,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 	for _, candidate := range candidates {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(conf, source.String()) {
-			opts := &ImageOptions{Resize: true, ResizeW: AvatarResolution, ResizeH: AvatarResolution}
+			opts := &ImageOptions{Thumbnail: true, Width: AvatarResolution, Height: AvatarResolution}
 			_, err := DownloadImage(conf, source.String(), externalDir, slug, opts)
 			if err != nil {
 				log.WithError(err).
@@ -530,9 +531,11 @@ func IsVideo(fn string) bool {
 }
 
 type ImageOptions struct {
-	Resize  bool
-	ResizeW int
-	ResizeH int
+	Crop      bool
+	Resize    bool
+	Thumbnail bool
+	Width     int
+	Height    int
 }
 
 type AudioOptions struct {
@@ -581,65 +584,7 @@ func DownloadImage(conf *Config, url string, resource, name string, opts *ImageO
 		return "", err
 	}
 
-	if _, err := tf.Seek(0, io.SeekStart); err != nil {
-		log.WithError(err).Error("error seeking temporary file")
-		return "", err
-	}
-
-	img, _, err := image.Decode(tf)
-	if err != nil {
-		log.WithError(err).Error("jpeg.Decode failed")
-		return "", err
-	}
-
-	newImg := img
-
-	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
-			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
-		}
-	}
-
-	p := filepath.Join(conf.Data, resource)
-	if err := os.MkdirAll(p, 0755); err != nil {
-		log.WithError(err).Error("error creating avatars directory")
-		return "", err
-	}
-
-	var fn string
-
-	if name == "" {
-		uuid := shortuuid.New()
-		fn = filepath.Join(p, fmt.Sprintf("%s.webp", uuid))
-	} else {
-		fn = fmt.Sprintf("%s.webp", filepath.Join(p, name))
-	}
-
-	of, err := os.OpenFile(fn, os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		log.WithError(err).Error("error opening output file")
-		return "", err
-	}
-	defer of.Close()
-
-	if err := webp.Encode(of, newImg, &webp.Options{Lossless: true}); err != nil {
-		log.WithError(err).Error("error reencoding image")
-		return "", err
-	}
-
-	// Re-encode to PNG (for older browsers)
-	if err := of.Close(); err != nil {
-		log.WithError(err).Warnf("error cloding file %s", fn)
-	}
-	if err := ImageToPng(fn); err != nil {
-		log.WithError(err).Warnf("error reencoding image to PNG (for older browsers: %s", fn)
-	}
-
-	return fmt.Sprintf(
-		"%s/%s/%s",
-		strings.TrimSuffix(conf.BaseURL, "/"),
-		resource, strings.TrimSuffix(filepath.Base(fn), filepath.Ext(fn)),
-	), nil
+	return ProcessImage(conf, tf.Name(), resource, name, opts)
 }
 
 func ReceiveAudio(r io.Reader) (string, error) {
@@ -851,8 +796,18 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 	newImg := img
 
 	if opts != nil {
-		if opts.Resize && (opts.ResizeW+opts.ResizeH > 0) && (opts.ResizeH > 0 || img.Bounds().Size().X > opts.ResizeW) {
-			newImg = resize.Resize(uint(opts.ResizeW), uint(opts.ResizeH), img, resize.Lanczos3)
+		if opts.Resize && (opts.Width+opts.Height > 0) && (opts.Height > 0 || img.Bounds().Size().X > opts.Width) {
+			newImg = resize.Resize(uint(opts.Width), uint(opts.Height), img, resize.Lanczos3)
+		} else if opts.Thumbnail {
+			newImg = resize.Thumbnail(uint(opts.Width), uint(opts.Height), img, resize.Lanczos3)
+		}
+
+		if opts.Crop {
+			newImg, err = cutter.Crop(newImg, cutter.Config{Width: opts.Width, Height: opts.Height})
+			if err != nil {
+				log.WithError(err).Error("error cropping image")
+				return "", err
+			}
 		}
 	}
 

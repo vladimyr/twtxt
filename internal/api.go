@@ -811,9 +811,9 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 
 		if avatarFile != nil {
 			opts := &ImageOptions{
-				Resize:  true,
-				ResizeW: AvatarResolution,
-				ResizeH: AvatarResolution,
+				Resize: true,
+				Width:  AvatarResolution,
+				Height: AvatarResolution,
 			}
 			_, err = StoreUploadedImage(
 				a.config, avatarFile,
@@ -867,7 +867,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		var mediaURI string
 
 		if mediaFile != nil {
-			opts := &ImageOptions{Resize: true, ResizeW: MediaResolution, ResizeH: 0}
+			opts := &ImageOptions{Resize: true, Width: MediaResolution, Height: 0}
 			mediaURI, err = StoreUploadedImage(
 				a.config, mediaFile,
 				mediaDir, "",
