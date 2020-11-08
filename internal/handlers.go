@@ -307,9 +307,9 @@ func (s *Server) ManageFeedHandler() httprouter.Handle {
 
 			if avatarFile != nil {
 				opts := &ImageOptions{
-					Thumbnail: true,
-					Width:     AvatarResolution,
-					Height:    AvatarResolution,
+					Resize: true,
+					Width:  AvatarResolution,
+					Height: AvatarResolution,
 				}
 				_, err = StoreUploadedImage(
 					s.config, avatarFile,
@@ -1383,9 +1383,9 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		if avatarFile != nil {
 			opts := &ImageOptions{
-				Thumbnail: true,
-				Width:     AvatarResolution,
-				Height:    AvatarResolution,
+				Resize: true,
+				Width:  AvatarResolution,
+				Height: AvatarResolution,
 			}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,

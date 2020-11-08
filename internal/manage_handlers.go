@@ -49,9 +49,9 @@ func (s *Server) ManagePodHandler() httprouter.Handle {
 
 		if avatarFile != nil {
 			opts := &ImageOptions{
-				Thumbnail: true,
-				Width:     AvatarResolution,
-				Height:    AvatarResolution,
+				Resize: true,
+				Width:  AvatarResolution,
+				Height: AvatarResolution,
 			}
 			_, err = StoreUploadedImage(
 				s.config, avatarFile,

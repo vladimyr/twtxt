@@ -223,7 +223,7 @@ func GetExternalAvatar(conf *Config, nick, uri string) string {
 	for _, candidate := range candidates {
 		source, _ := base.Parse(candidate)
 		if ResourceExists(conf, source.String()) {
-			opts := &ImageOptions{Thumbnail: true, Width: AvatarResolution, Height: AvatarResolution}
+			opts := &ImageOptions{Resize: true, Width: AvatarResolution, Height: AvatarResolution}
 			_, err := DownloadImage(conf, source.String(), externalDir, slug, opts)
 			if err != nil {
 				log.WithError(err).
@@ -530,10 +530,9 @@ func IsVideo(fn string) bool {
 }
 
 type ImageOptions struct {
-	Resize    bool
-	Thumbnail bool
-	Width     int
-	Height    int
+	Resize bool
+	Width  int
+	Height int
 }
 
 type AudioOptions struct {

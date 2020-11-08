@@ -18,6 +18,7 @@ article hgroup footer {
 .avatar {
   width: 60px;
   height: 60px;
+  object-fit: cover;
   border: 3px solid var(--h1);
   border-radius: 50%;
   -webkit-border-radius: 60px;;
@@ -384,7 +385,8 @@ footer small .footer-menu a:last-child::after{
   }
   .u-author.h-card>div img.avatar{
     width: 60px;
-    height; 60px;
+    height: 60px;
+    object-fit: cover;
   }
   .u-author.h-card .author{
     flex: 80%;
