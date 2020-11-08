@@ -139,7 +139,7 @@ func Slugify(uri string) string {
 }
 
 func GenerateAvatar(conf *Config, username string) (image.Image, error) {
-	ig, err := identicon.New(conf.Name, 5, 3)
+	ig, err := identicon.New(conf.Name, 7, 4)
 	if err != nil {
 		log.WithError(err).Error("error creating identicon generator")
 		return nil, err
