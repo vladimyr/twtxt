@@ -30,7 +30,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/bakape/thumbnailer/v2"
 	"github.com/chai2010/webp"
-	"github.com/disintegration/imaging"
+	"github.com/disintegration/gift"
+	"github.com/disintegration/imageorient"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/html"
@@ -784,21 +785,32 @@ func ProcessImage(conf *Config, ifn string, resource, name string, opts *ImageOp
 	}
 	defer f.Close()
 
-	img, err := imaging.Decode(f, imaging.AutoOrientation(true))
+	img, _, err := imageorient.Decode(f)
 	if err != nil {
 		log.WithError(err).Error("imageorient.Decode failed")
 		return "", err
 	}
 
-	newImg := img
+	g := gift.New(
+		gift.UnsharpMask(1, 1, 0),
+	)
 
-	if opts != nil {
-		if opts.Resize && (opts.Width+opts.Height > 0) && (opts.Height > 0 || img.Bounds().Size().X > opts.Width) {
-			newImg = imaging.Fit(img, opts.Width, opts.Height, imaging.Lanczos)
-		} else if opts.Thumbnail {
-			newImg = imaging.Thumbnail(img, opts.Width, opts.Height, imaging.Lanczos)
+	if opts != nil && opts.Resize {
+		if opts.Width > 0 && opts.Height > 0 {
+			g.Add(gift.ResizeToFit(opts.Width, opts.Height, gift.LanczosResampling))
+		} else if (opts.Width+opts.Height > 0) && (opts.Height > 0 || img.Bounds().Size().X > opts.Width) {
+			g.Add(gift.Resize(opts.Width, opts.Height, gift.LanczosResampling))
+		} else {
+			log.Warnf(
+				"not resizing image with bounds %s to %dx%d",
+				img.Bounds(), opts.Width, opts.Height,
+			)
 		}
 	}
+
+	newImg := image.NewRGBA(g.Bounds(img.Bounds()))
+
+	g.Draw(newImg, img)
 
 	of, err := os.OpenFile(ofn, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
