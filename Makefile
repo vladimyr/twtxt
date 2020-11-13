@@ -48,7 +48,6 @@ install: build
 
 image:
 	@docker build --build-arg VERSION="$(VERSION)" --build-arg COMMIT="$(COMMIT)" -t prologic/twtxt .
-	@docker push prologic/twtxt
 
 release:
 	@./tools/release.sh
