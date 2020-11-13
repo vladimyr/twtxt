@@ -173,6 +173,12 @@ also have that configured and running in your cluster appropriately.
 docker stack deploy -c twtxt.yml
 ```
 
+__NOTE:__ The [Dockerfile](/Dockerfile) specifies that the container run as
+          the user `twtd` with `uid=1000`. Be sure that any volume(s) you
+          mount into your container and use as the data storage (`-d/--data`)
+          path and database storage path (`-s/--store`) is correctly configured
+          to have the correct user/group ownership. e.g: `chorn -R 1000:1000 /data`
+
 ## Sponsor
 
 Support the ongoing development of twtxt!
