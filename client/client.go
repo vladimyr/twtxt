@@ -124,3 +124,13 @@ func (c *Client) Post(text string) (res types.AuthResponse, err error) {
 	err = c.do(req, &res)
 	return
 }
+
+// Timeline ...
+func (c *Client) Timeline(page int) (res types.PagedResponse, err error) {
+	req, err := c.newRequest("POST", "/timeline", types.PagedRequest{Page: page})
+	if err != nil {
+		return types.PagedResponse{}, err
+	}
+	err = c.do(req, &res)
+	return
+}

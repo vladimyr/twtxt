@@ -101,6 +101,38 @@ __NOTE___: It is important you follow these steps and don't just simply attempt
 
 ## Usage
 
+### Command-line Client
+
+1. Login to  your [Twt.social](https://twt.social) pod:
+
+```#!console
+$ ./twt login
+INFO[0000] Using config file: /Users/prologic/.twt.yaml
+Username:
+```
+
+2. Viewing your timeline
+
+```#!console
+$ ./twt timeline
+INFO[0000] Using config file: /Users/prologic/.twt.yaml
+> prologic (50 minutes ago)
+Hey @rosaelefanten 👋 Nice to see you have a Twtxt feed! Saw your [Tweet](https://twitter.com/koehr_in/status/1326914925348982784?s=20) (_or at least I assume it was yours?_). Never heard of `aria2c` till now! 🤣 TIL
+
+> dilbert (2 hours ago)
+Angry Techn Writers ‣ https://dilbert.com/strip/2020-11-14
+```
+
+3. Making a Twt (_post_):
+
+```#!console
+$ ./twt post
+INFO[0000] Using config file: /Users/prologic/.twt.yaml
+Testing `twt` the command-line client
+INFO[0015] posting twt...
+INFO[0016] post successful
+```
+
 ### Deploy with Docker Compose
 
 Run the compose configuration:
