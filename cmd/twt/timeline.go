@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -46,6 +47,8 @@ func timeline(cli *client.Client, args []string) {
 		log.WithError(err).Error("error retrieving timeline")
 		os.Exit(1)
 	}
+
+	sort.Sort(sort.Reverse(res.Twts))
 
 	for _, twt := range res.Twts {
 		PrintTwt(twt, time.Now())

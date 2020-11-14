@@ -93,7 +93,7 @@ type PagerResponse struct {
 
 // PagedResponse ...
 type PagedResponse struct {
-	Twts  []Twt `json:"twts"`
+	Twts  Twts `json:"twts"`
 	Pager PagerResponse
 }
 
