@@ -47,8 +47,14 @@ install: build
 	@go install ./cmd/twt/...
 	@go install ./cmd/twtd/...
 
+ifeq ($(PUBLISH), 1)
 image:
 	@docker build --build-arg VERSION="$(VERSION)" --build-arg COMMIT="$(COMMIT)" -t prologic/twtxt .
+	@docker push prologic/twtxt
+else
+image:
+	@docker build --build-arg VERSION="$(VERSION)" --build-arg COMMIT="$(COMMIT)" -t prologic/twtxt .
+endif
 
 release:
 	@./tools/release.sh
