@@ -3,13 +3,17 @@
     <div>
       <hgroup>
         <h2>Sign up</h2>
-        <h3>Create and register a new twtxt account on {{ .InstanceName }}</h3>
+        <p>Create and register a new Twt.social account on {{ .InstanceName }}</p>
       </hgroup>
       <form id="register" action="/register" method="POST">
         <input type="text" name="username" placeholder="Username" aria-label="Username" autocomplete="nickname" autofocus required>
         <input type="password" name="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required>
         <input type="email" name="email" placeholder="Email address" aria-label="Email">
-        <small>We'll never share your email address. Used for password recovery only.</small>
+        <small>
+          <b>NOTE:</b>We DO NOT actually store this! If you forget
+          or loose access to your Email account provided here, it will
+          be impossible to recovery your Twt.social account!
+        </small>
         <fieldset>
           <label for="switch">
             <input id="agree" type="checkbox" name="agree" role="switch">
@@ -17,13 +21,37 @@
           </label>
         </fieldset>
         <button type="submit" class="contrast">Register</button>
-        <p>Already have an account? <a href="/login">Login</a> instead.</p>
+        <p>Already have an account? <a href="/login">/login</a> instead.</p>
       </form>
+    </div>
+    <div>
+      <hgroup>
+        <h2>How to create an account</h2>
+      </hgroup>
+      <p>
+        You are about to create a new <a href="https://twt.social" target="_blank">Twt.social</a>
+        account on {{ .InstanceName }}
+      </p>
       <p>
         By registering an account on {{ .InstanceName }} you agree to abide
         by the Community Guidelines set out in the <a href="/abuse">Abuse Policy</a>.
       </p>
+      <p>
+        <ul>
+          <li>Pick a username</li>
+          <li>Create a unique and secure password</li>
+          <li>Enter your email address in case you forget your password</li>
+        </ul>
+      </p>
+      <p>
+        Pick any username you like (<i>as long as it is available on {{ .InstanceName }}</i>).
+      </p>
+      <p>
+        Please note we <b>DO NOT</b> actually store your email address at all!
+        If you forget your email address or loose access to your email we are
+        really sorry but you will be unable to recover your account if you
+        forget your password.
+      </p>
     </div>
-    <div></div>
   </article>
 {{end}}
