@@ -234,7 +234,11 @@ func (bs *BitcaskStore) GetSession(sid string) (*session.Session, error) {
 		}
 		return nil, err
 	}
-	return session.LoadSession(data)
+	sess := session.NewSession(bs)
+	if err := session.LoadSession(data, sess); err != nil {
+		return nil, err
+	}
+	return sess, nil
 }
 
 func (bs *BitcaskStore) SetSession(sid string, sess *session.Session) error {
@@ -288,11 +292,11 @@ func (bs *BitcaskStore) GetAllSessions() ([]*session.Session, error) {
 			return err
 		}
 
-		session, err := session.LoadSession(data)
-		if err != nil {
+		sess := session.NewSession(bs)
+		if err := session.LoadSession(data, sess); err != nil {
 			return err
 		}
-		sessions = append(sessions, session)
+		sessions = append(sessions, sess)
 		return nil
 	})
 	if err != nil {

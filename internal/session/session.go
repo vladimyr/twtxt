@@ -18,16 +18,20 @@ type Session struct {
 	ExpiresAt time.Time `json:"expires"`
 }
 
-func LoadSession(data []byte) (sess *Session, err error) {
-	if err = json.Unmarshal(data, &sess); err != nil {
-		return nil, err
+func NewSession(store Store) *Session {
+	return &Session{store: store}
+}
+
+func LoadSession(data []byte, sess *Session) error {
+	if err := json.Unmarshal(data, &sess); err != nil {
+		return err
 	}
 
 	if sess.Data == nil {
 		sess.Data = make(Map)
 	}
 
-	return
+	return nil
 }
 
 func (sess *Session) Expired() bool {

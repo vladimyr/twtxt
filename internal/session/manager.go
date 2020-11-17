@@ -123,8 +123,6 @@ func (m *Manager) GetOrCreate(w http.ResponseWriter, r *http.Request) (*Session,
 		return nil, err
 	}
 
-	sess.store = m.store
-
 	return sess, nil
 }
 
