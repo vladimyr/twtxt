@@ -36,7 +36,6 @@ func init() {
 		"Stats":             NewJobSpec("@daily", NewStatsJob),
 		"MergeStore":        NewJobSpec("@daily", NewMergeStoreJob),
 
-		"ValidateFeeds":        NewJobSpec("", NewValidateFeedsJob),
 		"RemoveEmailAddresses": NewJobSpec("", NewRemoveEmailAddressesJob),
 	}
 
@@ -46,7 +45,6 @@ func init() {
 		"FixUserAccounts":      Jobs["FixUserAccounts"],
 		"FixMissingTwts":       Jobs["FixMissingTwts"],
 		"DeleteOldSessions":    Jobs["DeleteOldSessions"],
-		"ValidateFeeds":        Jobs["ValidateFeeds"],
 		"RemoveEmailAddresses": Jobs["RemoveEmailAddresses"],
 	}
 }
@@ -293,42 +291,6 @@ func (job *FixUserAccountsJob) Run() {
 			log.WithError(err).Warnf("error creating new feed %s", feed)
 		}
 	}
-}
-
-type ValidateFeedsJob struct {
-	conf    *Config
-	blogs   *BlogsCache
-	cache   *Cache
-	archive Archiver
-	db      Store
-}
-
-func NewValidateFeedsJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
-	return &ValidateFeedsJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
-}
-
-func (job *ValidateFeedsJob) Run() {
-	log.Info("validating feeds...")
-
-	users, err := job.db.GetAllUsers()
-	if err != nil {
-		log.WithError(err).Warn("unable to get all users from database")
-		return
-	}
-
-	for _, user := range users {
-		for feed := range user.Sources() {
-			if err := ValidateFeed(job.conf, feed.Nick, feed.URL); err != nil {
-				log.Infof("invalid feed %s from %s", feed, user)
-				delete(user.Following, feed.Nick)
-			}
-		}
-		if err := job.db.SetUser(user.Username, user); err != nil {
-			log.WithError(err).Warn("error saving user object for AdminUser")
-		}
-	}
-
-	log.Info("finished validating feeds")
 }
 
 type FixMissingTwtsJob struct {
