@@ -158,13 +158,9 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 		// anon func takes needed variables as arg, avoiding capture of iterator variables
 		go func(feed types.Feed) {
-			stime := time.Now()
-			log.Infof("fetching feed %s", feed)
-
 			defer func() {
 				<-fetchers
 				wg.Done()
-				log.Infof("fetched feed %s (%s)", feed, time.Now().Sub(stime))
 			}()
 
 			headers := make(http.Header)
@@ -256,8 +252,6 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					return
 				}
 
-				log.Infof("fetched %d new and %d old twts from %s", len(twts), len(old), feed)
-
 				// Archive old twts
 				for _, twt := range old {
 					if !archive.Has(twt.Hash()) {
@@ -279,7 +273,6 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				}
 				cache.mu.Unlock()
 			case http.StatusNotModified: // 304
-				log.Infof("feed %s has not changed", feed)
 				cache.mu.RLock()
 				twts = cache.Twts[feed.URL].Twts
 				cache.mu.RUnlock()
