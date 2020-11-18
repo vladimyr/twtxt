@@ -298,7 +298,6 @@ func ParseFile(scanner *bufio.Scanner, twter types.Twter, ttl time.Duration, N i
 		twt, err := ParseLine(line, twter)
 		if err != nil {
 			nErrors++
-			log.Warnf("could not parse: '%s' (source:%s)\n", line, twter.URL)
 			continue
 		}
 		if twt.IsZero() {
