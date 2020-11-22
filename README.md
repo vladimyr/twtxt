@@ -97,6 +97,15 @@ FreeBSD:
 gmake deps
 ```
 
+FreeBSD:
+
+- Install ```gmake```
+- Install ```pkgconf``` that brings ```pkg-config```
+
+```console
+gmake deps
+```
+
 3. Build the binaries
 
 Linux, macOS:
