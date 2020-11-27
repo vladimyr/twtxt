@@ -123,26 +123,27 @@ func (s *Server) Shutdown(ctx context.Context) error {
 // Run ...
 func (s *Server) Run() (err error) {
 	idleConnsClosed := make(chan struct{})
+
 	go func() {
-		sigch := make(chan os.Signal, 1)
-		signal.Notify(sigch, syscall.SIGINT, syscall.SIGTERM)
-		sig := <-sigch
-		log.Infof("Recieved signal %s", sig)
-
-		log.Info("Shutting down...")
-
-		// We received an interrupt signal, shut down.
-		if err = s.Shutdown(context.Background()); err != nil {
-			// Error from closing listeners, or context timeout:
-			log.WithError(err).Fatal("Error shutting down HTTP server")
+		if err = s.ListenAndServe(); err != http.ErrServerClosed {
+			// Error starting or closing listener:
+			log.WithError(err).Fatal("HTTP server ListenAndServe")
 		}
-		close(idleConnsClosed)
 	}()
 
-	if err = s.ListenAndServe(); err != http.ErrServerClosed {
-		// Error starting or closing listener:
-		log.WithError(err).Fatal("HTTP server ListenAndServe")
+	sigch := make(chan os.Signal, 1)
+	signal.Notify(sigch, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-sigch
+	log.Infof("Received signal %s", sig)
+
+	log.Info("Shutting down...")
+
+	// We received an interrupt signal, shut down.
+	if err = s.Shutdown(context.Background()); err != nil {
+		// Error from closing listeners, or context timeout:
+		log.WithError(err).Fatal("Error shutting down HTTP server")
 	}
+	close(idleConnsClosed)
 
 	<-idleConnsClosed
 
