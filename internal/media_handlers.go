@@ -102,6 +102,7 @@ func (s *Server) UploadMediaHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
+		defer r.Body.Close()
 
 		mfile, headers, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {

@@ -324,6 +324,7 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
+		defer r.Body.Close()
 
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
 

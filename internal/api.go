@@ -767,6 +767,7 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+		defer r.Body.Close()
 
 		user := r.Context().Value(UserContextKey).(*User)
 
@@ -857,6 +858,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, a.config.MaxUploadSize)
+		defer r.Body.Close()
 
 		mediaFile, _, err := r.FormFile("media_file")
 		if err != nil && err != http.ErrMissingFile {

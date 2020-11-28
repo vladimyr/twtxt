@@ -804,6 +804,7 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 func (s *Server) WebMentionHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		r.Body = http.MaxBytesReader(w, r.Body, 1024)
+		defer r.Body.Close()
 		webmentions.WebMentionEndpoint(w, r)
 	}
 }
@@ -1357,6 +1358,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 
 		// Limit request body to to abuse
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
+		defer r.Body.Close()
 
 		// XXX: We DO NOT store this! (EVER)
 		email := strings.TrimSpace(r.FormValue("email"))
