@@ -500,8 +500,6 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 
 		twts := a.cache.GetByPrefix(a.config.BaseURL, false)
 
-		sort.Sort(twts)
-
 		var pagedTwts types.Twts
 
 		pager := paginator.New(adapter.NewSliceAdapter(twts), a.config.TwtsPerPage)
@@ -1126,8 +1124,6 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 			http.Error(w, "User/Feed not found", http.StatusNotFound)
 			return
 		}
-
-		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 

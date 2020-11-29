@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -371,6 +372,8 @@ func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 		}
 	}
 	cache.mu.RUnlock()
+
+	sort.Sort(twts)
 
 	cache.mu.Lock()
 	cache.Twts[key] = Cached{

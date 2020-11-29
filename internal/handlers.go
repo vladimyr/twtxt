@@ -231,8 +231,6 @@ func (s *Server) ProfileHandler() httprouter.Handle {
 
 		twts := s.cache.GetByURL(profile.URL)
 
-		sort.Sort(twts)
-
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
@@ -763,9 +761,8 @@ func (s *Server) TimelineHandler() httprouter.Handle {
 					twts = append(twts, s.cache.GetByURL(feed.URL)...)
 				}
 			}
+			sort.Sort(twts)
 		}
-
-		sort.Sort(twts)
 
 		var pagedTwts types.Twts
 
@@ -932,8 +929,6 @@ func (s *Server) DiscoverHandler() httprouter.Handle {
 
 		localTwts := s.cache.GetByPrefix(s.config.BaseURL, false)
 
-		sort.Sort(localTwts)
-
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
@@ -1025,7 +1020,6 @@ func (s *Server) SearchHandler() httprouter.Handle {
 		}
 
 		twts = getTweetsByTag()
-
 		sort.Sort(twts)
 
 		var pagedTwts types.Twts
@@ -1588,8 +1582,6 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 
 		twts := s.cache.GetByURL(uri)
 
-		sort.Sort(twts)
-
 		var pagedTwts types.Twts
 
 		page := SafeParseInt(r.FormValue("p"), 1)
@@ -1976,8 +1968,6 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 			return
 		}
-
-		sort.Sort(twts)
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
