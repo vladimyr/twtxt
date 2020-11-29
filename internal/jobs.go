@@ -36,6 +36,8 @@ func init() {
 
 		"FixMissingTwts": NewJobSpec("@daily", NewFixMissingTwtsJob),
 		"Stats":          NewJobSpec("@daily", NewStatsJob),
+
+		"FixFollowers": NewJobSpec("", NewFixFollowersJob),
 	}
 
 	StartupJobs = map[string]JobSpec{
@@ -44,6 +46,7 @@ func init() {
 		"FixUserAccounts":   Jobs["FixUserAccounts"],
 		"FixMissingTwts":    Jobs["FixMissingTwts"],
 		"DeleteOldSessions": Jobs["DeleteOldSessions"],
+		"FixFollowers":      Jobs["FixFollowers"],
 	}
 }
 
@@ -357,5 +360,61 @@ func (job *DeleteOldSessionsJob) Run() {
 				log.WithError(err).Error("error deleting session object")
 			}
 		}
+	}
+}
+
+type FixFollowersJob struct {
+	conf    *Config
+	blogs   *BlogsCache
+	cache   *Cache
+	archive Archiver
+	db      Store
+}
+
+func NewFixFollowersJob(conf *Config, blogs *BlogsCache, cache *Cache, archive Archiver, db Store) cron.Job {
+	return &FixFollowersJob{conf: conf, blogs: blogs, cache: cache, archive: archive, db: db}
+}
+
+func (job *FixFollowersJob) Run() {
+	log.Infof("fixing followers")
+
+	feeds, err := job.db.GetAllFeeds()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all feeds from database")
+		return
+	}
+
+	users, err := job.db.GetAllUsers()
+	if err != nil {
+		log.WithError(err).Warn("unable to get all users from database")
+		return
+	}
+
+	for _, followee := range feeds {
+		for _, follower := range users {
+			if follower.Follows(followee.URL) && !followee.FollowedBy(follower.URL) {
+				log.Infof("%s follows feed %s but not listed in .Followers", follower.Username, followee.Name)
+				followee.Followers[follower.Username] = follower.URL
+			}
+		}
+		if err := job.db.SetFeed(followee.Name, followee); err != nil {
+			log.WithError(err).Error("error updating followee")
+		}
+	}
+
+	for _, followee := range users {
+		for _, follower := range users {
+			if follower.Follows(followee.URL) && !followee.FollowedBy(follower.URL) {
+				log.Infof("%s follows user %s but not listed in .Followers", follower.Username, followee.Username)
+				followee.Followers[follower.Username] = follower.URL
+			}
+		}
+		if err := job.db.SetUser(followee.Username, followee); err != nil {
+			log.WithError(err).Error("error updating followee")
+		}
+	}
+
+	if err := job.db.Sync(); err != nil {
+		log.WithError(err).Error("error syncing store")
 	}
 }
