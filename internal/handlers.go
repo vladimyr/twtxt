@@ -24,6 +24,7 @@ import (
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
+	"github.com/james4k/fmatter"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rickb777/accept"
 	"github.com/securisec/go-keywords"
@@ -60,6 +61,10 @@ func (s *Server) NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	s.render("404", w, ctx)
 }
 
+type FrontMatter struct {
+	Title string
+}
+
 // PageHandler ...
 func (s *Server) PageHandler(name string) httprouter.Handle {
 	box := rice.MustFindBox("pages")
@@ -70,9 +75,19 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 
 		md, err := RenderString(mdTpl, ctx)
 		if err != nil {
-			log.WithError(err).Errorf("error rendering help page %s", name)
+			log.WithError(err).Errorf("error rendering page %s", name)
 			ctx.Error = true
 			ctx.Message = "Error loading help page! Please contact support."
+			s.render("error", w, ctx)
+			return
+		}
+
+		var frontmatter FrontMatter
+		content, err := fmatter.Read([]byte(md), &frontmatter)
+		if err != nil {
+			log.WithError(err).Error("error parsing front matter")
+			ctx.Error = true
+			ctx.Message = "Error loading page! Please contact support."
 			s.render("error", w, ctx)
 			return
 		}
@@ -87,9 +102,17 @@ func (s *Server) PageHandler(name string) httprouter.Handle {
 		}
 		renderer := html.NewRenderer(opts)
 
-		html := markdown.ToHTML([]byte(md), p, renderer)
+		html := markdown.ToHTML(content, p, renderer)
 
-		ctx.Title = strings.Title(name)
+		var title string
+
+		if frontmatter.Title != "" {
+			title = frontmatter.Title
+		} else {
+			title = strings.Title(name)
+		}
+		ctx.Title = title
+
 		ctx.Page = name
 		ctx.Content = template.HTML(html)
 

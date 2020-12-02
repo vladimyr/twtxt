@@ -1,3 +1,7 @@
+---
+title: Help on how to use Twtxt.net
+---
+
 # Help
 
 <details>

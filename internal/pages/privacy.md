@@ -1,3 +1,7 @@
+---
+title: Privacy Policy
+---
+
 # Privacy Policy
 
 This is aimed to be the world's simplest privacy policy.

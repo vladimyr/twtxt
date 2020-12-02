@@ -33,6 +33,7 @@ require (
 	github.com/h2non/filetype v1.1.0
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.10 // indirect
+	github.com/james4k/fmatter v0.0.0-20150827042251-377c8ea6259d
 	github.com/jinzhu/gorm v1.9.15 // indirect
 	github.com/jinzhu/now v1.1.1 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
@@ -52,6 +53,7 @@ require (
 	github.com/prologic/observe v0.0.0-20181231082615-747b185a0928
 	github.com/prologic/read-file-last-line v0.0.0-20200806014221-326f63458987
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0
 	github.com/renstrom/shortuuid v3.0.0+incompatible
 	github.com/rickb777/accept v0.0.0-20170318132422-d5183c44530d
 	github.com/robfig/cron v1.2.0

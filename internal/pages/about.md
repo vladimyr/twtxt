@@ -1,3 +1,7 @@
+---
+title: About Twtxt.net a self-hosted, Twitter™-like decentralised micro-blogging platform.
+---
+
 # About {{ .InstanceName }}
 
 📕 {{ .InstanceName}} is a [Twt.social](https://twt.social) Pod; a Self-Hosted,
