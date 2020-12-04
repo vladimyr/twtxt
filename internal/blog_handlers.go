@@ -326,27 +326,21 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 		r.Body = http.MaxBytesReader(w, r.Body, s.config.MaxUploadSize)
 		defer r.Body.Close()
 
+		// Extract form fields
 		postas := strings.ToLower(strings.TrimSpace(r.FormValue("postas")))
-
 		title := strings.TrimSpace(r.FormValue("title"))
-		if title == "" {
-			ctx.Error = true
-			ctx.Message = "No title provided!"
-			s.render("error", w, ctx)
-			return
-		}
-
 		text := r.FormValue("text")
+
+		// Cleanup the text and convert DOS line ending \r\n to UNIX \n
+		text = strings.TrimSpace(text)
+		text = strings.ReplaceAll(text, "\r\n", "\n")
+
 		if text == "" {
 			ctx.Error = true
 			ctx.Message = "No content provided!"
 			s.render("error", w, ctx)
 			return
 		}
-
-		// Cleanup the text and convert DOS line ending \r\n to UNIX \n
-		text = strings.TrimSpace(text)
-		text = strings.ReplaceAll(text, "\r\n", "\n")
 
 		hash := r.FormValue("hash")
 		if hash != "" {
@@ -376,6 +370,13 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 				return
 			}
 			http.Redirect(w, r, blogPost.URL(s.config.BaseURL), http.StatusFound)
+			return
+		}
+
+		if title == "" {
+			ctx.Error = true
+			ctx.Message = "No title provided!"
+			s.render("error", w, ctx)
 			return
 		}
 
