@@ -657,6 +657,8 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	am := auth.NewManager(auth.NewOptions("/login", "/register"))
 
+	tasks := NewDispatcher(10, 100) // TODO: Make this configurable?
+
 	pm := passwords.NewScryptPasswords(nil)
 
 	sc := NewSessionStore(db, config.SessionCacheTTL)
@@ -671,7 +673,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		sc,
 	)
 
-	api := NewAPI(router, config, cache, archive, db, pm)
+	api := NewAPI(router, config, cache, archive, db, pm, tasks)
 
 	server := &Server{
 		bind:      bind,
@@ -710,7 +712,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		cron: cron.New(),
 
 		// Dispatcher
-		tasks: NewDispatcher(10, 100), // TODO: Make this configurable?
+		tasks: tasks,
 
 		// Auth Manager
 		am: am,
