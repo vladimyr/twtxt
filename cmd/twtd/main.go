@@ -4,6 +4,7 @@ import (
 	"expvar"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"path"
 	"strings"
@@ -289,6 +290,12 @@ func main() {
 
 			// start the profiler on service start (optional)
 			profiler.StartProfiling()
+
+			// Add pprof handlers
+			http.Handle("/debug/pprof/block", pprof.Handler("block"))
+			http.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+			http.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+			http.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
 
 			// listen on port 6060 (pick a port)
 			http.ListenAndServe(":6060", nil)
