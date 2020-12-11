@@ -4,6 +4,7 @@
 .DS_Store
 *.idea
 .vscode
+*.sw?
 
 /dist
 
@@ -26,3 +27,5 @@
 /data/external/*
 
 /internal/rice-box.go
+
+/docs/_site/
