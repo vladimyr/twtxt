@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 

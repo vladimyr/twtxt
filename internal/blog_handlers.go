@@ -12,7 +12,7 @@ import (
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/julienschmidt/httprouter"
-	"github.com/prologic/twtxt/types"
+	"github.com/jointwt/twtxt/types"
 	"github.com/securisec/go-keywords"
 	log "github.com/sirupsen/logrus"
 	"github.com/vcraescu/go-paginator"

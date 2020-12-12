@@ -1,4 +1,4 @@
-module github.com/prologic/twtxt
+module github.com/jointwt/twtxt
 
 go 1.14
 
