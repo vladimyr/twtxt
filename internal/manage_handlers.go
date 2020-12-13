@@ -121,7 +121,7 @@ func (s *Server) ManageUsersHandler() httprouter.Handle {
 		}
 
 		s.render("manageUsers", w, ctx)
-		return
+
 	}
 }
 
@@ -269,7 +269,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 								return
 							}
 
-							mediaPaths := GetMediaNamesFromText(twt.Text)
+							mediaPaths := GetMediaNamesFromText(twt.Text())
 
 							// Remove all uploaded media in a twt
 							for _, mediaPath := range mediaPaths {
@@ -342,7 +342,7 @@ func (s *Server) DelUserHandler() httprouter.Handle {
 				return
 			}
 
-			mediaPaths := GetMediaNamesFromText(twt.Text)
+			mediaPaths := GetMediaNamesFromText(twt.Text())
 
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {

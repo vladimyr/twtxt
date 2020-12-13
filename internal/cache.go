@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -21,7 +20,8 @@ import (
 )
 
 const (
-	feedCacheFile = "cache"
+	feedCacheFile    = "cache"
+	feedCacheVersion = 1 // increase this if breaking changes occur to cache file.
 )
 
 // Cached ...
@@ -33,7 +33,7 @@ type Cached struct {
 }
 
 // Lookup ...
-func (cached Cached) Lookup(hash string) (types.Twt, bool) {
+func (cached *Cached) Lookup(hash string) (types.Twt, bool) {
 	cached.mu.RLock()
 	twt, ok := cached.cache[hash]
 	cached.mu.RUnlock()
@@ -53,16 +53,17 @@ func (cached Cached) Lookup(hash string) (types.Twt, bool) {
 		}
 	}
 
-	return types.Twt{}, false
+	return types.NilTwt, false
 }
 
 // OldCache ...
-type OldCache map[string]Cached
+type OldCache map[string]*Cached
 
 // Cache ...
 type Cache struct {
-	mu   sync.RWMutex
-	Twts map[string]Cached
+	mu      sync.RWMutex
+	Version int
+	Twts    map[string]*Cached
 }
 
 // Store ...
@@ -94,15 +95,16 @@ func (cache *Cache) Store(path string) error {
 // LoadCache ...
 func LoadCache(path string) (*Cache, error) {
 	cache := &Cache{
-		Twts: make(map[string]Cached),
+		Twts: make(map[string]*Cached),
 	}
 
 	f, err := os.Open(filepath.Join(path, feedCacheFile))
 	if err != nil {
 		if !os.IsNotExist(err) {
-			log.WithError(err).Error("error loading cache, cache not found")
+			log.WithError(err).Error("error loading cache, cache file found but unreadable")
 			return nil, err
 		}
+		cache.Version = feedCacheVersion
 		return cache, nil
 	}
 	defer f.Close()
@@ -110,22 +112,46 @@ func LoadCache(path string) (*Cache, error) {
 	dec := gob.NewDecoder(f)
 	err = dec.Decode(&cache)
 	if err != nil {
+		if strings.Contains(err.Error(), "wrong type") {
+			log.WithError(err).Error("error decoding cache. removing corrupt file.")
+			// Remove invalid cache file.
+			os.Remove(filepath.Join(path, feedCacheFile))
+			cache.Version = feedCacheVersion
+			cache.Twts = make(map[string]*Cached)
+
+			return cache, nil
+		}
+
 		log.WithError(err).Error("error decoding cache (trying OldCache)")
 
-		f.Seek(0, io.SeekStart)
+		_, _ = f.Seek(0, io.SeekStart)
 		oldcache := make(OldCache)
 		dec := gob.NewDecoder(f)
 		err = dec.Decode(&oldcache)
 		if err != nil {
-			log.WithError(err).Error("error decoding cache")
-			return nil, err
+			log.WithError(err).Error("error decoding cache. removing corrupt file.")
+			// Remove invalid cache file.
+			os.Remove(filepath.Join(path, feedCacheFile))
+			cache.Version = feedCacheVersion
+			cache.Twts = make(map[string]*Cached)
+
+			return cache, nil
 		}
+		cache.Version = feedCacheVersion
 		for url, cached := range oldcache {
-			cache.mu.Lock()
 			cache.Twts[url] = cached
 			cache.mu.Unlock()
 		}
 	}
+
+	log.Infof("Cache version %d", cache.Version)
+	if cache.Version != feedCacheVersion {
+		log.Errorf("Cache version mismatch. Expect = %d, Got = %d. Removing old cache.", feedCacheVersion, cache.Version)
+		os.Remove(filepath.Join(path, feedCacheFile))
+		cache.Version = feedCacheVersion
+		cache.Twts = make(map[string]*Cached)
+	}
+
 	return cache, nil
 }
 
@@ -139,7 +165,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 			"cache",
 			"last_processed_seconds",
 		).Set(
-			float64(time.Now().Sub(stime) / 1e9),
+			float64(time.Since(stime) / 1e9),
 		)
 	}()
 
@@ -234,7 +260,6 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 			switch res.StatusCode {
 			case http.StatusOK: // 200
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
-				scanner := bufio.NewScanner(limitedReader)
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
 					twter.URL = URLForUser(conf, feed.Nick)
@@ -246,7 +271,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 						twter.Avatar = URLForExternalAvatar(conf, feed.URL)
 					}
 				}
-				twts, old, err := ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+				twts, old, err := types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 				if err != nil {
 					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil
@@ -267,7 +292,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 				lastmodified := res.Header.Get("Last-Modified")
 				cache.mu.Lock()
-				cache.Twts[feed.URL] = Cached{
+				cache.Twts[feed.URL] = &Cached{
 					cache:        make(map[string]types.Twt),
 					Twts:         twts,
 					Lastmodified: lastmodified,
@@ -312,7 +337,7 @@ func (cache *Cache) Lookup(hash string) (types.Twt, bool) {
 			return twt, true
 		}
 	}
-	return types.Twt{}, false
+	return types.NilTwt, false
 }
 
 func (cache *Cache) Count() int {
@@ -342,8 +367,8 @@ func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
 
 	// Search for @mentions in the cache against all Twts (local, followed and even external if any)
 	for _, twt := range cache.GetAll() {
-		for _, twter := range twt.Mentions() {
-			if u.Is(twter.URL) && !seen[twt.Hash()] {
+		for _, mention := range twt.Mentions() {
+			if u.Is(mention.Twter().URL) && !seen[twt.Hash()] {
 				twts = append(twts, twt)
 				seen[twt.Hash()] = true
 			}
@@ -376,7 +401,7 @@ func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	sort.Sort(twts)
 
 	cache.mu.Lock()
-	cache.Twts[key] = Cached{
+	cache.Twts[key] = &Cached{
 		cache:        make(map[string]types.Twt),
 		Twts:         twts,
 		Lastmodified: time.Now().Format(time.RFC3339),

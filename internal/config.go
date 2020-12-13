@@ -12,6 +12,7 @@ import (
 
 	"github.com/gabstv/merger"
 	"github.com/goccy/go-yaml"
+	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -76,8 +77,20 @@ type Config struct {
 	whitelistedDomains []*regexp.Regexp
 	WhitelistedDomains []string
 
-	path string
+	// path string
 }
+
+var _ types.FmtOpts = (*Config)(nil)
+
+func (c *Config) IsLocalURL(url string) bool {
+	if NormalizeURL(url) == "" {
+		return false
+	}
+	return strings.HasPrefix(NormalizeURL(url), NormalizeURL(c.BaseURL))
+}
+func (c *Config) LocalURL() *url.URL                  { return c.baseURL }
+func (c *Config) ExternalURL(nick, uri string) string { return URLForExternalProfile(c, nick, uri) }
+func (c *Config) UserURL(url string) string           { return UserURL(url) }
 
 // Settings returns a `Settings` struct containing pod settings that can
 // then be persisted to disk to override some configuration options.

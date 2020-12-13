@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/jointwt/twtxt/internal/session"
+	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 )
@@ -28,7 +28,7 @@ func (s *Server) CaptchaHandler() httprouter.Handle {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		sess.(*session.Session).Set("captchaText", img.Text)
+		_ = sess.(*session.Session).Set("captchaText", img.Text)
 
 		w.Header().Set("Content-Type", "image/png")
 		if err := img.WriteImage(w); err != nil {
@@ -62,14 +62,14 @@ func (s *Server) SupportHandler() httprouter.Handle {
 		if sess == nil {
 			log.Warn("no session found")
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("no session found, do you have cookies disabled?")
+			ctx.Message = "no session found, do you have cookies disabled?"
 			s.render("error", w, ctx)
 			return
 		}
 
 		// Get captcha text from session
 		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
-		if isCaptchaTextAvailable == false {
+		if !isCaptchaTextAvailable {
 			log.Warn("no captcha provided")
 			ctx.Error = true
 			ctx.Message = "no captcha text found"
@@ -139,14 +139,14 @@ func (s *Server) ReportHandler() httprouter.Handle {
 		if sess == nil {
 			log.Warn("no session found")
 			ctx.Error = true
-			ctx.Message = fmt.Sprintf("no session found, do you have cookies disabled?")
+			ctx.Message = "no session found, do you have cookies disabled?"
 			s.render("error", w, ctx)
 			return
 		}
 
 		// Get captcha text from session
 		captchaText, isCaptchaTextAvailable := sess.(*session.Session).Get("captchaText")
-		if isCaptchaTextAvailable == false {
+		if !isCaptchaTextAvailable {
 			log.Warn("no captcha provided")
 			ctx.Error = true
 			ctx.Message = "no captcha text found"

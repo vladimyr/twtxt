@@ -125,18 +125,11 @@ func (a *API) CreateToken(user *User, r *http.Request) (*Token, error) {
 }
 
 func (a *API) formatTwtText(twts types.Twts) types.Twts {
-	res := make(types.Twts, 0)
-
 	for _, twt := range twts {
-		res = append(res, types.Twt{
-			Twter:        twt.Twter,
-			Text:         twt.Text,
-			Created:      twt.Created,
-			MarkdownText: FormatMentionsAndTags(a.config, twt.Text, MarkdownFmt),
-		})
+		twt.SetFmtOpts(a.config)
 	}
 
-	return res
+	return twts
 }
 
 func (a *API) jwtKeyFunc(token *jwt.Token) (interface{}, error) {
@@ -226,8 +219,7 @@ func (a *API) isAuthorized(endpoint httprouter.Handle) httprouter.Handle {
 func (a *API) PingEndpoint() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -379,7 +371,7 @@ func (a *API) AuthEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -431,8 +423,7 @@ func (a *API) PostEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -484,7 +475,7 @@ func (a *API) TimelineEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -530,7 +521,7 @@ func (a *API) DiscoverEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -577,7 +568,7 @@ func (a *API) MentionsEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(body)
+		_, _ = w.Write(body)
 	}
 }
 
@@ -683,8 +674,7 @@ func (a *API) FollowEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -758,7 +748,7 @@ func (a *API) UnfollowEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -779,7 +769,7 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			w.Write(data)
+			_, _ = w.Write(data)
 			return
 		}
 
@@ -848,8 +838,7 @@ func (a *API) SettingsEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -894,9 +883,7 @@ func (a *API) OldUploadMediaEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
-
-		return
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1006,9 +993,7 @@ func (a *API) UploadMediaEndpoint() httprouter.Handle {
 		if uri.Type == "taskURI" {
 			w.WriteHeader(http.StatusAccepted)
 		}
-		w.Write(data)
-
-		return
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1097,7 +1082,7 @@ func (a *API) ProfileEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1143,7 +1128,8 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
 			for _, twt := range a.cache.GetAll() {
-				if HasString(UniqStrings(twt.Tags()), hash) && !seen[twt.Hash()] {
+				var lis types.TagList = twt.Tags()
+				if HasString(UniqStrings(lis.Tags()), hash) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true
 				}
@@ -1184,7 +1170,7 @@ func (a *API) ConversationEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1268,7 +1254,7 @@ func (a *API) FetchTwtsEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1321,7 +1307,7 @@ func (a *API) ExternalProfileEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1355,8 +1341,8 @@ func (a *API) MuteEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1389,8 +1375,7 @@ func (a *API) UnmuteEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
 	}
 }
 
@@ -1420,8 +1405,8 @@ func (a *API) SupportEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1456,8 +1441,8 @@ func (a *API) ReportEndpoint() httprouter.Handle {
 
 		// No real response
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{}`))
-		return
+		_, _ = w.Write([]byte(`{}`))
+
 	}
 }
 
@@ -1472,6 +1457,6 @@ func (a *API) PodConfigEndpoint() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }

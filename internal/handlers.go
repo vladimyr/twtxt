@@ -184,7 +184,7 @@ func (s *Server) UserConfigHandler() httprouter.Handle {
 			return
 		}
 
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -712,7 +712,7 @@ func (s *Server) PostHandler() httprouter.Handle {
 			return
 		}
 
-		var twt types.Twt
+		var twt types.Twt = types.NilTwt
 
 		switch postas {
 		case "", user.Username:
@@ -748,7 +748,8 @@ func (s *Server) PostHandler() httprouter.Handle {
 		s.cache.GetByPrefix(s.config.BaseURL, true)
 
 		// WebMentions ...
-		for _, twter := range twt.Mentions() {
+		for _, m := range twt.Mentions() {
+			twter := m.Twter()
 			if !isLocalURL(twter.URL) || isExternalFeed(twter.URL) {
 				if err := WebMention(twter.URL, URLForTwt(s.config.BaseURL, twt.Hash())); err != nil {
 					log.WithError(err).Warnf("error sending webmention to %s", twter.URL)
@@ -870,35 +871,36 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			image string
 		)
 
-		if isLocal(twt.Twter.URL) {
-			who = fmt.Sprintf("%s@%s", twt.Twter.Nick, s.config.baseURL.Hostname())
-			image = URLForAvatar(s.config, twt.Twter.Nick)
+		if isLocal(twt.Twter().URL) {
+			who = fmt.Sprintf("%s@%s", twt.Twter().Nick, s.config.baseURL.Hostname())
+			image = URLForAvatar(s.config, twt.Twter().Nick)
 		} else {
-			who = fmt.Sprintf("@<%s %s>", twt.Twter.Nick, twt.Twter.URL)
-			image = URLForExternalAvatar(s.config, twt.Twter.URL)
+			who = fmt.Sprintf("@<%s %s>", twt.Twter().Nick, twt.Twter().URL)
+			image = URLForExternalAvatar(s.config, twt.Twter().URL)
 		}
 
-		when := twt.Created.Format(time.RFC3339)
-		what := FormatMentionsAndTags(s.config, twt.Text, TextFmt)
+		when := twt.Created().Format(time.RFC3339)
+		what := FormatMentionsAndTags(s.config, twt.Text(), TextFmt)
 
 		var ks []string
 		if ks, err = keywords.Extract(what); err != nil {
 			log.WithError(err).Warn("error extracting keywords")
 		}
 
-		for _, twter := range twt.Mentions() {
-			ks = append(ks, twter.Nick)
+		for _, m := range twt.Mentions() {
+			ks = append(ks, m.Twter().Nick)
 		}
-		ks = append(ks, twt.Tags()...)
+		var tags types.TagList = twt.Tags()
+		ks = append(ks, tags.Tags()...)
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Last-Modified", twt.Created.Format(http.TimeFormat))
-		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+		w.Header().Set("Last-Modified", twt.Created().Format(http.TimeFormat))
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			w.Header().Set(
 				"Link",
 				fmt.Sprintf(
 					`<%s/user/%s/webmention>; rel="webmention"`,
-					s.config.BaseURL, twt.Twter.Nick,
+					s.config.BaseURL, twt.Twter().Nick,
 				),
 			)
 		}
@@ -920,28 +922,30 @@ func (s *Server) PermalinkHandler() httprouter.Handle {
 			URL:         URLForTwt(s.config.BaseURL, hash),
 			Keywords:    strings.Join(ks, ", "),
 		}
-		if strings.HasPrefix(twt.Twter.URL, s.config.BaseURL) {
+		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
 			ctx.Links = append(ctx.Links, types.Link{
-				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter.URL)),
+				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter().URL)),
 				Rel:  "webmention",
 			})
 			ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
 				types.Alternative{
 					Type:  "text/plain",
-					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter.Nick),
-					URL:   twt.Twter.URL,
+					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter().Nick),
+					URL:   twt.Twter().URL,
 				},
 				types.Alternative{
 					Type:  "application/atom+xml",
-					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter.Nick),
-					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter.URL)),
+					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter().Nick),
+					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter().URL)),
 				},
 			}...)
 		}
 
+		fmt.Println("TWT", twt)
+
 		ctx.Twts = FilterTwts(ctx.User, types.Twts{twt})
 		s.render("permalink", w, ctx)
-		return
+
 	}
 }
 
@@ -1034,7 +1038,8 @@ func (s *Server) SearchHandler() httprouter.Handle {
 			seen := make(map[string]bool)
 			// TODO: Improve this by making this an O(1) lookup on the tag
 			for _, twt := range s.cache.GetAll() {
-				if HasString(UniqStrings(twt.Tags()), tag) && !seen[twt.Hash()] {
+				var tags types.TagList = twt.Tags()
+				if HasString(UniqStrings(tags.Tags()), tag) && !seen[twt.Hash()] {
 					result = append(result, twt)
 					seen[twt.Hash()] = true
 				}
@@ -1110,7 +1115,7 @@ func (s *Server) FeedHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = fmt.Sprintf("Successfully created feed: %s", name)
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -1212,11 +1217,11 @@ func (s *Server) LoginHandler() httprouter.Handle {
 		}
 
 		// Authorize session
-		sess.(*session.Session).Set("username", username)
+		_ = sess.(*session.Session).Set("username", username)
 
 		// Persist session?
 		if rememberme {
-			sess.(*session.Session).Set("persist", "1")
+			_ = sess.(*session.Session).Set("persist", "1")
 		}
 
 		http.Redirect(w, r, "/", http.StatusFound)
@@ -1358,7 +1363,7 @@ func (s *Server) LookupHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -1449,7 +1454,7 @@ func (s *Server) SettingsHandler() httprouter.Handle {
 		ctx.Error = false
 		ctx.Message = "Successfully updated settings"
 		s.render("error", w, ctx)
-		return
+
 	}
 }
 
@@ -1471,7 +1476,7 @@ func (s *Server) DeleteTokenHandler() httprouter.Handle {
 		ctx.Message = "Successfully deleted token"
 
 		http.Redirect(w, r, "/settings", http.StatusFound)
-		return
+
 	}
 }
 
@@ -1623,7 +1628,7 @@ func (s *Server) ExternalHandler() httprouter.Handle {
 		ctx.Pager = &pager
 
 		if len(ctx.Twts) > 0 {
-			ctx.Twter = ctx.Twts[0].Twter
+			ctx.Twter = ctx.Twts[0].Twter()
 		} else {
 			ctx.Twter = types.Twter{Nick: nick, URL: uri}
 			avatar := GetExternalAvatar(s.config, nick, uri)
@@ -1934,9 +1939,8 @@ func (s *Server) TaskHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 
-		return
 	}
 }
 
@@ -1996,7 +2000,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			defer r.Body.Close()
 			w.Header().Set(
 				"Last-Modified",
-				twts[len(twts)].Created.Format(http.TimeFormat),
+				twts[len(twts)].Created().Format(http.TimeFormat),
 			)
 			return
 		}
@@ -2016,11 +2020,11 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 		for _, twt := range twts {
 			items = append(items, &feeds.Item{
 				Id:          twt.Hash(),
-				Title:       string(formatTwt(twt.Text)),
+				Title:       string(formatTwt(twt.Text())),
 				Link:        &feeds.Link{Href: URLForTwt(s.config.BaseURL, twt.Hash())},
-				Author:      &feeds.Author{Name: twt.Twter.Nick},
-				Description: string(formatTwt(twt.Text)),
-				Created:     twt.Created,
+				Author:      &feeds.Author{Name: twt.Twter().Nick},
+				Description: string(formatTwt(twt.Text())),
+				Created:     twt.Created(),
 			},
 			)
 		}
@@ -2034,7 +2038,7 @@ func (s *Server) SyndicationHandler() httprouter.Handle {
 			return
 		}
 
-		w.Write([]byte(data))
+		_, _ = w.Write([]byte(data))
 	}
 }
 
@@ -2049,7 +2053,7 @@ func (s *Server) PodConfigHandler() httprouter.Handle {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(data)
+		_, _ = w.Write(data)
 	}
 }
 
@@ -2169,8 +2173,8 @@ func (s *Server) TransferFeedHandler() httprouter.Handle {
 			}
 
 			// Transfer ownerships
-			RemoveFeedOwnership(s.db, fromUser, feed)
-			AddFeedOwnership(s.db, toUser, feed)
+			_ = RemoveFeedOwnership(s.db, fromUser, feed)
+			_ = AddFeedOwnership(s.db, toUser, feed)
 
 			ctx.Error = false
 			ctx.Message = "Feed ownership changed successfully."
@@ -2219,7 +2223,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 								return
 							}
 
-							mediaPaths := GetMediaNamesFromText(twt.Text)
+							mediaPaths := GetMediaNamesFromText(twt.Text())
 
 							// Remove all uploaded media in a twt
 							for _, mediaPath := range mediaPaths {
@@ -2292,7 +2296,7 @@ func (s *Server) DeleteAllHandler() httprouter.Handle {
 				return
 			}
 
-			mediaPaths := GetMediaNamesFromText(twt.Text)
+			mediaPaths := GetMediaNamesFromText(twt.Text())
 
 			// Remove all uploaded media in a twt
 			for _, mediaPath := range mediaPaths {

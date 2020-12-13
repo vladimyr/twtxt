@@ -668,7 +668,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		session.NewOptions(
 			config.Name,
 			config.CookieSecret,
-			strings.HasPrefix(config.BaseURL, "https"),
+			config.LocalURL().Scheme == "https",
 			config.SessionExpiry,
 		),
 		sc,

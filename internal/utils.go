@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/base32"
@@ -40,11 +39,11 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/goware/urlx"
 	"github.com/h2non/filetype"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/types"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nullrocks/identicon"
-	"github.com/jointwt/twtxt"
-	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
@@ -1094,9 +1093,8 @@ func ValidateFeed(conf *Config, nick, url string) error {
 	}
 
 	limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
-	scanner := bufio.NewScanner(limitedReader)
 	twter := types.Twter{Nick: nick, URL: url}
-	_, _, err = ParseFile(scanner, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
+	_, _, err = types.ParseFile(limitedReader, twter, conf.MaxCacheTTL, conf.MaxCacheItems)
 	if err != nil {
 		return err
 	}
@@ -1591,7 +1589,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 				html := PreprocessMedia(conf, u, string(image.Title))
 
-				io.WriteString(w, html)
+				_, _ = io.WriteString(w, html)
 
 				return ast.SkipChildren, true
 			}
@@ -1626,7 +1624,7 @@ func FormatTwtFactory(conf *Config) func(text string) template.HTML {
 
 				html := PreprocessMedia(conf, u, alt)
 
-				io.WriteString(w, html)
+				_, _ = io.WriteString(w, html)
 
 				return ast.GoToNext, true
 			}
