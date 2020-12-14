@@ -8,11 +8,12 @@ import (
 )
 
 var (
-	ErrInvalidStore   = errors.New("error: invalid store")
-	ErrUserNotFound   = errors.New("error: user not found")
-	ErrTokenNotFound  = errors.New("error: token not found")
-	ErrFeedNotFound   = errors.New("error: feed not found")
-	ErrInvalidSession = errors.New("error: invalid session")
+	ErrInvalidStore    = errors.New("error: invalid store")
+	ErrUserNotFound    = errors.New("error: user not found")
+	ErrTokenNotFound   = errors.New("error: token not found")
+	ErrFeedNotFound    = errors.New("error: feed not found")
+	ErrMailboxNotFound = errors.New("error: mailbox not found")
+	ErrInvalidSession  = errors.New("error: invalid session")
 )
 
 type Store interface {
@@ -23,10 +24,16 @@ type Store interface {
 	DelFeed(name string) error
 	HasFeed(name string) bool
 	GetFeed(name string) (*Feed, error)
-	SetFeed(name string, user *Feed) error
+	SetFeed(name string, feed *Feed) error
 	LenFeeds() int64
 	SearchFeeds(prefix string) []string
 	GetAllFeeds() ([]*Feed, error)
+
+	DelMailbox(hash string) error
+	HasMailbox(hash string) bool
+	GetMailbox(hash string) (*Mailbox, error)
+	SetMailbox(hash string, mbox *Mailbox) error
+	LenMailboxes() int64
 
 	DelUser(username string) error
 	HasUser(username string) bool

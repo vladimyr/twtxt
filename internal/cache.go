@@ -353,6 +353,39 @@ func (cache *Cache) GetMentions(u *User) (twts types.Twts) {
 	return
 }
 
+// GetBySuffix ...
+func (cache *Cache) GetBySuffix(suffix string, refresh bool) types.Twts {
+	key := fmt.Sprintf("suffix:%s", suffix)
+	cache.mu.RLock()
+	cached, ok := cache.Twts[key]
+	cache.mu.RUnlock()
+	if ok && !refresh {
+		return cached.Twts
+	}
+
+	var twts types.Twts
+
+	cache.mu.RLock()
+	for url, cached := range cache.Twts {
+		if strings.HasSuffix(url, suffix) {
+			twts = append(twts, cached.Twts...)
+		}
+	}
+	cache.mu.RUnlock()
+
+	sort.Sort(twts)
+
+	cache.mu.Lock()
+	cache.Twts[key] = Cached{
+		cache:        make(map[string]types.Twt),
+		Twts:         twts,
+		Lastmodified: time.Now().Format(time.RFC3339),
+	}
+	cache.mu.Unlock()
+
+	return twts
+}
+
 // GetByPrefix ...
 func (cache *Cache) GetByPrefix(prefix string, refresh bool) types.Twts {
 	key := fmt.Sprintf("prefix:%s", prefix)

@@ -38,6 +38,16 @@ type Feed struct {
 	remotes map[string]string
 }
 
+// Mailbox ...
+type Mailbox struct {
+	Sender    string
+	URL       string
+	CreatedAt time.Time
+
+	Readers map[string]string `default:"{}"`
+	readers map[string]string
+}
+
 // User ...
 type User struct {
 	Username  string
@@ -53,8 +63,9 @@ type User struct {
 	IsFollowersPubliclyVisible bool   `default:"true"`
 	IsFollowingPubliclyVisible bool   `default:"true"`
 
-	Feeds  []string `default:"[]"`
-	Tokens []string `default:"[]"`
+	Feeds     []string `default:"[]"`
+	Tokens    []string `default:"[]"`
+	Mailboxes []string `default:"[]"`
 
 	Followers map[string]string `default:"{}"`
 	Following map[string]string `default:"{}"`
@@ -93,6 +104,42 @@ func (t *Token) Bytes() ([]byte, error) {
 		return nil, err
 	}
 	return data, nil
+}
+
+func CreateMailbox(conf *Config, db Store, user *User, sender string) error {
+	p := filepath.Join(conf.Data, mailboxesDir)
+	if err := os.MkdirAll(p, 0755); err != nil {
+		log.WithError(err).Error("error creating mailboxes directory")
+		return err
+	}
+
+	now := time.Now()
+	hash := FastHash(fmt.Sprintf("%s\n%s\n%s", sender, user.Username, now.Format(time.RFC3339)))
+
+	fn := filepath.Join(p, hash)
+
+	if FileExists(fn) {
+		return nil
+	}
+
+	if err := ioutil.WriteFile(fn, []byte{}, 0644); err != nil {
+		return err
+	}
+
+	if !user.HasMailbox(hash) {
+		user.Mailboxes = append(user.Mailboxes, hash)
+	}
+
+	mbox := NewMailbox()
+	mbox.Sender = sender
+	mbox.URL = URLForMailbox(conf, hash)
+	mbox.CreatedAt = now
+
+	if err := db.SetMailbox(hash, mbox); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func CreateFeed(conf *Config, db Store, user *User, name string, force bool) error {
@@ -213,6 +260,41 @@ func LoadFeed(data []byte) (feed *Feed, err error) {
 	return
 }
 
+// NewMailbox ...
+func NewMailbox() *Mailbox {
+	mbox := &Mailbox{}
+	if err := defaults.Set(mbox); err != nil {
+		log.WithError(err).Error("error creating new mailbox object")
+	}
+	return mbox
+}
+
+// LoadMailbox ...
+func LoadMailbox(data []byte) (mbox *Mailbox, err error) {
+	mbox = &Mailbox{}
+	if err := defaults.Set(mbox); err != nil {
+		return nil, err
+	}
+
+	if err = json.Unmarshal(data, &mbox); err != nil {
+		return nil, err
+	}
+
+	if mbox.Readers == nil {
+		mbox.Readers = make(map[string]string)
+	}
+
+	mbox.readers = make(map[string]string)
+	for n, u := range mbox.Readers {
+		if u = NormalizeURL(u); u == "" {
+			continue
+		}
+		mbox.readers[u] = n
+	}
+
+	return
+}
+
 // NewUser ...
 func NewUser() *User {
 	user := &User{}
@@ -314,6 +396,14 @@ func (f *Feed) Bytes() ([]byte, error) {
 	return data, nil
 }
 
+func (m *Mailbox) Bytes() ([]byte, error) {
+	data, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (u *User) String() string {
 	url, err := url.Parse(u.URL)
 	if err != nil {
@@ -334,6 +424,15 @@ func (u *User) AddToken(token *Token) {
 func (u *User) HasToken(token string) bool {
 	for _, t := range u.Tokens {
 		if t == token {
+			return true
+		}
+	}
+	return false
+}
+
+func (u *User) HasMailbox(hash string) bool {
+	for _, mbox := range u.Mailboxes {
+		if mbox == hash {
 			return true
 		}
 	}

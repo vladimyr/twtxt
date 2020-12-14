@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	feedsKeyPrefix    = "/feeds"
-	sessionsKeyPrefix = "/sessions"
-	usersKeyPrefix    = "/users"
-	tokensKeyPrefix   = "/tokens"
+	feedsKeyPrefix     = "/feeds"
+	sessionsKeyPrefix  = "/sessions"
+	usersKeyPrefix     = "/users"
+	tokensKeyPrefix    = "/tokens"
+	mailboxesKeyPrefix = "/mailboxes"
 )
 
 // BitcaskStore ...
@@ -144,6 +145,49 @@ func (bs *BitcaskStore) GetAllFeeds() ([]*Feed, error) {
 	}
 
 	return feeds, nil
+}
+
+func (bs *BitcaskStore) HasMailbox(hash string) bool {
+	key := []byte(fmt.Sprintf("%s/%s", mailboxesKeyPrefix, hash))
+	return bs.db.Has(key)
+}
+
+func (bs *BitcaskStore) DelMailbox(hash string) error {
+	key := []byte(fmt.Sprintf("%s/%s", mailboxesKeyPrefix, hash))
+	return bs.db.Delete(key)
+}
+
+func (bs *BitcaskStore) GetMailbox(hash string) (*Mailbox, error) {
+	key := []byte(fmt.Sprintf("%s/%s", mailboxesKeyPrefix, hash))
+	data, err := bs.db.Get(key)
+	if err == bitcask.ErrKeyNotFound {
+		return nil, ErrMailboxNotFound
+	}
+	return LoadMailbox(data)
+}
+
+func (bs *BitcaskStore) SetMailbox(hash string, mbox *Mailbox) error {
+	data, err := mbox.Bytes()
+	if err != nil {
+		return err
+	}
+
+	key := []byte(fmt.Sprintf("%s/%s", mailboxesKeyPrefix, hash))
+	if err := bs.db.Put(key, data); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bs *BitcaskStore) LenMailboxes() int64 {
+	var count int64
+
+	bs.db.Scan([]byte(mailboxesKeyPrefix), func(_ []byte) error {
+		count++
+		return nil
+	})
+
+	return count
 }
 
 func (bs *BitcaskStore) HasUser(username string) bool {

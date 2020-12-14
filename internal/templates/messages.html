@@ -1,0 +1,54 @@
+{{define "content"}}
+  <article class="grid">
+    <div>
+      <hgroup>
+        <h2>Private Messages</h2>
+        <h3>Your private messages</h3>
+      </hgroup>
+      {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" ($.Twts | rest) "EmptyMessage" "You have no messages") }}
+
+      {{ if .Authenticated }}
+        <hgroup>
+          <h2>Compose Message</h2>
+        </hgroup>
+        <form id="compose" action="/mailbox" method="POST">
+          <input id="recipient" name="recipient" placeholder="Username" required>
+          <div class="textarea-container">
+            <textarea id="message" name="message" placeholder="Your message" rows=3 maxlength={{ $.MaxTwtLength }} required></textarea>
+          </div>
+          <div class="grid">
+            <div>
+              <button id="send" type="submit">
+                <i class="icss-paper-plane"></i>
+                Send
+              </button>
+            </div>
+          </div>
+        </form>
+      {{ else }}
+        <small>You must be <a href="/login">Logged in</a> to send a private message.</small>
+      {{ end }}
+    </div>
+    <div>
+      <hgroup>
+        <h2>Private Messaging</h2>
+      </hgroup>
+      <p>
+        Private messaging on {{ .InstanceName }} is very simple and follows
+        a similar form to Twt(s) themselves. In other words you can send
+        private messages to users on the same pod as you.
+      </p>
+      <p>
+        Find the username of the person you want to message, and type in a
+        short message (<i>limited to {{ .MaxTwtLength }} characters</i>) and
+        hit the "Send" button.
+      </p>
+      <p>
+        <b>NOTE:</b>&nbsp;Messages are not encrypted or signed at this time so it is
+        currently possible for the Pod Operator of {{ .InstanceName }}
+        to view your private messages. This will change in time as we continue
+        to develop this feature out and add e2e encryption. THank you.
+      </p>
+    </div>
+  </article>
+{{ end }}

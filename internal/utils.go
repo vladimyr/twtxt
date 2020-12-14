@@ -40,11 +40,11 @@ import (
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/goware/urlx"
 	"github.com/h2non/filetype"
+	"github.com/jointwt/twtxt"
+	"github.com/jointwt/twtxt/types"
 	shortuuid "github.com/lithammer/shortuuid/v3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nullrocks/identicon"
-	"github.com/jointwt/twtxt"
-	"github.com/jointwt/twtxt/types"
 	log "github.com/sirupsen/logrus"
 	"github.com/writeas/slug"
 	"golang.org/x/crypto/blake2b"
@@ -1249,6 +1249,14 @@ func URLForTwt(baseURL, hash string) string {
 		"%s/twt/%s",
 		strings.TrimSuffix(baseURL, "/"),
 		hash,
+	)
+}
+
+func URLForMailbox(conf *Config, username string) string {
+	return fmt.Sprintf(
+		"%s/user/%s/msgs.txt",
+		strings.TrimSuffix(conf.BaseURL, "/"),
+		username,
 	)
 }
 
