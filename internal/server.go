@@ -18,6 +18,7 @@ import (
 	"github.com/andyleap/microformats"
 	humanize "github.com/dustin/go-humanize"
 	"github.com/gabstv/merger"
+	"github.com/justinas/nosurf"
 	"github.com/prologic/observe"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
@@ -708,6 +709,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	smtpService := NewSMTPService(config, db, pm, msgs, tasks)
 
+	csrfHandler := nosurf.New(router)
+	csrfHandler.ExemptGlob("/api/v1/*")
+
 	server := &Server{
 		bind:      bind,
 		config:    config,
@@ -721,7 +725,7 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 				RemoteAddressHeaders: []string{"X-Forwarded-For"},
 			}).Handler(
 				gziphandler.GzipHandler(
-					sm.Handler(router),
+					sm.Handler(csrfHandler),
 				),
 			),
 		},

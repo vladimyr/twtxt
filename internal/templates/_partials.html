@@ -15,6 +15,7 @@
         {{ end }}
         <li class="toolbar-form-button">
           <form id="imageUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload image">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadImage">
               <i id="uploadImageButton" class="icss-camera"></i>
             </label>
@@ -23,6 +24,7 @@
         </li>
         <li class="toolbar-form-button">
           <form id="audioUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload audio">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadAudio">
               <i id="uploadAudioButton" class="icss-microphone"></i>
             </label>
@@ -31,6 +33,7 @@
         </li>
         <li class="toolbar-form-button">
           <form id="videoUploadForm" action="/upload" enctype="multipart/form-data" method="POST" data-tooltip="Upload video">
+            <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
             <label for="uploadVideo">
               <i id="uploadVideoButton" class="icss-video-camera"></i>
             </label>
@@ -40,6 +43,7 @@
       </ul>
     </nav>
     <form id="form" action="{{ with $.BlogPost }}/blog{{ else }}/post{{ end }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       {{ with $.BlogPost }}
         <input type="hidden" id="replaceBlog" name="hash" value="{{ $.BlogPost.Hash }}" />
       {{ else }}

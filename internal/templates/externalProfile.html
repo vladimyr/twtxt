@@ -51,6 +51,6 @@
       <h3>Recent twts from {{ .Profile.Username }}</h3>
     </hgroup>
   </div>
-  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true) }}
+  {{ template "post" (dict "Authenticated" $.Authenticated "User" $.User "TwtPrompt" $.TwtPrompt "MaxTwtLength" $.MaxTwtLength "Reply" $.Reply "AutoFocus" true "CSRFToken" $.CSRFToken) }}
   {{ template "feed" (dict "Authenticated" $.Authenticated "User" $.User "Profile" $.Profile "LastTwt" $.LastTwt "Pager" $.Pager "Twts" $.Twts) }}
 {{end}}

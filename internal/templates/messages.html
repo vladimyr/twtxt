@@ -6,6 +6,7 @@
         <h3>Your private messages</h3>
       </hgroup>
       <form id="delete" action="/messages/delete" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <table>
           <thead>
             <tr>
@@ -42,6 +43,7 @@
         <h2>Compose Message</h2>
       </hgroup>
       <form id="compose" action="/messages/send" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
         <input id="recipient" name="recipient" placeholder="Username" required>
         <input id="subject" name="subject" placeholder="Subject" required>
         <div class="textarea-container">

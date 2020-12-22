@@ -2,6 +2,7 @@
   {{ $Msg := $.Messages | first }}
   <article id="{{ $Msg.Id }}" class="h-entry">
     <form id="delete" action="/messages/delete" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <input type="hidden" name="hash" value="{{ $Msg.Id }}">
       <div class="u-author h-card">
         <div>
@@ -30,6 +31,7 @@
       <h2>Compose Reply</h2>
     </hgroup>
     <form id="compose" action="/messages/send" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}">
       <input type="hidden" name="recipient" value="{{ $Msg.User }}">
       <input type="hidden" name="subject" value="{{ $Msg.Subject }}">
       <div class="textarea-container">
