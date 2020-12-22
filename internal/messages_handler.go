@@ -87,6 +87,7 @@ func (s *Server) SendMessageHandler() httprouter.Handle {
 			s.render("error", w, ctx)
 			return
 		}
+		s.msgs.Inc(recipient)
 
 		ctx.Error = false
 		ctx.Message = "Messages successfully sent"
@@ -162,6 +163,7 @@ func (s *Server) ViewMessageHandler() httprouter.Handle {
 		if err := markMessageAsRead(s.config, ctx.Username, msgId); err != nil {
 			log.WithError(err).Warnf("error marking message %d for %s as read", msgId, ctx.Username)
 		}
+		s.msgs.Dec(ctx.Username)
 
 		ctx.Title = fmt.Sprintf("Private Message from %s: %s", msg.From, msg.Subject)
 		ctx.Messages = Messages{msg}

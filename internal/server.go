@@ -704,9 +704,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 
 	api := NewAPI(router, config, cache, archive, db, pm, tasks)
 
-	pop3Service := NewPOP3Service(config, db, pm, tasks)
+	pop3Service := NewPOP3Service(config, db, pm, msgs, tasks)
 
-	smtpService := NewSMTPService(config, db, pm, tasks)
+	smtpService := NewSMTPService(config, db, pm, msgs, tasks)
 
 	server := &Server{
 		bind:      bind,

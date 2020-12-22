@@ -40,24 +40,6 @@ func parseAddresses(addrs []string) ([]*mail.Address, error) {
 	return addresses, nil
 }
 
-func storeMessage(conf *Config, msg *message.Entity, to []string) error {
-	addresses, err := parseAddresses(to)
-	if err != nil {
-		log.WithError(err).Error("error parsing `To` address list")
-		return fmt.Errorf("error parsing `To` address list: %w", err)
-	}
-
-	for _, address := range addresses {
-		username, _ := splitEmailAddress(address.Address)
-		if err := writeMessage(conf, msg, username); err != nil {
-			log.WithError(err).Errorf("error writing message for %s", username)
-			return fmt.Errorf("error writing message for %s: %w", username, err)
-		}
-	}
-
-	return nil
-}
-
 func splitEmailAddress(email string) (string, string) {
 	components := strings.Split(email, "@")
 	username, domain := components[0], components[1]
@@ -75,14 +57,15 @@ type mboxHandler struct {
 	config *Config
 	db     Store
 	pm     passwords.Passwords
+	msgs   *MessagesCache
 	tasks  *Dispatcher
 
 	mboxFile string
 	username string
 }
 
-func NewMboxHandler(config *Config, db Store, pm passwords.Passwords, tasks *Dispatcher) popart.Handler {
-	return &mboxHandler{config, db, pm, tasks, "", ""}
+func NewMboxHandler(config *Config, db Store, pm passwords.Passwords, msgs *MessagesCache, tasks *Dispatcher) popart.Handler {
+	return &mboxHandler{config, db, pm, msgs, tasks, "", ""}
 }
 
 func (m *mboxHandler) AuthenticatePASS(username, password string) error {
@@ -161,12 +144,13 @@ type POP3Service struct {
 	config *Config
 	db     Store
 	pm     passwords.Passwords
+	msgs   *MessagesCache
 	tasks  *Dispatcher
 }
 
 // NewPOP3Service ...
-func NewPOP3Service(config *Config, db Store, pm passwords.Passwords, tasks *Dispatcher) *POP3Service {
-	svc := &POP3Service{config, db, pm, tasks}
+func NewPOP3Service(config *Config, db Store, pm passwords.Passwords, msgs *MessagesCache, tasks *Dispatcher) *POP3Service {
+	svc := &POP3Service{config, db, pm, msgs, tasks}
 
 	return svc
 }
@@ -174,7 +158,7 @@ func NewPOP3Service(config *Config, db Store, pm passwords.Passwords, tasks *Dis
 func (s *POP3Service) getHandler() func(peer net.Addr) popart.Handler {
 	return func(peer net.Addr) popart.Handler {
 		log.Infof("Incoming connection from %q", peer)
-		return NewMboxHandler(s.config, s.db, s.pm, s.tasks)
+		return NewMboxHandler(s.config, s.db, s.pm, s.msgs, s.tasks)
 	}
 }
 
@@ -209,12 +193,13 @@ type SMTPService struct {
 	config *Config
 	db     Store
 	pm     passwords.Passwords
+	msgs   *MessagesCache
 	tasks  *Dispatcher
 }
 
 // NewSMTPService ...
-func NewSMTPService(config *Config, db Store, pm passwords.Passwords, tasks *Dispatcher) *SMTPService {
-	svc := &SMTPService{config, db, pm, tasks}
+func NewSMTPService(config *Config, db Store, pm passwords.Passwords, msgs *MessagesCache, tasks *Dispatcher) *SMTPService {
+	svc := &SMTPService{config, db, pm, msgs, tasks}
 
 	return svc
 }
@@ -281,6 +266,25 @@ func (s *SMTPService) rcptHandler() smtpd.HandlerRcpt {
 	}
 }
 
+func (s *SMTPService) storeMessage(conf *Config, msg *message.Entity, to []string) error {
+	addresses, err := parseAddresses(to)
+	if err != nil {
+		log.WithError(err).Error("error parsing `To` address list")
+		return fmt.Errorf("error parsing `To` address list: %w", err)
+	}
+
+	for _, address := range addresses {
+		username, _ := splitEmailAddress(address.Address)
+		if err := writeMessage(conf, msg, username); err != nil {
+			log.WithError(err).Errorf("error writing message for %s", username)
+			return fmt.Errorf("error writing message for %s: %w", username, err)
+		}
+		s.msgs.Inc(username)
+	}
+
+	return nil
+}
+
 func (s *SMTPService) mailHandler() smtpd.Handler {
 	return func(origin net.Addr, from string, to []string, data []byte) error {
 		msg, err := message.Read(bytes.NewReader(data))
@@ -293,7 +297,7 @@ func (s *SMTPService) mailHandler() smtpd.Handler {
 
 		conf := &Config{Data: "./"}
 
-		if err := storeMessage(conf, msg, to); err != nil {
+		if err := s.storeMessage(conf, msg, to); err != nil {
 			log.WithError(err).Error("error storing message")
 			return fmt.Errorf("error storing message: %w", err)
 		}
