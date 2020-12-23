@@ -42,11 +42,11 @@ func init() {
 
 // Server ...
 type Server struct {
-	bind      string
-	config    *Config
-	templates *Templates
-	router    *Router
-	server    *http.Server
+	bind    string
+	config  *Config
+	tmplman *TemplateManager
+	router  *Router
+	server  *http.Server
 
 	// Blogs Cache
 	blogs *BlogsCache
@@ -94,7 +94,7 @@ func (s *Server) render(name string, w http.ResponseWriter, ctx *Context) {
 		ctx.NewMessages = s.msgs.Get(ctx.User.Username)
 	}
 
-	buf, err := s.templates.Exec(name, ctx)
+	buf, err := s.tmplman.Exec(name, ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -442,15 +442,14 @@ func (s *Server) runStartupJobs() {
 }
 
 func (s *Server) initRoutes() {
-	cssBox := rice.MustFindBox("static/css").HTTPBox()
-	imgBox := rice.MustFindBox("static/img").HTTPBox()
-	jsBox := rice.MustFindBox("static/js").HTTPBox()
-
 	if s.config.Debug {
-		s.router.ServeFilesWithCacheControl("/css/*filepath", cssBox)
-		s.router.ServeFilesWithCacheControl("/img/*filepath", imgBox)
-		s.router.ServeFilesWithCacheControl("/js/*filepath", jsBox)
+		s.router.ServeFiles("/css/*filepath", http.Dir("./internal/static/css"))
+		s.router.ServeFiles("/img/*filepath", http.Dir("./internal/static/img"))
+		s.router.ServeFiles("/js/*filepath", http.Dir("./internal/static/js"))
 	} else {
+		cssBox := rice.MustFindBox("static/css").HTTPBox()
+		imgBox := rice.MustFindBox("static/img").HTTPBox()
+		jsBox := rice.MustFindBox("static/js").HTTPBox()
 		s.router.ServeFilesWithCacheControl("/css/:commit/*filepath", cssBox)
 		s.router.ServeFilesWithCacheControl("/img/:commit/*filepath", imgBox)
 		s.router.ServeFilesWithCacheControl("/js/:commit/*filepath", jsBox)
@@ -677,9 +676,9 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 		return nil, err
 	}
 
-	templates, err := NewTemplates(config, blogs, cache)
+	tmplman, err := NewTemplateManager(config, blogs, cache)
 	if err != nil {
-		log.WithError(err).Error("error loading templates")
+		log.WithError(err).Error("error creating template manager")
 		return nil, err
 	}
 
@@ -713,10 +712,10 @@ func NewServer(bind string, options ...Option) (*Server, error) {
 	csrfHandler.ExemptGlob("/api/v1/*")
 
 	server := &Server{
-		bind:      bind,
-		config:    config,
-		router:    router,
-		templates: templates,
+		bind:    bind,
+		config:  config,
+		router:  router,
+		tmplman: tmplman,
 
 		server: &http.Server{
 			Addr: bind,
