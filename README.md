@@ -197,7 +197,7 @@ Usage of ./twtd:
       --cookie-secret string        cookie secret to use secure sessions (default "PLEASE_CHANGE_ME!!!")
   -d, --data string                 data directory (default "./data")
   -D, --debug                       enable debug logging
-      --feed-sources strings        external feed sources for discovery of other feeds (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt])
+      --feed-sources strings        external feed sources for discovery of other feeds (default [https://feeds.twtxt.net/we-are-feeds.txt,https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt,https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt])
       --magiclink-secret string     magiclink secret to use for password reset tokens (default "PLEASE_CHANGE_ME!!!")
   -F, --max-fetch-limit int         maximum feed fetch limit in bytes (default 2097152)
   -L, --max-twt-length int          maximum length of posts (default 288)

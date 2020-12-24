@@ -104,8 +104,8 @@ var (
 	// DefaultFeedSources is the default list of external feed sources
 	DefaultFeedSources = []string{
 		"https://feeds.twtxt.net/we-are-feeds.txt",
-		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-bots.txt",
-		"https://raw.githubusercontent.com/mdom/we-are-twtxt/master/we-are-twtxt.txt",
+		"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-bots.txt",
+		"https://raw.githubusercontent.com/jointwt/we-are-twtxt/master/we-are-twtxt.txt",
 	}
 
 	// DefaultTwtPrompts are the set of default prompts  for twt text(s)
