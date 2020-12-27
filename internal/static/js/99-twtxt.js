@@ -855,7 +855,7 @@ window.onbeforeunload = function () {
 
 window.onload =  function () {
   var text = localStorage.getItem('text');
-  if (text != undefined || text != "") {
+  if (text) {
     insertText(u("textarea#text"), text);
   }
 }
