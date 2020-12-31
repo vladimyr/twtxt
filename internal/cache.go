@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/jointwt/twtxt"
@@ -259,7 +260,20 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 			switch res.StatusCode {
 			case http.StatusOK: // 200
+				if res.ContentLength >= 0 && res.ContentLength > conf.MaxFetchLimit {
+					log.Warnf(
+						"feed size %s exceeds MaxFetchLimit of %s for %s",
+						humanize.Bytes(uint64(res.ContentLength)), conf.MaxFetchLimit,
+						feed,
+					)
+					metrics.Counter("cache", "limited").Inc()
+				} else if res.ContentLength == -1 {
+					log.Warnf("feed size unknosn for %s", feed)
+					metrics.Counter("cache", "limited").Inc()
+				}
+
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
+
 				twter := types.Twter{Nick: feed.Nick}
 				if strings.HasPrefix(feed.URL, conf.BaseURL) {
 					twter.URL = URLForUser(conf, feed.Nick)

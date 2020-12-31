@@ -259,6 +259,12 @@ func (s *Server) setupMetrics() {
 		"Number of seconds for a feed cache cycle",
 	)
 
+	// feed cache limited fetch (feed exceeded MaxFetchLImit or unknown size)
+	metrics.NewCounter(
+		"cache", "limited",
+		"Number of feed cache fetches affected by MaxFetchLimit",
+	)
+
 	// archive size
 	metrics.NewCounter(
 		"archive", "size",
