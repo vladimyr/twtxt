@@ -260,19 +260,6 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 
 			switch res.StatusCode {
 			case http.StatusOK: // 200
-				if res.ContentLength >= 0 && res.ContentLength > conf.MaxFetchLimit {
-					log.Warnf(
-						"feed size %s exceeds MaxFetchLimit of %s for %s",
-						humanize.Bytes(uint64(res.ContentLength)),
-						humanize.Bytes(uint64(conf.MaxFetchLimit)),
-						feed,
-					)
-					metrics.Counter("cache", "limited").Inc()
-				} else if res.ContentLength == -1 {
-					log.Warnf("feed size unknosn for %s", feed)
-					metrics.Counter("cache", "limited").Inc()
-				}
-
 				limitedReader := &io.LimitedReader{R: res.Body, N: conf.MaxFetchLimit}
 
 				twter := types.Twter{Nick: feed.Nick}
@@ -291,6 +278,18 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 					log.WithError(err).Errorf("error parsing feed %s", feed)
 					twtsch <- nil
 					return
+				}
+
+				// If N == 0 we possibly exceeded conf.MaxFetchLimit when
+				// reading this feed. Log it and bump a cache_limited counter
+				if limitedReader.N <= 0 {
+					log.Warnf(
+						"feed size %s exceeds MaxFetchLimit of %s for %s",
+						humanize.Bytes(uint64(res.ContentLength)),
+						humanize.Bytes(uint64(conf.MaxFetchLimit)),
+						feed,
+					)
+					metrics.Counter("cache", "limited").Inc()
 				}
 
 				// Archive old twts
