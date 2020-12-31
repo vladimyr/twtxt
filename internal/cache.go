@@ -284,8 +284,7 @@ func (cache *Cache) FetchTwts(conf *Config, archive Archiver, feeds types.Feeds,
 				// reading this feed. Log it and bump a cache_limited counter
 				if limitedReader.N <= 0 {
 					log.Warnf(
-						"feed size %s exceeds MaxFetchLimit of %s for %s",
-						humanize.Bytes(uint64(res.ContentLength)),
+						"feed size possibly exceeds MaxFetchLimit of %s for %s",
 						humanize.Bytes(uint64(conf.MaxFetchLimit)),
 						feed,
 					)
