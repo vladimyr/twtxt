@@ -1429,7 +1429,7 @@ func UnparseTwtFactory(conf *Config) func(text string) string {
 						log.WithField("uri", uri).Warn("UnparseTwt(): error parsing uri")
 						return match
 					}
-					return fmt.Sprintf("@%s@%sd", nick, u.Hostname())
+					return fmt.Sprintf("@%s@%s", nick, u.Hostname())
 				}
 				return fmt.Sprintf("@%s", nick)
 			case "#":
