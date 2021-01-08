@@ -27,7 +27,7 @@ signs:
   - artifacts: checksum
 brews:
   -
-    github:
+    tap:
       owner: prologic
       name: homebrew-twtxt
     homepage: "https://github.io/jointwt/twtxt"
