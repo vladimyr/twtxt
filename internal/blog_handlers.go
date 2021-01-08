@@ -51,34 +51,6 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		sort.Sort(sort.Reverse(twts))
 
-		// If the twt is not in the cache look for it in the archive
-		if len(twts) == 0 {
-			if s.archive.Has(blogPost.Twt) {
-				twt, err := s.archive.Get(blogPost.Twt)
-				if err != nil {
-					ctx.Error = true
-					ctx.Message = fmt.Sprintf(
-						"Error loading associated twt for blog post %s from archive",
-						blogPost,
-					)
-					s.render("error", w, ctx)
-					return
-				}
-
-				twts = append(twts, twt)
-			}
-		}
-
-		if len(twts) == 0 {
-			ctx.Error = true
-			ctx.Message = fmt.Sprintf(
-				"No associated twt found for blog post %s",
-				blogPost,
-			)
-			s.render("404", w, ctx)
-			return
-		}
-
 		extensions := parser.CommonExtensions |
 			parser.NoEmptyLineBeforeBlock |
 			parser.AutoHeadingIDs |
@@ -96,33 +68,23 @@ func (s *Server) BlogHandler() httprouter.Handle {
 
 		html := markdown.ToHTML(blogPost.Bytes(), mdParser, renderer)
 
-		twt := twts[0]
-		who := fmt.Sprintf("%s %s", twt.Twter().Nick, twt.Twter().URL)
-		when := twt.Created().Format(time.RFC3339)
-		what := twt.Text()
+		who := fmt.Sprintf("%s %s", blogPost.Author, URLForUser(s.config, blogPost.Author))
+		when := blogPost.Created().Format(time.RFC3339)
 
 		var ks []string
-		if ks, err = keywords.Extract(what); err != nil {
+		if ks, err = keywords.Extract(blogPost.Content()); err != nil {
 			log.WithError(err).Warn("error extracting keywords")
 		}
 
-		for _, m := range twt.Mentions() {
-			ks = append(ks, m.Twter().Nick)
-		}
-		var tags types.TagList = twt.Tags()
-		ks = append(ks, tags.Tags()...)
-
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Last-Modified", blogPost.Modified().Format(http.TimeFormat))
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
-			w.Header().Set(
-				"Link",
-				fmt.Sprintf(
-					`<%s/user/%s/webmention>; rel="webmention"`,
-					s.config.BaseURL, twt.Twter().Nick,
-				),
-			)
-		}
+		w.Header().Set(
+			"Link",
+			fmt.Sprintf(
+				`<%s/user/%s/webmention>; rel="webmention"`,
+				s.config.BaseURL, blogPost.Author,
+			),
+		)
 
 		if r.Method == http.MethodHead {
 			defer r.Body.Close()
@@ -136,28 +98,26 @@ func (s *Server) BlogHandler() httprouter.Handle {
 		)
 		ctx.Content = template.HTML(html)
 		ctx.Meta = Meta{
-			Author:      who,
-			Description: what,
+			Author:      blogPost.Author,
+			Description: blogPost.Title,
 			Keywords:    strings.Join(ks, ", "),
 		}
-		if strings.HasPrefix(twt.Twter().URL, s.config.BaseURL) {
-			ctx.Links = append(ctx.Links, types.Link{
-				Href: fmt.Sprintf("%s/webmention", UserURL(twt.Twter().URL)),
-				Rel:  "webmention",
-			})
-			ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
-				types.Alternative{
-					Type:  "text/plain",
-					Title: fmt.Sprintf("%s's Twtxt Feed", twt.Twter().Nick),
-					URL:   twt.Twter().URL,
-				},
-				types.Alternative{
-					Type:  "application/atom+xml",
-					Title: fmt.Sprintf("%s's Atom Feed", twt.Twter().Nick),
-					URL:   fmt.Sprintf("%s/atom.xml", UserURL(twt.Twter().URL)),
-				},
-			}...)
-		}
+		ctx.Links = append(ctx.Links, types.Link{
+			Href: fmt.Sprintf("%s/webmention", UserURL(URLForUser(s.config, blogPost.Author))),
+			Rel:  "webmention",
+		})
+		ctx.Alternatives = append(ctx.Alternatives, types.Alternatives{
+			types.Alternative{
+				Type:  "text/plain",
+				Title: fmt.Sprintf("%s's Twtxt Feed", blogPost.Author),
+				URL:   URLForUser(s.config, blogPost.Author),
+			},
+			types.Alternative{
+				Type:  "application/atom+xml",
+				Title: fmt.Sprintf("%s's Atom Feed", blogPost.Author),
+				URL:   fmt.Sprintf("%s/atom.xml", UserURL(URLForUser(s.config, blogPost.Author))),
+			},
+		}...)
 
 		var pagedTwts types.Twts
 
@@ -412,32 +372,17 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
-		summary := fmt.Sprintf(
-			"(#%s) New Blog Post [%s](%s) by @%s 📝",
-			blogPost.Hash(), blogPost.Title, blogPost.URL(s.config.BaseURL), blogPost.Author,
-		)
-
-		var twt types.Twt
+		twtText := fmt.Sprintf("[%s](%s)", blogPost.Title, blogPost.URL(s.config.BaseURL))
 
 		if postas == "" || postas == user.Username {
-			twt, err = AppendTwt(s.config, s.db, user, summary)
+			_, err = AppendTwt(s.config, s.db, user, twtText)
 		} else {
-			twt, err = AppendSpecial(s.config, s.db, postas, summary)
+			_, err = AppendSpecial(s.config, s.db, postas, twtText)
 		}
-
 		if err != nil {
 			log.WithError(err).Error("error posting blog post twt")
 			ctx.Error = true
 			ctx.Message = "Error posting announcement twt for new blog post"
-			s.render("error", w, ctx)
-			return
-		}
-
-		blogPost.Twt = twt.Hash()
-		if err := blogPost.Save(s.config); err != nil {
-			log.WithError(err).Error("error persisting twt metdata for blog post")
-			ctx.Error = true
-			ctx.Message = "Error recording twt for new blog post"
 			s.render("error", w, ctx)
 			return
 		}
