@@ -858,5 +858,25 @@ window.onload =  function () {
   var text = localStorage.getItem('text');
   if (text) {
     insertText(u("textarea#text"), text);
+    return;
+  }
+
+  // Support Bookmarklet
+  /*
+    var url = document.URL ;
+    var title = document.title ;
+
+    window.location.href = "https://twtxt.net"
+                            + "/?title="
+                            + title + "&url="
+                            + url;
+  */
+  if (typeof(window.URLSearchParams) != "undefined") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const titleParam = urlParams.get("title");
+    const urlParam = urlParams.get("url");
+    if (titleParam && urlParam) {
+      insertText(u("textarea#text"), "[" + titleParam + "](" + urlParam + ")\r\n\r\n");
+    }
   }
 }
