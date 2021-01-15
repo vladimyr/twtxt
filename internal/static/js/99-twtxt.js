@@ -176,6 +176,7 @@ function deleteTwt(e) {
     Twix.ajax({
       type: "DELETE",
       url: u("#form").attr("action"),
+      data: new FormData(u("#form").first()),
       success: function (data) {
         var hash = u(e.target).data("hash");
         u("#" + hash).remove();
