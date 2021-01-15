@@ -19,9 +19,13 @@
 
 ![](https://twtxt.net/media/XsLsDHuisnXcL6NuUkYguK.png)
 
-> Technically `twtxt` is a [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
-> of a web application. It supports multiple users and
-> also hosts user feeds directly.
+> Technically `twtxt` is a multi-user [twtxt](https://twtxt.readthedocs.io/en/latest/) client in the form
+> of a web app and api. It supports multiple users and
+> also hosts user feeds directly and provides a familiar "social" experience with minimal user profiles.
+> 
+> It also supports "rich" text by utilising Markdown as well as multimedia such as photos, videos and even audio.
+>
+> There is also a set of [Mobile App]s(https://jointwt.org/goryon/) available for both the App Store and Play Store. 
 
 There is also a publicly (_free_) available Pod available at:
 
@@ -29,9 +33,9 @@ There is also a publicly (_free_) available Pod available at:
 
 > __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
 
-> **[Sponsor](#Sponsor)** this project to support the development of new features
-> the upcoming Mobile App and much more! Or contact [Support](https://twtxt.net)
-> for help with running your own Twtxt!
+> **[Sponsor](#Sponsor)** this project to support the development of new features, improving existings ones and fix bugs!
+> Or contact [Support](https://twtxt.net) for help with running your own Pod!
+> Or host your own Twtxt feed and support our [Extensions](https://dev.twtxt.net).
 
 ![Demo_1](https://user-images.githubusercontent.com/15314237/90351548-cac74b80-dffd-11ea-8288-b347af548465.gif)
 
