@@ -304,6 +304,10 @@ func (s *Server) PublishBlogHandler() httprouter.Handle {
 			return
 		}
 
+		// Expand Mentions and Tags
+		text = ExpandTag(s.config, ExpandMentions(s.config, s.db, ctx.User, text))
+		text = FormatMentionsAndTags(s.config, text, MarkdownFmt)
+
 		hash := r.FormValue("hash")
 		if hash != "" {
 			blogPost, ok := s.blogs.Get(hash)
