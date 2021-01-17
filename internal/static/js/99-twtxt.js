@@ -455,7 +455,7 @@ u("#writeBtn").on("click", function (e) {
   u("#title").attr("type", "");
 
   var title = localStorage.getItem('title');
-  if (title != undefined || title != "") {
+  if (title) {
     if (u("input#title").attr("type") != 'hidden') {
       insertText(u("input#title"), title);
     }
