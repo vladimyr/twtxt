@@ -31,7 +31,7 @@ There is also a publicly (_free_) available Pod available at:
 
 - https://twtxt.net/
 
-> __NOTE:__ I [James Mills](https://github.com/prologic) run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
+> __NOTE:__ I, [James Mills](https://github.com/prologic), run this first (_of which I hope to be many_) `twtxt` instance on pretty cheap hardware on a limited budget. Please use it fairly so everyone can enjoy using it equally! Please be sure to read the [/privacy](https://twtxt.net/privacy) policy before signing up (_pretty striaght forward_) and happy Twt'ing! 🤗
 
 > **[Sponsor](#Sponsor)** this project to support the development of new features, improving existings ones and fix bugs!
 > Or contact [Support](https://twtxt.net) for help with running your own Pod!
@@ -101,22 +101,15 @@ Linux, macOS:
 ```console
 make deps
 ```
-FreeBSD:
-
-- Install ```gmake```
-- Install ```pkgconf``` that brings ```pkg-config```
-- ```console
-gmake deps
-```
+Note that in order to get the media upload functions to work, you need to 
+install ffmpeg and its associated `-dev` packages. Consult your distribution's package 
+repository for availability and names.
 
 FreeBSD:
 
-- Install ```gmake```
-- Install ```pkgconf``` that brings ```pkg-config```
-
-```console
-gmake deps
-```
+- Install `gmake`
+- Install `pkgconf` that brings `pkg-config`
+`gmake deps`
 
 3. Build the binaries
 
