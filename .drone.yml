@@ -12,6 +12,7 @@ steps:
     environment:
       GOPROXY: https://goproxy.mills.io
     commands:
+      - make deps
       - make build
       - make image
       - make test
