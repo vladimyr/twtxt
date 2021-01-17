@@ -14,8 +14,6 @@ steps:
     commands:
       - make deps
       - make build
-      - make image
-      - make test
 
   - name: notify
     image: plugins/webhook
