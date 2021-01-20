@@ -471,9 +471,19 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, avatarsDir, fmt.Sprintf("%s.webp", nick))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -536,7 +546,7 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		if preferredContentType == "image/webp" {
 			w.Header().Set("Content-Type", "image/webp")
 			if r.Method == http.MethodHead {
 				return
@@ -549,10 +559,11 @@ func (s *Server) AvatarHandler() httprouter.Handle {
 			return
 		}
 
-		// Support older browsers like IE11 that don't support WebP :/
 		if r.Method == http.MethodHead {
 			return
 		}
+
+		// Support older browsers like IE11 that don't support WebP :/
 		metrics.Counter("media", "old_avatar").Inc()
 		w.Header().Set("Content-Type", "image/png")
 		if err := png.Encode(w, img); err != nil {
@@ -1669,7 +1680,17 @@ func (s *Server) ExternalAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, externalDir, fmt.Sprintf("%s.webp", slug))
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
@@ -2065,7 +2086,17 @@ func (s *Server) PodAvatarHandler() httprouter.Handle {
 
 		var fn string
 
-		if accept.PreferredContentTypeLike(r.Header, "image/webp") == "image/webp" {
+		preferredContentType := accept.PreferredContentTypeLike(r.Header, "image/webp")
+
+		// Apple iOS 14.3 is lying. It claims it can support WebP and sends
+		// an Accept: image/webp,... however it doesn't render the WebP
+		// correctly at all.
+		// XXX: https://github.com/jointwt/twtxt/issues/337 for details
+		if preferredContentType == "image/webp" && strings.Contains(r.UserAgent(), "iPhone OS 14_3") {
+			preferredContentType = "image/png"
+		}
+
+		if preferredContentType == "image/webp" {
 			fn = filepath.Join(s.config.Data, "", "logo.webp")
 			w.Header().Set("Content-Type", "image/webp")
 		} else {
