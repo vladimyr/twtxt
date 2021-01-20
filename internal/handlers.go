@@ -609,11 +609,23 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 		if err != nil {
 			log.WithError(err).Warnf("unable to detect twtxt client from %s", FormatRequest(r))
 		} else {
-			user, err := s.db.GetUser(nick)
-			if err != nil {
-				log.WithError(err).Warnf("error loading user object for %s", nick)
+			var (
+				user       *User
+				feed       *Feed
+				err        error
+				followedBy bool
+			)
+
+			if user, err = s.db.GetUser(nick); err == nil {
+				followedBy = user.FollowedBy(followerClient.URL)
+			} else if feed, err = s.db.GetFeed(nick); err == nil {
+				followedBy = feed.FollowedBy(followerClient.URL)
 			} else {
-				if (s.config.Debug || followerClient.IsPublicURL()) && !user.FollowedBy(followerClient.URL) {
+				log.WithError(err).Warnf("unable to load user or feed object for %s", nick)
+			}
+
+			if (user != nil) || (feed != nil) {
+				if (s.config.Debug || followerClient.IsPublicURL()) && !followedBy {
 					if _, err := AppendSpecial(
 						s.config, s.db,
 						twtxtBot,
@@ -626,9 +638,19 @@ func (s *Server) TwtxtHandler() httprouter.Handle {
 					); err != nil {
 						log.WithError(err).Warnf("error appending special FOLLOW post")
 					}
-					user.AddFollower(followerClient.Nick, followerClient.URL)
-					if err := s.db.SetUser(nick, user); err != nil {
-						log.WithError(err).Warnf("error updating user object for %s", nick)
+
+					if user != nil {
+						user.AddFollower(followerClient.Nick, followerClient.URL)
+						if err := s.db.SetUser(nick, user); err != nil {
+							log.WithError(err).Warnf("error updating user object for %s", nick)
+						}
+					} else if feed != nil {
+						feed.AddFollower(followerClient.Nick, followerClient.URL)
+						if err := s.db.SetFeed(nick, feed); err != nil {
+							log.WithError(err).Warnf("error updating feed object for %s", nick)
+						}
+					} else {
+						// Should not be reached
 					}
 				}
 			}

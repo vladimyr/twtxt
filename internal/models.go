@@ -276,6 +276,12 @@ func LoadUser(data []byte) (user *User, err error) {
 	return
 }
 
+func (f *Feed) AddFollower(nick, url string) {
+	url = NormalizeURL(url)
+	f.Followers[nick] = url
+	f.remotes[url] = nick
+}
+
 func (f *Feed) FollowedBy(url string) bool {
 	_, ok := f.remotes[NormalizeURL(url)]
 	return ok
