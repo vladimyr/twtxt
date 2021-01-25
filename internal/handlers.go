@@ -2101,8 +2101,9 @@ func (s *Server) PodConfigHandler() httprouter.Handle {
 	}
 }
 
-// PodAvatarHandler ...
-func (s *Server) PodAvatarHandler() httprouter.Handle {
+// PodLogoHandler ...
+func (s *Server) PodLogoHandler() httprouter.Handle {
+	box := rice.MustFindBox("static")
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Cache-Control", "public, no-cache, must-revalidate")
 
@@ -2156,9 +2157,18 @@ func (s *Server) PodAvatarHandler() httprouter.Handle {
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-
 			return
 		}
+
+		data, err := box.Bytes("img/logo.png")
+		if err != nil {
+			log.WithError(err).Error("error loading default logo")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "image/png")
+		w.Write(data)
 	}
 }
 

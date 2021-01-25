@@ -528,7 +528,7 @@ func (s *Server) initRoutes() {
 	s.router.GET("/user/:nick/followers", s.FollowersHandler())
 	s.router.GET("/user/:nick/following", s.FollowingHandler())
 
-	s.router.GET("/pod/avatar", s.PodAvatarHandler())
+	s.router.GET("/pod/logo", s.PodLogoHandler())
 
 	// WebMentions
 	s.router.POST("/user/:nick/webmention", s.WebMentionHandler())
