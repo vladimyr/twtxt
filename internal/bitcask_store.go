@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/binary"
 	"fmt"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 )
 
 const (
+	versionKey        = "/version"
 	feedsKeyPrefix    = "/feeds"
 	sessionsKeyPrefix = "/sessions"
 	usersKeyPrefix    = "/users"
@@ -65,6 +67,26 @@ func (bs *BitcaskStore) Merge() error {
 	}
 
 	return nil
+}
+
+func (bs *BitcaskStore) GetVersion() (int64, error) {
+	var n uint64
+	raw, err := bs.db.Get([]byte(versionKey))
+	if err != nil {
+		if err != bitcask.ErrKeyNotFound {
+			return 0, err
+		}
+	} else {
+		n = binary.BigEndian.Uint64(raw)
+	}
+
+	return int64(n), nil
+}
+
+func (bs *BitcaskStore) SetVersion(version int64) error {
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(version))
+	return bs.db.Put([]byte(versionKey), buf)
 }
 
 func (bs *BitcaskStore) HasFeed(name string) bool {

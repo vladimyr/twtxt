@@ -20,6 +20,9 @@ type Store interface {
 	Close() error
 	Sync() error
 
+	GetVersion() (int64, error)
+	SetVersion(version int64) error
+
 	DelFeed(name string) error
 	HasFeed(name string) bool
 	GetFeed(name string) (*Feed, error)
